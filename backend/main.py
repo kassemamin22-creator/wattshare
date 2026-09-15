@@ -1,10 +1,10 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
 
 from models import UserCreate, UserLogin, UserOut
-from auth import hash_password, verify_password, create_access_token
+from auth import hash_password, verify_password, create_access_token, get_current_user
 from bson import ObjectId
 
 load_dotenv()
@@ -65,3 +65,7 @@ def login(user: UserLogin):
     })
 
     return {"access_token": access_token, "token_type": "bearer"}
+
+@app.get("/me")
+def read_current_user(current_user: dict = Depends(get_current_user)):
+    return current_user
