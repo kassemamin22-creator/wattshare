@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from enum import Enum
+from datetime import datetime
 
 class UserRole(str, Enum):
     subscriber = "subscriber"
@@ -33,3 +34,22 @@ class SubscriptionOut(BaseModel):
     ampere: int
     tariff_rate: float
     status: str
+
+class MeterReadingCreate(BaseModel):
+    subscriber_id: str
+    reading_value: float
+
+class MeterReadingOut(BaseModel):
+    id: str
+    subscriber_id: str
+    reading_value: float
+    reading_date: datetime
+
+class BillOut(BaseModel):
+    id: str
+    subscriber_id: str
+    meter_reading_id: str
+    consumption_kwh: float
+    amount: float
+    status: str
+    created_at: datetime
