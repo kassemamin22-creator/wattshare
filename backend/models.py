@@ -22,3 +22,14 @@ class UserOut(BaseModel):
     name: str
     email: str
     role: UserRole
+
+class SubscriptionCreate(BaseModel):
+    ampere: int
+
+class SubscriptionOut(BaseModel):
+    id: str
+    subscriber_id: str
+    generator_name: str
+    ampere: int
+    tariff_rate: float
+    status: str
