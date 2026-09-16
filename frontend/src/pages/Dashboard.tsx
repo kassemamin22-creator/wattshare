@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { isAxiosError } from "axios";
 import api from "../services/api";
 
@@ -72,7 +72,21 @@ function Dashboard() {
         ) : hasSubscription ? (
           <p>Loading...</p>
         ) : (
-          <p>No subscription yet</p>
+          <>
+            <p>No subscription yet</p>
+            <Link
+              className="auth-button"
+              to="/subscribe"
+              style={{
+                display: "block",
+                textAlign: "center",
+                textDecoration: "none",
+                boxSizing: "border-box",
+              }}
+            >
+              Subscribe Now
+            </Link>
+          </>
         )}
 
         <h2 className="auth-title">Bills</h2>
