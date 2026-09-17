@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { BarChart3, AlertCircle, Gauge, User, LogOut } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { isAxiosError } from "axios";
 import api from "../services/api";
 
@@ -35,85 +38,19 @@ function statusPillClass(status: string): string {
   }
 }
 
-function AlertIcon() {
-  return (
-    <svg
-      className="dash-icon"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="var(--color-accent)"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="10"></circle>
-      <line x1="12" y1="8" x2="12" y2="12"></line>
-      <line x1="12" y1="16" x2="12.01" y2="16"></line>
-    </svg>
-  );
-}
+const CARD_STAGGER = 0.08;
+const cardHover = {
+  scale: 1.015,
+  y: -4,
+  transition: { type: "spring" as const, stiffness: 300, damping: 20 },
+};
 
-function GaugeIcon() {
-  return (
-    <svg
-      className="dash-icon"
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="var(--color-accent)"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="m12 14 4-4"></path>
-      <path d="M3.34 19a10 10 0 1 1 17.32 0"></path>
-    </svg>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg
-      className="dash-icon"
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="var(--color-cyan)"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-      <circle cx="12" cy="7" r="4"></circle>
-    </svg>
-  );
-}
-
-function LogoutIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-      <polyline points="16 17 21 12 16 7"></polyline>
-      <line x1="21" y1="12" x2="9" y2="12"></line>
-    </svg>
-  );
+function cardEntrance(index: number) {
+  return {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.4, delay: index * CARD_STAGGER, ease: "easeOut" as const },
+  };
 }
 
 function OwnerDashboard() {
@@ -179,21 +116,32 @@ function OwnerDashboard() {
     }
   };
 
+  const chartData = subscribers.map((subscriber, index) => ({
+    label: `Sub ${index + 1}`,
+    ampere: subscriber.ampere,
+  }));
+
   return (
     <div className="dash-page">
       <div className="dash-content">
         <div className="dash-logo">⚡ WattShare</div>
         <div className="dash-page-title">
-          <GaugeIcon /> Owner Dashboard
+          <Gauge size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Owner Dashboard
         </div>
 
         {subscribers.length === 0 ? (
           <p>No subscribers yet</p>
         ) : (
-          subscribers.map((subscriber) => (
-            <div key={subscriber.id} className="owner-row">
+          subscribers.map((subscriber, index) => (
+            <motion.div
+              key={subscriber.id}
+              className="owner-row"
+              style={{ animation: "none" }}
+              {...cardEntrance(index)}
+              whileHover={cardHover}
+            >
               <p className="owner-row-id">
-                <UserIcon /> Subscriber ID: {subscriber.subscriber_id}
+                <User size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Subscriber ID: {subscriber.subscriber_id}
               </p>
               <p className="owner-row-value">Ampere: {subscriber.ampere}A</p>
               <p className="owner-row-status-line">
@@ -213,12 +161,13 @@ function OwnerDashboard() {
                   handleReadingChange(subscriber.subscriber_id, e.target.value)
                 }
               />
-              <button
+              <motion.button
                 className="auth-button owner-submit-button"
                 onClick={() => handleSubmitReading(subscriber.subscriber_id)}
+                whileTap={{ scale: 0.97 }}
               >
                 Submit Reading
-              </button>
+              </motion.button>
 
               {messages[subscriber.subscriber_id] && (
                 <p className="dash-success">
@@ -230,18 +179,55 @@ function OwnerDashboard() {
                   {errors[subscriber.subscriber_id]}
                 </p>
               )}
-            </div>
+            </motion.div>
           ))
         )}
 
+        <motion.div
+          className="dash-card"
+          style={{ animation: "none" }}
+          {...cardEntrance(subscribers.length)}
+          whileHover={cardHover}
+        >
+          <h2 className="dash-card-title">
+            <BarChart3 size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Subscriber Consumption Overview
+          </h2>
+          {subscribers.length === 0 ? (
+            <p className="forecast-message">Chart will appear once you have subscribers</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis dataKey="label" tick={{ fill: "var(--color-text-muted)", fontSize: 11 }} />
+                <YAxis hide={true} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--color-surface-2)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: "8px",
+                    color: "var(--color-text)",
+                  }}
+                />
+                <Bar dataKey="ampere" fill="var(--color-cyan)" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </motion.div>
+
         <h2 className="dash-card-title">
-          <AlertIcon /> Reported Issues
+          <AlertCircle size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Reported Issues
         </h2>
         {issues.length === 0 ? (
           <p>No issues reported yet</p>
         ) : (
-          issues.map((issue) => (
-            <div key={issue.id} className="owner-row">
+          issues.map((issue, index) => (
+            <motion.div
+              key={issue.id}
+              className="owner-row"
+              style={{ animation: "none" }}
+              {...cardEntrance(index)}
+              whileHover={cardHover}
+            >
               <p className="owner-issue-desc">{issue.description}</p>
               <p className="owner-issue-date">
                 Reported: {new Date(issue.created_at).toLocaleString()}
@@ -252,22 +238,27 @@ function OwnerDashboard() {
                   {issue.status.toUpperCase()}
                 </span>
               </div>
-              <select
+              <motion.select
                 className="owner-select"
                 value={issue.status}
                 onChange={(e) => handleStatusChange(issue.id, e.target.value)}
+                whileTap={{ scale: 0.97 }}
               >
                 <option value="open">Open</option>
                 <option value="in progress">In Progress</option>
                 <option value="resolved">Resolved</option>
-              </select>
-            </div>
+              </motion.select>
+            </motion.div>
           ))
         )}
 
-        <button className="dash-button-logout" onClick={handleLogout}>
-          <LogoutIcon /> Log Out
-        </button>
+        <motion.button
+          className="dash-button-logout"
+          onClick={handleLogout}
+          whileTap={{ scale: 0.97 }}
+        >
+          <LogOut size={18} /> Log Out
+        </motion.button>
       </div>
     </div>
   );
