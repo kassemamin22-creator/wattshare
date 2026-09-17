@@ -27,12 +27,18 @@ interface Bill {
   created_at: string;
 }
 
+interface Prediction {
+  prediction: number | null;
+  message: string;
+}
+
 function Dashboard() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [hasSubscription, setHasSubscription] = useState(true);
   const [bills, setBills] = useState<Bill[]>([]);
+  const [prediction, setPrediction] = useState<Prediction | null>(null);
   const [issueDescription, setIssueDescription] = useState("");
   const [issueMessage, setIssueMessage] = useState("");
   const [issueError, setIssueError] = useState("");
@@ -50,6 +56,8 @@ function Dashboard() {
       });
 
     api.get("/bills/me").then((response) => setBills(response.data));
+
+    api.get("/bills/predict").then((response) => setPrediction(response.data));
   }, []);
 
   const handleLogout = () => {
@@ -122,6 +130,22 @@ function Dashboard() {
               </li>
             ))}
           </ul>
+        )}
+
+        <h2 className="auth-title">Predicted Next Bill</h2>
+        {prediction && (
+          <>
+            {prediction.prediction !== null ? (
+              <>
+                <p>${prediction.prediction.toFixed(2)}</p>
+                <p style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>
+                  {prediction.message}
+                </p>
+              </>
+            ) : (
+              <p>{prediction.message}</p>
+            )}
+          </>
         )}
 
         <h2 className="auth-title">Report an Issue</h2>
