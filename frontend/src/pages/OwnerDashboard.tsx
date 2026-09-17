@@ -12,15 +12,25 @@ interface Subscriber {
   status: string;
 }
 
+interface Issue {
+  id: string;
+  subscriber_id: string;
+  description: string;
+  status: string;
+  created_at: string;
+}
+
 function OwnerDashboard() {
   const navigate = useNavigate();
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [readingValues, setReadingValues] = useState<Record<string, string>>({});
   const [messages, setMessages] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [issues, setIssues] = useState<Issue[]>([]);
 
   useEffect(() => {
     api.get("/subscribers").then((response) => setSubscribers(response.data));
+    api.get("/issues").then((response) => setIssues(response.data));
   }, []);
 
   const handleLogout = () => {
@@ -30,6 +40,19 @@ function OwnerDashboard() {
 
   const handleReadingChange = (subscriberId: string, value: string) => {
     setReadingValues((prev) => ({ ...prev, [subscriberId]: value }));
+  };
+
+  const handleStatusChange = async (issueId: string, newStatus: string) => {
+    try {
+      await api.patch(`/issues/${issueId}?status=${newStatus}`);
+      setIssues((prev) =>
+        prev.map((issue) =>
+          issue.id === issueId ? { ...issue, status: newStatus } : issue
+        )
+      );
+    } catch {
+      // status update failed; leave the dropdown as-is
+    }
   };
 
   const handleSubmitReading = async (subscriberId: string) => {
@@ -110,6 +133,36 @@ function OwnerDashboard() {
                   {errors[subscriber.subscriber_id]}
                 </div>
               )}
+            </div>
+          ))
+        )}
+
+        <h2 className="auth-title">Reported Issues</h2>
+        {issues.length === 0 ? (
+          <p>No issues reported yet</p>
+        ) : (
+          issues.map((issue) => (
+            <div
+              key={issue.id}
+              style={{
+                border: "1px solid var(--color-border)",
+                borderRadius: "8px",
+                padding: "1rem",
+                marginBottom: "1rem",
+                textAlign: "left",
+              }}
+            >
+              <p>{issue.description}</p>
+              <p>Reported: {new Date(issue.created_at).toLocaleString()}</p>
+              <select
+                className="auth-input"
+                value={issue.status}
+                onChange={(e) => handleStatusChange(issue.id, e.target.value)}
+              >
+                <option value="open">Open</option>
+                <option value="in progress">In Progress</option>
+                <option value="resolved">Resolved</option>
+              </select>
             </div>
           ))
         )}

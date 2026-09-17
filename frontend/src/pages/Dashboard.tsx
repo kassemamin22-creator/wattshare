@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { isAxiosError } from "axios";
 import api from "../services/api";
@@ -33,6 +33,9 @@ function Dashboard() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [hasSubscription, setHasSubscription] = useState(true);
   const [bills, setBills] = useState<Bill[]>([]);
+  const [issueDescription, setIssueDescription] = useState("");
+  const [issueMessage, setIssueMessage] = useState("");
+  const [issueError, setIssueError] = useState("");
 
   useEffect(() => {
     api.get("/me").then((response) => setCurrentUser(response.data));
@@ -52,6 +55,24 @@ function Dashboard() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/");
+  };
+
+  const handleReportIssue = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIssueMessage("");
+    setIssueError("");
+
+    try {
+      await api.post("/issues", { description: issueDescription });
+      setIssueMessage("Issue reported successfully");
+      setIssueDescription("");
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        setIssueError(err.response.data.detail);
+      } else {
+        setIssueError("Failed to report issue");
+      }
+    }
   };
 
   return (
@@ -102,6 +123,24 @@ function Dashboard() {
             ))}
           </ul>
         )}
+
+        <h2 className="auth-title">Report an Issue</h2>
+        <form onSubmit={handleReportIssue}>
+          <textarea
+            className="auth-input"
+            placeholder="Describe the issue"
+            value={issueDescription}
+            onChange={(e) => setIssueDescription(e.target.value)}
+            rows={3}
+          />
+          <button className="auth-button" type="submit">
+            Report Issue
+          </button>
+          {issueMessage && (
+            <p style={{ color: "var(--color-cyan)" }}>{issueMessage}</p>
+          )}
+          {issueError && <div className="auth-error">{issueError}</div>}
+        </form>
 
         <button className="auth-button" onClick={handleLogout}>
           Log Out
