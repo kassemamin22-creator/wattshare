@@ -53,3 +53,13 @@ class BillOut(BaseModel):
     amount: float
     status: str
     created_at: datetime
+
+class IssueCreate(BaseModel):
+    description: str
+
+class IssueOut(BaseModel):
+    id: str
+    subscriber_id: str
+    description: str
+    status: str
+    created_at: datetime

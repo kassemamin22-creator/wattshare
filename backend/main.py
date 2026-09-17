@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from typing import List
 import os
 
-from models import UserCreate, UserLogin, UserOut, UserRole, SubscriptionCreate, SubscriptionOut, MeterReadingCreate, BillOut
+from models import UserCreate, UserLogin, UserOut, UserRole, SubscriptionCreate, SubscriptionOut, MeterReadingCreate, BillOut, IssueCreate, IssueOut
 from auth import hash_password, verify_password, create_access_token, get_current_user
 from bson import ObjectId
 from datetime import datetime
@@ -22,6 +22,7 @@ users_collection = db["users"]
 subscriptions_collection = db["subscriptions"]
 meter_readings_collection = db["meter_readings"]
 bills_collection = db["bills"]
+issues_collection = db["issues"]
 
 GENERATOR_NAME = "Al-Kassir Diesel Generator"
 TARIFF_RATE = 0.484
@@ -210,6 +211,64 @@ def read_my_bills(current_user: dict = Depends(get_current_user)):
         )
         for bill in bills
     ]
+
+@app.post("/issues", response_model=IssueOut)
+def create_issue(issue: IssueCreate, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "subscriber":
+        raise HTTPException(status_code=403, detail="Only subscribers can report issues")
+
+    created_at = datetime.utcnow()
+    result = issues_collection.insert_one({
+        "subscriber_id": current_user["id"],
+        "description": issue.description,
+        "status": "open",
+        "created_at": created_at,
+    })
+
+    return IssueOut(
+        id=str(result.inserted_id),
+        subscriber_id=current_user["id"],
+        description=issue.description,
+        status="open",
+        created_at=created_at,
+    )
+
+@app.get("/issues", response_model=List[IssueOut])
+def read_issues(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "owner":
+        raise HTTPException(status_code=403, detail="Only the generator owner can view issues")
+
+    issues = issues_collection.find().sort("created_at", -1)
+
+    return [
+        IssueOut(
+            id=str(issue["_id"]),
+            subscriber_id=issue["subscriber_id"],
+            description=issue["description"],
+            status=issue["status"],
+            created_at=issue["created_at"],
+        )
+        for issue in issues
+    ]
+
+@app.patch("/issues/{issue_id}", response_model=IssueOut)
+def update_issue(issue_id: str, status: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "owner":
+        raise HTTPException(status_code=403, detail="Only the generator owner can update issues")
+
+    issue = issues_collection.find_one({"_id": ObjectId(issue_id)})
+    if not issue:
+        raise HTTPException(status_code=404, detail="Issue not found")
+
+    issues_collection.update_one({"_id": ObjectId(issue_id)}, {"$set": {"status": status}})
+
+    return IssueOut(
+        id=str(issue["_id"]),
+        subscriber_id=issue["subscriber_id"],
+        description=issue["description"],
+        status=status,
+        created_at=issue["created_at"],
+    )
 
 @app.get("/admin/users", response_model=List[UserOut])
 def read_all_users(current_user: dict = Depends(get_current_user)):
