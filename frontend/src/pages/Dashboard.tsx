@@ -1,4 +1,4 @@
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState, FormEvent, CSSProperties } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { isAxiosError } from "axios";
 import api from "../services/api";
@@ -30,6 +30,102 @@ interface Bill {
 interface Prediction {
   prediction: number | null;
   message: string;
+}
+
+function statusPillClass(status: string): string {
+  switch (status) {
+    case "active":
+    case "resolved":
+    case "paid":
+      return "pill pill-success";
+    case "pending":
+      return "pill pill-warning";
+    case "disputed":
+      return "pill pill-danger";
+    default:
+      return "pill pill-cyan";
+  }
+}
+
+function ZapIcon() {
+  return (
+    <svg
+      className="dash-icon"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="var(--color-accent)"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+    </svg>
+  );
+}
+
+function BarChartIcon() {
+  return (
+    <svg
+      className="dash-icon"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="var(--color-cyan)"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <line x1="18" y1="20" x2="18" y2="10"></line>
+      <line x1="12" y1="20" x2="12" y2="4"></line>
+      <line x1="6" y1="20" x2="6" y2="14"></line>
+    </svg>
+  );
+}
+
+function ReceiptIcon() {
+  return (
+    <svg
+      className="dash-icon"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="var(--color-accent)"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+      <polyline points="14 2 14 8 20 8"></polyline>
+      <line x1="16" y1="13" x2="8" y2="13"></line>
+      <line x1="16" y1="17" x2="8" y2="17"></line>
+    </svg>
+  );
+}
+
+function ChatIcon() {
+  return (
+    <svg
+      className="dash-icon"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="var(--color-cyan)"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+    </svg>
+  );
 }
 
 function Dashboard() {
@@ -83,90 +179,154 @@ function Dashboard() {
     }
   };
 
+  const displayName = currentUser
+    ? currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1)
+    : "";
+  const avatarInitial = currentUser ? currentUser.role.charAt(0).toUpperCase() : "";
+
+  const totalConsumption = bills.reduce((sum, bill) => sum + bill.consumption_kwh, 0);
+  const currentBalance = bills
+    .filter((bill) => bill.status === "pending")
+    .reduce((sum, bill) => sum + bill.amount, 0);
+
+  const highestBillAmount = bills.reduce((max, bill) => Math.max(max, bill.amount), 0);
+  const forecastPercent =
+    prediction?.prediction != null && highestBillAmount > 0
+      ? Math.min(100, (prediction.prediction / highestBillAmount) * 100)
+      : 0;
+  const forecastBarStyle = {
+    "--fill-width": `${forecastPercent}%`,
+  } as CSSProperties;
+
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <div className="auth-logo">⚡ WattShare</div>
-        <h1 className="auth-title">Welcome to WattShare</h1>
-        <p>You are logged in.</p>
+    <div className="dash-page">
+      <div className="dash-content">
+        <div className="dash-header">
+          <div className="dash-logo">⚡ WattShare</div>
+          <div className="dash-avatar">{avatarInitial}</div>
+        </div>
 
-        {currentUser && <p>Role: {currentUser.role}</p>}
-
-        <h2 className="auth-title">Subscription</h2>
-        {subscription ? (
-          <p>
-            {subscription.generator_name} — {subscription.ampere}A —{" "}
-            {subscription.status}
-          </p>
-        ) : hasSubscription ? (
-          <p>Loading...</p>
-        ) : (
-          <>
-            <p>No subscription yet</p>
-            <Link
-              className="auth-button"
-              to="/subscribe"
-              style={{
-                display: "block",
-                textAlign: "center",
-                textDecoration: "none",
-                boxSizing: "border-box",
-              }}
-            >
-              Subscribe Now
-            </Link>
-          </>
-        )}
-
-        <h2 className="auth-title">Bills</h2>
-        {bills.length === 0 ? (
-          <p>No bills yet</p>
-        ) : (
-          <ul>
-            {bills.map((bill) => (
-              <li key={bill.id}>
-                {bill.consumption_kwh} kWh — ${bill.amount.toFixed(2)} —{" "}
-                {bill.status}
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <h2 className="auth-title">Predicted Next Bill</h2>
-        {prediction && (
-          <>
-            {prediction.prediction !== null ? (
-              <>
-                <p>${prediction.prediction.toFixed(2)}</p>
-                <p style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>
-                  {prediction.message}
-                </p>
-              </>
-            ) : (
-              <p>{prediction.message}</p>
-            )}
-          </>
-        )}
-
-        <h2 className="auth-title">Report an Issue</h2>
-        <form onSubmit={handleReportIssue}>
-          <textarea
-            className="auth-input"
-            placeholder="Describe the issue"
-            value={issueDescription}
-            onChange={(e) => setIssueDescription(e.target.value)}
-            rows={3}
-          />
-          <button className="auth-button" type="submit">
-            Report Issue
-          </button>
-          {issueMessage && (
-            <p style={{ color: "var(--color-cyan)" }}>{issueMessage}</p>
+        <div className="dash-greeting">
+          <p className="dash-greeting-text">Hello, {displayName}</p>
+          {subscription && (
+            <span className="pill pill-success pill-live">
+              {subscription.ampere}A ACTIVE
+            </span>
           )}
-          {issueError && <div className="auth-error">{issueError}</div>}
-        </form>
+        </div>
 
-        <button className="auth-button" onClick={handleLogout}>
+        <div className="dash-card">
+          <h2 className="dash-card-title">
+            <ZapIcon /> My Subscription
+          </h2>
+          {subscription ? (
+            <>
+              <p className="dash-label">ASSIGNED GENERATOR</p>
+              <p className="dash-value-lg">{subscription.generator_name}</p>
+              <hr className="dash-divider" />
+              <div className="dash-cols">
+                <div className="dash-col">
+                  <p className="dash-label">TIER</p>
+                  <p className="dash-value-lg">{subscription.ampere} Amperes</p>
+                </div>
+                <div className="dash-col">
+                  <p className="dash-label">STATUS</p>
+                  <span className={statusPillClass(subscription.status)}>
+                    {subscription.status.toUpperCase()}
+                  </span>
+                </div>
+              </div>
+            </>
+          ) : hasSubscription ? (
+            <p>Loading...</p>
+          ) : (
+            <>
+              <p>No subscription yet</p>
+              <Link className="dash-button" to="/subscribe" style={{ display: "block", textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+                Subscribe Now
+              </Link>
+            </>
+          )}
+        </div>
+
+        <div className="stat-row">
+          <div className="stat-card stat-card-cyan">
+            <p className="dash-label">
+              <BarChartIcon /> TOTAL CONSUMPTION
+            </p>
+            <p className="stat-number-cyan">{totalConsumption} kWh</p>
+          </div>
+          <div className="stat-card stat-card-amber">
+            <p className="dash-label">CURRENT BALANCE</p>
+            <p className="stat-number-amber">{currentBalance.toFixed(2)} USD</p>
+          </div>
+        </div>
+
+        <div className="dash-card forecast-card">
+          <p className="forecast-label">✨ AI FORECAST</p>
+          {prediction && prediction.prediction !== null ? (
+            <>
+              <p className="forecast-amount">${prediction.prediction.toFixed(2)}</p>
+              <p className="forecast-message">{prediction.message}</p>
+              <div className="forecast-bar-track">
+                <div className="forecast-bar-fill" style={forecastBarStyle}></div>
+              </div>
+            </>
+          ) : (
+            <p className="forecast-message">{prediction?.message ?? "Loading..."}</p>
+          )}
+        </div>
+
+        <div className="dash-card">
+          <h2 className="dash-card-title">
+            <ReceiptIcon /> Billing History
+          </h2>
+          {bills.length === 0 ? (
+            <p>No bills yet</p>
+          ) : (
+            <div>
+              {bills.map((bill) => (
+                <div className="bill-row" key={bill.id}>
+                  <div>
+                    <p className="bill-kwh">{bill.consumption_kwh} kWh</p>
+                    <p className="bill-date">
+                      {new Date(bill.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="bill-amount-wrap">
+                    <p className="bill-amount">${bill.amount.toFixed(2)}</p>
+                    <span className={statusPillClass(bill.status)}>
+                      <span className="pill-dot"></span>
+                      {bill.status.toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="dash-card">
+          <h2 className="dash-card-title">
+            <ChatIcon /> Report an Issue
+          </h2>
+          <form onSubmit={handleReportIssue}>
+            <textarea
+              className="dash-textarea"
+              placeholder="Describe the issue..."
+              value={issueDescription}
+              onChange={(e) => setIssueDescription(e.target.value)}
+              rows={3}
+            />
+            <button className="dash-button" type="submit">
+              Submit Report
+            </button>
+            {issueMessage && <p className="dash-success">{issueMessage}</p>}
+            {issueError && <p className="dash-error">{issueError}</p>}
+          </form>
+        </div>
+
+        <button className="dash-button-outline" onClick={handleLogout}>
           Log Out
         </button>
       </div>
