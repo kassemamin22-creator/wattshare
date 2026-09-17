@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from typing import List
 import os
 
-from models import UserCreate, UserLogin, UserOut, SubscriptionCreate, SubscriptionOut, MeterReadingCreate, BillOut
+from models import UserCreate, UserLogin, UserOut, UserRole, SubscriptionCreate, SubscriptionOut, MeterReadingCreate, BillOut
 from auth import hash_password, verify_password, create_access_token, get_current_user
 from bson import ObjectId
 from datetime import datetime
@@ -50,6 +50,9 @@ def db_check():
 
 @app.post("/register", response_model=UserOut)
 def register(user: UserCreate):
+    if user.role == UserRole.admin:
+        raise HTTPException(status_code=403, detail="Cannot self-register as admin")
+
     if users_collection.find_one({"email": user.email}):
         raise HTTPException(status_code=400, detail="Email already registered")
 
@@ -194,6 +197,62 @@ def create_meter_reading(reading: MeterReadingCreate, current_user: dict = Depen
 @app.get("/bills/me", response_model=List[BillOut])
 def read_my_bills(current_user: dict = Depends(get_current_user)):
     bills = bills_collection.find({"subscriber_id": current_user["id"]}).sort("created_at", -1)
+
+    return [
+        BillOut(
+            id=str(bill["_id"]),
+            subscriber_id=bill["subscriber_id"],
+            meter_reading_id=bill["meter_reading_id"],
+            consumption_kwh=bill["consumption_kwh"],
+            amount=bill["amount"],
+            status=bill["status"],
+            created_at=bill["created_at"],
+        )
+        for bill in bills
+    ]
+
+@app.get("/admin/users", response_model=List[UserOut])
+def read_all_users(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can access this")
+
+    users = users_collection.find()
+
+    return [
+        UserOut(
+            id=str(user["_id"]),
+            name=user["name"],
+            email=user["email"],
+            role=user["role"],
+        )
+        for user in users
+    ]
+
+@app.get("/admin/subscriptions", response_model=List[SubscriptionOut])
+def read_all_subscriptions(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can access this")
+
+    subscriptions = subscriptions_collection.find()
+
+    return [
+        SubscriptionOut(
+            id=str(subscription["_id"]),
+            subscriber_id=subscription["subscriber_id"],
+            generator_name=subscription["generator_name"],
+            ampere=subscription["ampere"],
+            tariff_rate=subscription["tariff_rate"],
+            status=subscription["status"],
+        )
+        for subscription in subscriptions
+    ]
+
+@app.get("/admin/bills", response_model=List[BillOut])
+def read_all_bills(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can access this")
+
+    bills = bills_collection.find()
 
     return [
         BillOut(
