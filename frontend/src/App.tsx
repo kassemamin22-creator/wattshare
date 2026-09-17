@@ -3,6 +3,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Subscribe from './pages/Subscribe'
+import OwnerDashboard from './pages/OwnerDashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -23,6 +24,14 @@ function App() {
         element={
           <ProtectedRoute>
             <Subscribe />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/owner"
+        element={
+          <ProtectedRoute>
+            <OwnerDashboard />
           </ProtectedRoute>
         }
       />

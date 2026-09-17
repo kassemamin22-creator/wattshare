@@ -125,6 +125,25 @@ def read_my_subscription(current_user: dict = Depends(get_current_user)):
         status=subscription["status"],
     )
 
+@app.get("/subscribers", response_model=List[SubscriptionOut])
+def read_subscribers(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "owner":
+        raise HTTPException(status_code=403, detail="Only the generator owner can view subscribers")
+
+    subscriptions = subscriptions_collection.find()
+
+    return [
+        SubscriptionOut(
+            id=str(subscription["_id"]),
+            subscriber_id=subscription["subscriber_id"],
+            generator_name=subscription["generator_name"],
+            ampere=subscription["ampere"],
+            tariff_rate=subscription["tariff_rate"],
+            status=subscription["status"],
+        )
+        for subscription in subscriptions
+    ]
+
 @app.post("/meter-reading", response_model=BillOut)
 def create_meter_reading(reading: MeterReadingCreate, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "owner":
