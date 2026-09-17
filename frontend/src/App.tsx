@@ -14,7 +14,7 @@ function App() {
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["subscriber"]}>
             <Dashboard />
           </ProtectedRoute>
         }
@@ -22,7 +22,7 @@ function App() {
       <Route
         path="/subscribe"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["subscriber"]}>
             <Subscribe />
           </ProtectedRoute>
         }
@@ -30,7 +30,7 @@ function App() {
       <Route
         path="/owner"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["owner"]}>
             <OwnerDashboard />
           </ProtectedRoute>
         }

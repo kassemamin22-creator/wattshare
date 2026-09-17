@@ -1,7 +1,14 @@
 import { useState, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { isAxiosError } from "axios";
+import { jwtDecode } from "jwt-decode";
 import api from "../services/api";
+
+interface DecodedToken {
+  id: string;
+  role: string;
+  exp: number;
+}
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -15,8 +22,11 @@ function Login() {
 
     try {
       const response = await api.post("/login", { email, password });
-      localStorage.setItem("token", response.data.access_token);
-      navigate("/dashboard");
+      const token = response.data.access_token;
+      localStorage.setItem("token", token);
+
+      const decoded = jwtDecode<DecodedToken>(token);
+      navigate(decoded.role === "owner" ? "/owner" : "/dashboard");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
         setError(err.response.data.detail);
