@@ -9,6 +9,8 @@ from models import UserCreate, UserLogin, UserOut, UserRole, SubscriptionCreate,
 from auth import hash_password, verify_password, create_access_token, get_current_user
 from bson import ObjectId
 from datetime import datetime
+from sklearn.linear_model import LinearRegression
+import numpy as np
 
 load_dotenv()
 
@@ -211,6 +213,44 @@ def read_my_bills(current_user: dict = Depends(get_current_user)):
         )
         for bill in bills
     ]
+
+@app.get("/bills/predict")
+def predict_next_bill(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "subscriber":
+        raise HTTPException(status_code=403, detail="Only subscribers can view bill predictions")
+
+    bills = list(
+        bills_collection.find({"subscriber_id": current_user["id"]}).sort("created_at", 1)
+    )
+
+    if len(bills) < 2:
+        return {
+            "prediction": None,
+            "message": "Not enough billing history yet to make a prediction",
+        }
+
+    try:
+        X = np.array(range(len(bills))).reshape(-1, 1)
+        y = np.array([bill["amount"] for bill in bills])
+
+        model = LinearRegression()
+        model.fit(X, y)
+
+        next_index = np.array([[len(bills)]])
+        predicted_value = model.predict(next_index)[0]
+
+        if predicted_value < 0:
+            predicted_value = 0
+
+        return {
+            "prediction": round(float(predicted_value), 2),
+            "message": "Based on your billing history",
+        }
+    except Exception:
+        return {
+            "prediction": None,
+            "message": "Unable to generate a prediction right now",
+        }
 
 @app.post("/issues", response_model=IssueOut)
 def create_issue(issue: IssueCreate, current_user: dict = Depends(get_current_user)):
