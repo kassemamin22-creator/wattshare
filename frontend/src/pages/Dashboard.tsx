@@ -1,5 +1,8 @@
 import { useEffect, useState, FormEvent, CSSProperties } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion, animate } from "framer-motion";
+import { Zap, BarChart3, Receipt, MessageCircle, LogOut, Sparkles } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { isAxiosError } from "axios";
 import api from "../services/api";
 
@@ -47,105 +50,19 @@ function statusPillClass(status: string): string {
   }
 }
 
-function ZapIcon() {
-  return (
-    <svg
-      className="dash-icon"
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="var(--color-accent)"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-    </svg>
-  );
-}
+const CARD_STAGGER = 0.08;
+const cardHover = {
+  scale: 1.015,
+  y: -4,
+  transition: { type: "spring" as const, stiffness: 300, damping: 20 },
+};
 
-function BarChartIcon() {
-  return (
-    <svg
-      className="dash-icon"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="var(--color-cyan)"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <line x1="18" y1="20" x2="18" y2="10"></line>
-      <line x1="12" y1="20" x2="12" y2="4"></line>
-      <line x1="6" y1="20" x2="6" y2="14"></line>
-    </svg>
-  );
-}
-
-function ReceiptIcon() {
-  return (
-    <svg
-      className="dash-icon"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="var(--color-accent)"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-      <polyline points="14 2 14 8 20 8"></polyline>
-      <line x1="16" y1="13" x2="8" y2="13"></line>
-      <line x1="16" y1="17" x2="8" y2="17"></line>
-    </svg>
-  );
-}
-
-function LogoutIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-      <polyline points="16 17 21 12 16 7"></polyline>
-      <line x1="21" y1="12" x2="9" y2="12"></line>
-    </svg>
-  );
-}
-
-function ChatIcon() {
-  return (
-    <svg
-      className="dash-icon"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="var(--color-cyan)"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-    </svg>
-  );
+function cardEntrance(index: number) {
+  return {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.4, delay: index * CARD_STAGGER, ease: "easeOut" as const },
+  };
 }
 
 function Dashboard() {
@@ -158,6 +75,7 @@ function Dashboard() {
   const [issueDescription, setIssueDescription] = useState("");
   const [issueMessage, setIssueMessage] = useState("");
   const [issueError, setIssueError] = useState("");
+  const [displayedForecast, setDisplayedForecast] = useState(0);
 
   useEffect(() => {
     api.get("/me").then((response) => setCurrentUser(response.data));
@@ -175,6 +93,18 @@ function Dashboard() {
 
     api.get("/bills/predict").then((response) => setPrediction(response.data));
   }, []);
+
+  useEffect(() => {
+    if (prediction?.prediction == null) return;
+
+    const controls = animate(0, prediction.prediction, {
+      duration: 0.8,
+      ease: "easeOut",
+      onUpdate: (latest) => setDisplayedForecast(latest),
+    });
+
+    return () => controls.stop();
+  }, [prediction?.prediction]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -218,6 +148,11 @@ function Dashboard() {
     "--fill-width": `${forecastPercent}%`,
   } as CSSProperties;
 
+  const chartData = [...bills].reverse().map((bill) => ({
+    date: new Date(bill.created_at).toLocaleDateString(),
+    consumption_kwh: bill.consumption_kwh,
+  }));
+
   return (
     <div className="dash-page">
       <div className="dash-content">
@@ -235,9 +170,14 @@ function Dashboard() {
           )}
         </div>
 
-        <div className="dash-card">
+        <motion.div
+          className="dash-card"
+          style={{ animation: "none" }}
+          {...cardEntrance(0)}
+          whileHover={cardHover}
+        >
           <h2 className="dash-card-title">
-            <ZapIcon /> My Subscription
+            <Zap size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> My Subscription
           </h2>
           {subscription ? (
             <>
@@ -267,26 +207,76 @@ function Dashboard() {
               </Link>
             </>
           )}
-        </div>
+        </motion.div>
 
         <div className="stat-row">
-          <div className="stat-card stat-card-cyan">
+          <motion.div
+            className="stat-card stat-card-cyan"
+            style={{ animation: "none" }}
+            {...cardEntrance(1)}
+            whileHover={cardHover}
+          >
             <p className="dash-label">
-              <BarChartIcon /> TOTAL CONSUMPTION
+              <BarChart3 size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> TOTAL CONSUMPTION
             </p>
             <p className="stat-number-cyan">{totalConsumption} kWh</p>
-          </div>
-          <div className="stat-card stat-card-amber">
+          </motion.div>
+          <motion.div
+            className="stat-card stat-card-amber"
+            style={{ animation: "none" }}
+            {...cardEntrance(2)}
+            whileHover={cardHover}
+          >
             <p className="dash-label">CURRENT BALANCE</p>
             <p className="stat-number-amber">{currentBalance.toFixed(2)} USD</p>
-          </div>
+          </motion.div>
         </div>
 
-        <div className="dash-card forecast-card">
-          <p className="forecast-label">✨ AI FORECAST</p>
+        <motion.div
+          className="dash-card"
+          style={{ animation: "none" }}
+          {...cardEntrance(3)}
+          whileHover={cardHover}
+        >
+          <h2 className="dash-card-title">
+            <BarChart3 size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Consumption Trend
+          </h2>
+          {bills.length < 2 ? (
+            <p className="forecast-message">Chart will appear once you have more billing history</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis dataKey="date" tick={{ fill: "var(--color-text-muted)", fontSize: 11 }} />
+                <YAxis hide={true} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--color-surface-2)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: "8px",
+                    color: "var(--color-text)",
+                  }}
+                />
+                <Bar dataKey="consumption_kwh" fill="var(--color-cyan)" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </motion.div>
+
+        <motion.div
+          className="dash-card forecast-card"
+          style={{ animation: "none" }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          whileHover={cardHover}
+        >
+          <p className="forecast-label">
+            <Sparkles size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> AI FORECAST
+          </p>
           {prediction && prediction.prediction !== null ? (
             <>
-              <p className="forecast-amount">${prediction.prediction.toFixed(2)}</p>
+              <p className="forecast-amount">${displayedForecast.toFixed(2)}</p>
               <p className="forecast-message">{prediction.message}</p>
               <div className="forecast-bar-track">
                 <div className="forecast-bar-fill" style={forecastBarStyle}></div>
@@ -295,11 +285,16 @@ function Dashboard() {
           ) : (
             <p className="forecast-message">{prediction?.message ?? "Loading..."}</p>
           )}
-        </div>
+        </motion.div>
 
-        <div className="dash-card">
+        <motion.div
+          className="dash-card"
+          style={{ animation: "none" }}
+          {...cardEntrance(4)}
+          whileHover={cardHover}
+        >
           <h2 className="dash-card-title">
-            <ReceiptIcon /> Billing History
+            <Receipt size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Billing History
           </h2>
           {bills.length === 0 ? (
             <p>No bills yet</p>
@@ -324,11 +319,16 @@ function Dashboard() {
               ))}
             </div>
           )}
-        </div>
+        </motion.div>
 
-        <div className="dash-card">
+        <motion.div
+          className="dash-card"
+          style={{ animation: "none" }}
+          {...cardEntrance(5)}
+          whileHover={cardHover}
+        >
           <h2 className="dash-card-title">
-            <ChatIcon /> Report an Issue
+            <MessageCircle size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Report an Issue
           </h2>
           <form onSubmit={handleReportIssue}>
             <textarea
@@ -338,17 +338,21 @@ function Dashboard() {
               onChange={(e) => setIssueDescription(e.target.value)}
               rows={3}
             />
-            <button className="dash-button" type="submit">
+            <motion.button className="dash-button" type="submit" whileTap={{ scale: 0.97 }}>
               Submit Report
-            </button>
+            </motion.button>
             {issueMessage && <p className="dash-success">{issueMessage}</p>}
             {issueError && <p className="dash-error">{issueError}</p>}
           </form>
-        </div>
+        </motion.div>
 
-        <button className="dash-button-logout" onClick={handleLogout}>
-          <LogoutIcon /> Log Out
-        </button>
+        <motion.button
+          className="dash-button-logout"
+          onClick={handleLogout}
+          whileTap={{ scale: 0.97 }}
+        >
+          <LogOut size={18} /> Log Out
+        </motion.button>
       </div>
     </div>
   );
