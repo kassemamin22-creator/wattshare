@@ -26,7 +26,13 @@ function Login() {
       localStorage.setItem("token", token);
 
       const decoded = jwtDecode<DecodedToken>(token);
-      navigate(decoded.role === "owner" ? "/owner" : "/dashboard");
+      if (decoded.role === "owner") {
+        navigate("/owner");
+      } else if (decoded.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
         setError(err.response.data.detail);

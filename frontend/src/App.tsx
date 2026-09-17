@@ -4,6 +4,7 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Subscribe from './pages/Subscribe'
 import OwnerDashboard from './pages/OwnerDashboard'
+import AdminDashboard from './pages/AdminDashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -32,6 +33,14 @@ function App() {
         element={
           <ProtectedRoute allowedRoles={["owner"]}>
             <OwnerDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminDashboard />
           </ProtectedRoute>
         }
       />
