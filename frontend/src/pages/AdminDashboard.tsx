@@ -20,6 +20,7 @@ interface Subscription {
   ampere: number;
   tariff_rate: number;
   status: string;
+  subscriber_name?: string;
 }
 
 interface Bill {
@@ -30,6 +31,7 @@ interface Bill {
   amount: number;
   status: string;
   created_at: string;
+  subscriber_name?: string;
 }
 
 function displayRole(role: string): string {
@@ -290,7 +292,7 @@ function AdminDashboard() {
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>Subscriber ID</th>
+                    <th>Subscriber</th>
                     <th>Ampere</th>
                     <th>Status</th>
                   </tr>
@@ -298,7 +300,7 @@ function AdminDashboard() {
                 <tbody>
                   {subscriptions.map((subscription) => (
                     <tr key={subscription.id}>
-                      <td>{subscription.subscriber_id}</td>
+                      <td>{subscription.subscriber_name || subscription.subscriber_id}</td>
                       <td>{subscription.ampere}A</td>
                       <td>
                         <span className={statusPillClass(subscription.status)}>
@@ -330,7 +332,7 @@ function AdminDashboard() {
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>Subscriber ID</th>
+                    <th>Subscriber</th>
                     <th>Consumption</th>
                     <th>Amount</th>
                     <th>Status</th>
@@ -339,7 +341,7 @@ function AdminDashboard() {
                 <tbody>
                   {bills.map((bill) => (
                     <tr key={bill.id}>
-                      <td>{bill.subscriber_id}</td>
+                      <td>{bill.subscriber_name || bill.subscriber_id}</td>
                       <td>{bill.consumption_kwh} kWh</td>
                       <td>${bill.amount.toFixed(2)}</td>
                       <td>
