@@ -68,6 +68,13 @@ function cardEntrance(index: number) {
   };
 }
 
+const NAV_ITEMS = [
+  { id: "users", label: "Users", icon: Users },
+  { id: "subscriptions", label: "Subscriptions", icon: Zap },
+  { id: "bills", label: "Bills", icon: Receipt },
+  { id: "add-manager", label: "Add Manager", icon: UserPlus },
+];
+
 function AdminDashboard() {
   const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
@@ -127,17 +134,110 @@ function AdminDashboard() {
   }));
 
   return (
-    <div className="dash-page">
-      <div className="dash-content">
-        <div className="dash-logo">⚡ WattShare</div>
+    <div className="admin-shell">
+      <aside className="admin-sidebar">
+        <div className="admin-sidebar-logo">⚡ WattShare</div>
+        <nav className="admin-nav">
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <a key={item.id} href={`#${item.id}`} className="admin-nav-link">
+                <Icon size={18} />
+                {item.label}
+              </a>
+            );
+          })}
+        </nav>
+        <motion.button
+          className="dash-button-logout"
+          onClick={handleLogout}
+          whileTap={{ scale: 0.97 }}
+        >
+          <LogOut size={18} /> Log Out
+        </motion.button>
+      </aside>
+
+      <div className="admin-mobile-bar">
+        <div className="admin-sidebar-logo admin-mobile-logo">⚡ WattShare</div>
+        <motion.button
+          className="admin-mobile-logout"
+          onClick={handleLogout}
+          whileTap={{ scale: 0.97 }}
+        >
+          <LogOut size={16} /> Log Out
+        </motion.button>
+      </div>
+
+      <main className="admin-main">
         <div className="dash-page-title">
           <ShieldCheck size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Admin Dashboard
         </div>
 
-        <motion.div
-          className="dash-card"
-          style={{ animation: "none" }}
-          {...cardEntrance(0)}
+        <div className="admin-stats-grid">
+          <motion.div
+            className="stat-card stat-card-amber"
+            {...cardEntrance(0)}
+            whileHover={cardHover}
+          >
+            <p className="dash-label">Subscribers</p>
+            <p className="stat-number-amber">
+              {users.filter((user) => user.role === "subscriber").length}
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="stat-card stat-card-cyan"
+            {...cardEntrance(1)}
+            whileHover={cardHover}
+          >
+            <p className="dash-label">Managers</p>
+            <p className="stat-number-cyan">
+              {users.filter((user) => user.role === "owner").length}
+            </p>
+          </motion.div>
+
+          <motion.div className="stat-card" {...cardEntrance(2)} whileHover={cardHover}>
+            <p className="dash-label">Admins</p>
+            <p className="dash-value-lg">
+              {users.filter((user) => user.role === "admin").length}
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="dash-card admin-chart-card"
+            {...cardEntrance(3)}
+            whileHover={cardHover}
+          >
+            <h2 className="dash-card-title">
+              <BarChart3 size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Users by Role
+            </h2>
+            {users.length === 0 ? (
+              <p className="forecast-message">Chart will appear once users register</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={roleCounts}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                  <XAxis dataKey="role" tick={{ fill: "var(--color-text-muted)", fontSize: 11 }} />
+                  <YAxis hide={true} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "var(--color-surface-2)",
+                      border: "1px solid var(--color-border)",
+                      borderRadius: "8px",
+                      color: "var(--color-text)",
+                    }}
+                  />
+                  <Bar dataKey="count" fill="var(--color-cyan)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </motion.div>
+        </div>
+
+        <motion.section
+          id="users"
+          className="dash-card admin-section"
+          {...cardEntrance(4)}
           whileHover={cardHover}
         >
           <h2 className="dash-card-title">
@@ -146,33 +246,126 @@ function AdminDashboard() {
           {users.length === 0 ? (
             <p>No data yet</p>
           ) : (
-            <div>
-              {users.map((user) => (
-                <div className="bill-row" key={user.id}>
-                  <div>
-                    <p className="bill-kwh">{user.name}</p>
-                    <p className="bill-date">{user.email}</p>
-                  </div>
-                  <span className={statusPillClass(user.role)}>
-                    <span className="pill-dot"></span>
-                    {displayRole(user.role).toUpperCase()}
-                  </span>
-                </div>
-              ))}
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => (
+                    <tr key={user.id}>
+                      <td>{user.name}</td>
+                      <td>{user.email}</td>
+                      <td>
+                        <span className={statusPillClass(user.role)}>
+                          <span className="pill-dot"></span>
+                          {displayRole(user.role).toUpperCase()}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
-        </motion.div>
+        </motion.section>
 
-        <motion.div
-          className="dash-card"
-          style={{ animation: "none" }}
-          {...cardEntrance(1)}
+        <motion.section
+          id="subscriptions"
+          className="dash-card admin-section"
+          {...cardEntrance(5)}
+          whileHover={cardHover}
+        >
+          <h2 className="dash-card-title">
+            <Zap size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Subscriptions
+          </h2>
+          {subscriptions.length === 0 ? (
+            <p>No data yet</p>
+          ) : (
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Subscriber ID</th>
+                    <th>Ampere</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {subscriptions.map((subscription) => (
+                    <tr key={subscription.id}>
+                      <td>{subscription.subscriber_id}</td>
+                      <td>{subscription.ampere}A</td>
+                      <td>
+                        <span className={statusPillClass(subscription.status)}>
+                          <span className="pill-dot"></span>
+                          {subscription.status.toUpperCase()}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </motion.section>
+
+        <motion.section
+          id="bills"
+          className="dash-card admin-section"
+          {...cardEntrance(6)}
+          whileHover={cardHover}
+        >
+          <h2 className="dash-card-title">
+            <Receipt size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Bills
+          </h2>
+          {bills.length === 0 ? (
+            <p>No data yet</p>
+          ) : (
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Subscriber ID</th>
+                    <th>Consumption</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bills.map((bill) => (
+                    <tr key={bill.id}>
+                      <td>{bill.subscriber_id}</td>
+                      <td>{bill.consumption_kwh} kWh</td>
+                      <td>${bill.amount.toFixed(2)}</td>
+                      <td>
+                        <span className={statusPillClass(bill.status)}>
+                          <span className="pill-dot"></span>
+                          {bill.status.toUpperCase()}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </motion.section>
+
+        <motion.section
+          id="add-manager"
+          className="dash-card admin-section"
+          {...cardEntrance(7)}
           whileHover={cardHover}
         >
           <h2 className="dash-card-title">
             <UserPlus size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Add Manager
           </h2>
-          <form onSubmit={handleAddManager}>
+          <form onSubmit={handleAddManager} className="admin-manager-form">
             <input
               className="auth-input"
               type="text"
@@ -204,108 +397,8 @@ function AdminDashboard() {
             {managerMessage && <p className="dash-success">{managerMessage}</p>}
             {managerError && <p className="dash-error">{managerError}</p>}
           </form>
-        </motion.div>
-
-        <motion.div
-          className="dash-card"
-          style={{ animation: "none" }}
-          {...cardEntrance(2)}
-          whileHover={cardHover}
-        >
-          <h2 className="dash-card-title">
-            <BarChart3 size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Users by Role
-          </h2>
-          {users.length === 0 ? (
-            <p className="forecast-message">Chart will appear once users register</p>
-          ) : (
-            <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={roleCounts}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                <XAxis dataKey="role" tick={{ fill: "var(--color-text-muted)", fontSize: 11 }} />
-                <YAxis hide={true} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "var(--color-surface-2)",
-                    border: "1px solid var(--color-border)",
-                    borderRadius: "8px",
-                    color: "var(--color-text)",
-                  }}
-                />
-                <Bar dataKey="count" fill="var(--color-cyan)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </motion.div>
-
-        <motion.div
-          className="dash-card"
-          style={{ animation: "none" }}
-          {...cardEntrance(3)}
-          whileHover={cardHover}
-        >
-          <h2 className="dash-card-title">
-            <Zap size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Subscriptions
-          </h2>
-          {subscriptions.length === 0 ? (
-            <p>No data yet</p>
-          ) : (
-            <div>
-              {subscriptions.map((subscription) => (
-                <div className="bill-row" key={subscription.id}>
-                  <div>
-                    <p className="bill-kwh">{subscription.subscriber_id}</p>
-                    <p className="bill-date">{subscription.ampere}A</p>
-                  </div>
-                  <span className={statusPillClass(subscription.status)}>
-                    <span className="pill-dot"></span>
-                    {subscription.status.toUpperCase()}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </motion.div>
-
-        <motion.div
-          className="dash-card"
-          style={{ animation: "none" }}
-          {...cardEntrance(4)}
-          whileHover={cardHover}
-        >
-          <h2 className="dash-card-title">
-            <Receipt size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Bills
-          </h2>
-          {bills.length === 0 ? (
-            <p>No data yet</p>
-          ) : (
-            <div>
-              {bills.map((bill) => (
-                <div className="bill-row" key={bill.id}>
-                  <div>
-                    <p className="bill-kwh">{bill.consumption_kwh} kWh</p>
-                    <p className="bill-date">{bill.subscriber_id}</p>
-                  </div>
-                  <div className="bill-amount-wrap">
-                    <p className="bill-amount">${bill.amount.toFixed(2)}</p>
-                    <span className={statusPillClass(bill.status)}>
-                      <span className="pill-dot"></span>
-                      {bill.status.toUpperCase()}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </motion.div>
-
-        <motion.button
-          className="dash-button-logout"
-          onClick={handleLogout}
-          whileTap={{ scale: 0.97 }}
-        >
-          <LogOut size={18} /> Log Out
-        </motion.button>
-      </div>
+        </motion.section>
+      </main>
     </div>
   );
 }
