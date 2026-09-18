@@ -22,6 +22,7 @@ interface Issue {
   description: string;
   status: string;
   created_at: string;
+  subscriber_name?: string;
 }
 
 function statusPillClass(status: string): string {
@@ -288,6 +289,7 @@ function OwnerDashboard() {
               <table className="admin-table">
                 <thead>
                   <tr>
+                    <th>Subscriber</th>
                     <th>Description</th>
                     <th>Reported</th>
                     <th>Status</th>
@@ -297,6 +299,7 @@ function OwnerDashboard() {
                 <tbody>
                   {issues.map((issue) => (
                     <tr key={issue.id}>
+                      <td>{issue.subscriber_name || "Unknown"}</td>
                       <td>{issue.description}</td>
                       <td>{new Date(issue.created_at).toLocaleString()}</td>
                       <td>
