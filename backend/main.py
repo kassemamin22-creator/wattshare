@@ -287,16 +287,23 @@ def read_issues(current_user: dict = Depends(get_current_user)):
 
     issues = issues_collection.find().sort("created_at", -1)
 
-    return [
-        IssueOut(
-            id=str(issue["_id"]),
-            subscriber_id=issue["subscriber_id"],
-            description=issue["description"],
-            status=issue["status"],
-            created_at=issue["created_at"],
+    result = []
+    for issue in issues:
+        subscriber = users_collection.find_one({"_id": ObjectId(issue["subscriber_id"])})
+        subscriber_name = subscriber["name"] if subscriber else "Unknown Subscriber"
+
+        result.append(
+            IssueOut(
+                id=str(issue["_id"]),
+                subscriber_id=issue["subscriber_id"],
+                description=issue["description"],
+                status=issue["status"],
+                created_at=issue["created_at"],
+                subscriber_name=subscriber_name,
+            )
         )
-        for issue in issues
-    ]
+
+    return result
 
 @app.patch("/issues/{issue_id}", response_model=IssueOut)
 def update_issue(issue_id: str, status: str, current_user: dict = Depends(get_current_user)):
