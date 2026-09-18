@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BarChart3, AlertCircle, Gauge, User, LogOut } from "lucide-react";
+import { Users, BarChart3, AlertCircle, Gauge, LogOut } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { isAxiosError } from "axios";
 import api from "../services/api";
@@ -53,6 +53,13 @@ function cardEntrance(index: number) {
     transition: { duration: 0.4, delay: index * CARD_STAGGER, ease: "easeOut" as const },
   };
 }
+
+const NAV_ITEMS = [
+  { id: "subscribers", label: "Subscribers", icon: Users },
+  { id: "subscribers", label: "Meter Reading", icon: Gauge },
+  { id: "issues", label: "Reported Issues", icon: AlertCircle },
+  { id: "chart", label: "Consumption Chart", icon: BarChart3 },
+];
 
 function OwnerDashboard() {
   const navigate = useNavigate();
@@ -123,71 +130,121 @@ function OwnerDashboard() {
   }));
 
   return (
-    <div className="dash-page">
-      <div className="dash-content">
-        <div className="dash-logo">⚡ WattShare</div>
+    <div className="admin-shell">
+      <aside className="admin-sidebar">
+        <div className="admin-sidebar-logo">⚡ WattShare</div>
+        <nav className="admin-nav">
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <a key={item.label} href={`#${item.id}`} className="admin-nav-link">
+                <Icon size={18} />
+                {item.label}
+              </a>
+            );
+          })}
+        </nav>
+        <motion.button
+          className="dash-button-logout"
+          onClick={handleLogout}
+          whileTap={{ scale: 0.97 }}
+        >
+          <LogOut size={18} /> Log Out
+        </motion.button>
+      </aside>
+
+      <div className="admin-mobile-bar">
+        <div className="admin-sidebar-logo admin-mobile-logo">⚡ WattShare</div>
+        <motion.button
+          className="admin-mobile-logout"
+          onClick={handleLogout}
+          whileTap={{ scale: 0.97 }}
+        >
+          <LogOut size={16} /> Log Out
+        </motion.button>
+      </div>
+
+      <main className="admin-main">
         <div className="dash-page-title">
           <Gauge size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Manager Dashboard
         </div>
 
-        {subscribers.length === 0 ? (
-          <p>No subscribers yet</p>
-        ) : (
-          subscribers.map((subscriber, index) => (
-            <motion.div
-              key={subscriber.id}
-              className="owner-row"
-              style={{ animation: "none" }}
-              {...cardEntrance(index)}
-              whileHover={cardHover}
-            >
-              <p className="owner-row-id">
-                <User size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Subscriber: {subscriber.subscriber_name || subscriber.subscriber_id}
-              </p>
-              <p className="owner-row-value">Ampere: {subscriber.ampere}A</p>
-              <p className="owner-row-status-line">
-                Status:
-                <span className={statusPillClass(subscriber.status)}>
-                  <span className="pill-dot"></span>
-                  {subscriber.status.toUpperCase()}
-                </span>
-              </p>
+        <motion.section
+          id="subscribers"
+          className="dash-card admin-section"
+          {...cardEntrance(0)}
+          whileHover={cardHover}
+        >
+          <h2 className="dash-card-title">
+            <Users size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Subscribers
+          </h2>
+          {subscribers.length === 0 ? (
+            <p>No subscribers yet</p>
+          ) : (
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Subscriber</th>
+                    <th>Ampere</th>
+                    <th>Status</th>
+                    <th>Reading Input</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {subscribers.map((subscriber) => (
+                    <tr key={subscriber.id}>
+                      <td>{subscriber.subscriber_name || subscriber.subscriber_id}</td>
+                      <td>{subscriber.ampere}A</td>
+                      <td>
+                        <span className={statusPillClass(subscriber.status)}>
+                          <span className="pill-dot"></span>
+                          {subscriber.status.toUpperCase()}
+                        </span>
+                      </td>
+                      <td>
+                        <input
+                          className="auth-input owner-reading-input"
+                          type="number"
+                          placeholder="Reading value"
+                          value={readingValues[subscriber.subscriber_id] || ""}
+                          onChange={(e) =>
+                            handleReadingChange(subscriber.subscriber_id, e.target.value)
+                          }
+                        />
+                      </td>
+                      <td>
+                        <motion.button
+                          className="auth-button owner-submit-button"
+                          onClick={() => handleSubmitReading(subscriber.subscriber_id)}
+                          whileTap={{ scale: 0.97 }}
+                        >
+                          Submit Reading
+                        </motion.button>
+                        {messages[subscriber.subscriber_id] && (
+                          <p className="dash-success">
+                            {messages[subscriber.subscriber_id]}
+                          </p>
+                        )}
+                        {errors[subscriber.subscriber_id] && (
+                          <p className="dash-error">
+                            {errors[subscriber.subscriber_id]}
+                          </p>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </motion.section>
 
-              <input
-                className="auth-input owner-reading-input"
-                type="number"
-                placeholder="Reading value"
-                value={readingValues[subscriber.subscriber_id] || ""}
-                onChange={(e) =>
-                  handleReadingChange(subscriber.subscriber_id, e.target.value)
-                }
-              />
-              <motion.button
-                className="auth-button owner-submit-button"
-                onClick={() => handleSubmitReading(subscriber.subscriber_id)}
-                whileTap={{ scale: 0.97 }}
-              >
-                Submit Reading
-              </motion.button>
-
-              {messages[subscriber.subscriber_id] && (
-                <p className="dash-success">
-                  {messages[subscriber.subscriber_id]}
-                </p>
-              )}
-              {errors[subscriber.subscriber_id] && (
-                <p className="dash-error">
-                  {errors[subscriber.subscriber_id]}
-                </p>
-              )}
-            </motion.div>
-          ))
-        )}
-
-        <motion.div
-          className="dash-card"
-          style={{ animation: "none" }}
-          {...cardEntrance(subscribers.length)}
+        <motion.section
+          id="chart"
+          className="dash-card admin-section"
+          {...cardEntrance(1)}
           whileHover={cardHover}
         >
           <h2 className="dash-card-title">
@@ -196,7 +253,7 @@ function OwnerDashboard() {
           {subscribers.length === 0 ? (
             <p className="forecast-message">Chart will appear once you have subscribers</p>
           ) : (
-            <ResponsiveContainer width="100%" height={180}>
+            <ResponsiveContainer width="100%" height={280}>
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis dataKey="label" tick={{ fill: "var(--color-text-muted)", fontSize: 11 }} />
@@ -213,54 +270,61 @@ function OwnerDashboard() {
               </BarChart>
             </ResponsiveContainer>
           )}
-        </motion.div>
+        </motion.section>
 
-        <h2 className="dash-card-title">
-          <AlertCircle size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Reported Issues
-        </h2>
-        {issues.length === 0 ? (
-          <p>No issues reported yet</p>
-        ) : (
-          issues.map((issue, index) => (
-            <motion.div
-              key={issue.id}
-              className="owner-row"
-              style={{ animation: "none" }}
-              {...cardEntrance(index)}
-              whileHover={cardHover}
-            >
-              <p className="owner-issue-desc">{issue.description}</p>
-              <p className="owner-issue-date">
-                Reported: {new Date(issue.created_at).toLocaleString()}
-              </p>
-              <div className="owner-issue-status-row">
-                <span className={statusPillClass(issue.status)}>
-                  <span className="pill-dot"></span>
-                  {issue.status.toUpperCase()}
-                </span>
-              </div>
-              <motion.select
-                className="owner-select"
-                value={issue.status}
-                onChange={(e) => handleStatusChange(issue.id, e.target.value)}
-                whileTap={{ scale: 0.97 }}
-              >
-                <option value="open">Open</option>
-                <option value="in progress">In Progress</option>
-                <option value="resolved">Resolved</option>
-              </motion.select>
-            </motion.div>
-          ))
-        )}
-
-        <motion.button
-          className="dash-button-logout"
-          onClick={handleLogout}
-          whileTap={{ scale: 0.97 }}
+        <motion.section
+          id="issues"
+          className="dash-card admin-section"
+          {...cardEntrance(2)}
+          whileHover={cardHover}
         >
-          <LogOut size={18} /> Log Out
-        </motion.button>
-      </div>
+          <h2 className="dash-card-title">
+            <AlertCircle size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Reported Issues
+          </h2>
+          {issues.length === 0 ? (
+            <p>No issues reported yet</p>
+          ) : (
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Description</th>
+                    <th>Reported</th>
+                    <th>Status</th>
+                    <th>Update</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {issues.map((issue) => (
+                    <tr key={issue.id}>
+                      <td>{issue.description}</td>
+                      <td>{new Date(issue.created_at).toLocaleString()}</td>
+                      <td>
+                        <span className={statusPillClass(issue.status)}>
+                          <span className="pill-dot"></span>
+                          {issue.status.toUpperCase()}
+                        </span>
+                      </td>
+                      <td>
+                        <motion.select
+                          className="owner-select"
+                          value={issue.status}
+                          onChange={(e) => handleStatusChange(issue.id, e.target.value)}
+                          whileTap={{ scale: 0.97 }}
+                        >
+                          <option value="open">Open</option>
+                          <option value="in progress">In Progress</option>
+                          <option value="resolved">Resolved</option>
+                        </motion.select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </motion.section>
+      </main>
     </div>
   );
 }
