@@ -65,6 +65,14 @@ function cardEntrance(index: number) {
   };
 }
 
+const NAV_ITEMS = [
+  { id: "subscription", label: "Subscription", icon: Zap },
+  { id: "chart", label: "Consumption Chart", icon: BarChart3 },
+  { id: "forecast", label: "AI Forecast", icon: Sparkles },
+  { id: "billing", label: "Billing History", icon: Receipt },
+  { id: "report-issue", label: "Report Issue", icon: MessageCircle },
+];
+
 function Dashboard() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
@@ -154,24 +162,56 @@ function Dashboard() {
   }));
 
   return (
-    <div className="dash-page">
-      <div className="dash-content">
+    <div className="admin-shell">
+      <aside className="admin-sidebar">
+        <div className="admin-sidebar-logo">⚡ WattShare</div>
+        <nav className="admin-nav">
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <a key={item.id} href={`#${item.id}`} className="admin-nav-link">
+                <Icon size={18} />
+                {item.label}
+              </a>
+            );
+          })}
+        </nav>
+        <motion.button
+          className="dash-button-logout"
+          onClick={handleLogout}
+          whileTap={{ scale: 0.97 }}
+        >
+          <LogOut size={18} /> Log Out
+        </motion.button>
+      </aside>
+
+      <div className="admin-mobile-bar">
+        <div className="admin-sidebar-logo admin-mobile-logo">⚡ WattShare</div>
+        <motion.button
+          className="admin-mobile-logout"
+          onClick={handleLogout}
+          whileTap={{ scale: 0.97 }}
+        >
+          <LogOut size={16} /> Log Out
+        </motion.button>
+      </div>
+
+      <main className="admin-main">
         <div className="dash-header">
-          <div className="dash-logo">⚡ WattShare</div>
+          <div className="dash-greeting">
+            <p className="dash-greeting-text">Hello, {displayName}</p>
+            {subscription && (
+              <span className="pill pill-success pill-live">
+                {subscription.ampere}A ACTIVE
+              </span>
+            )}
+          </div>
           <div className="dash-avatar">{avatarInitial}</div>
         </div>
 
-        <div className="dash-greeting">
-          <p className="dash-greeting-text">Hello, {displayName}</p>
-          {subscription && (
-            <span className="pill pill-success pill-live">
-              {subscription.ampere}A ACTIVE
-            </span>
-          )}
-        </div>
-
         <motion.div
-          className="dash-card"
+          id="subscription"
+          className="dash-card admin-section"
           style={{ animation: "none" }}
           {...cardEntrance(0)}
           whileHover={cardHover}
@@ -209,7 +249,7 @@ function Dashboard() {
           )}
         </motion.div>
 
-        <div className="stat-row">
+        <div className="admin-stats-grid">
           <motion.div
             className="stat-card stat-card-cyan"
             style={{ animation: "none" }}
@@ -233,7 +273,8 @@ function Dashboard() {
         </div>
 
         <motion.div
-          className="dash-card"
+          id="chart"
+          className="dash-card admin-section"
           style={{ animation: "none" }}
           {...cardEntrance(3)}
           whileHover={cardHover}
@@ -244,7 +285,7 @@ function Dashboard() {
           {bills.length < 2 ? (
             <p className="forecast-message">Chart will appear once you have more billing history</p>
           ) : (
-            <ResponsiveContainer width="100%" height={180}>
+            <ResponsiveContainer width="100%" height={220}>
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis dataKey="date" tick={{ fill: "var(--color-text-muted)", fontSize: 11 }} />
@@ -264,7 +305,8 @@ function Dashboard() {
         </motion.div>
 
         <motion.div
-          className="dash-card forecast-card"
+          id="forecast"
+          className="dash-card forecast-card admin-section"
           style={{ animation: "none" }}
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -288,7 +330,8 @@ function Dashboard() {
         </motion.div>
 
         <motion.div
-          className="dash-card"
+          id="billing"
+          className="dash-card admin-section"
           style={{ animation: "none" }}
           {...cardEntrance(4)}
           whileHover={cardHover}
@@ -299,30 +342,39 @@ function Dashboard() {
           {bills.length === 0 ? (
             <p>No bills yet</p>
           ) : (
-            <div>
-              {bills.map((bill) => (
-                <div className="bill-row" key={bill.id}>
-                  <div>
-                    <p className="bill-kwh">{bill.consumption_kwh} kWh</p>
-                    <p className="bill-date">
-                      {new Date(bill.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="bill-amount-wrap">
-                    <p className="bill-amount">${bill.amount.toFixed(2)}</p>
-                    <span className={statusPillClass(bill.status)}>
-                      <span className="pill-dot"></span>
-                      {bill.status.toUpperCase()}
-                    </span>
-                  </div>
-                </div>
-              ))}
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>kWh</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bills.map((bill) => (
+                    <tr key={bill.id}>
+                      <td>{bill.consumption_kwh} kWh</td>
+                      <td>{new Date(bill.created_at).toLocaleDateString()}</td>
+                      <td>${bill.amount.toFixed(2)}</td>
+                      <td>
+                        <span className={statusPillClass(bill.status)}>
+                          <span className="pill-dot"></span>
+                          {bill.status.toUpperCase()}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </motion.div>
 
         <motion.div
-          className="dash-card"
+          id="report-issue"
+          className="dash-card admin-section"
           style={{ animation: "none" }}
           {...cardEntrance(5)}
           whileHover={cardHover}
@@ -345,15 +397,7 @@ function Dashboard() {
             {issueError && <p className="dash-error">{issueError}</p>}
           </form>
         </motion.div>
-
-        <motion.button
-          className="dash-button-logout"
-          onClick={handleLogout}
-          whileTap={{ scale: 0.97 }}
-        >
-          <LogOut size={18} /> Log Out
-        </motion.button>
-      </div>
+      </main>
     </div>
   );
 }
