@@ -13,6 +13,7 @@ interface Subscriber {
   ampere: number;
   tariff_rate: number;
   status: string;
+  subscriber_name?: string;
 }
 
 interface Issue {
@@ -141,7 +142,7 @@ function OwnerDashboard() {
               whileHover={cardHover}
             >
               <p className="owner-row-id">
-                <User size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Subscriber ID: {subscriber.subscriber_id}
+                <User size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Subscriber: {subscriber.subscriber_name || subscriber.subscriber_id}
               </p>
               <p className="owner-row-value">Ampere: {subscriber.ampere}A</p>
               <p className="owner-row-status-line">
