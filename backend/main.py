@@ -341,17 +341,24 @@ def read_all_subscriptions(current_user: dict = Depends(get_current_user)):
 
     subscriptions = subscriptions_collection.find()
 
-    return [
-        SubscriptionOut(
-            id=str(subscription["_id"]),
-            subscriber_id=subscription["subscriber_id"],
-            generator_name=subscription["generator_name"],
-            ampere=subscription["ampere"],
-            tariff_rate=subscription["tariff_rate"],
-            status=subscription["status"],
+    result = []
+    for subscription in subscriptions:
+        subscriber = users_collection.find_one({"_id": ObjectId(subscription["subscriber_id"])})
+        subscriber_name = subscriber["name"] if subscriber else "Unknown Subscriber"
+
+        result.append(
+            SubscriptionOut(
+                id=str(subscription["_id"]),
+                subscriber_id=subscription["subscriber_id"],
+                generator_name=subscription["generator_name"],
+                ampere=subscription["ampere"],
+                tariff_rate=subscription["tariff_rate"],
+                status=subscription["status"],
+                subscriber_name=subscriber_name,
+            )
         )
-        for subscription in subscriptions
-    ]
+
+    return result
 
 @app.post("/admin/add-manager", response_model=UserOut)
 def add_manager(manager: ManagerCreate, current_user: dict = Depends(get_current_user)):
@@ -384,15 +391,22 @@ def read_all_bills(current_user: dict = Depends(get_current_user)):
 
     bills = bills_collection.find()
 
-    return [
-        BillOut(
-            id=str(bill["_id"]),
-            subscriber_id=bill["subscriber_id"],
-            meter_reading_id=bill["meter_reading_id"],
-            consumption_kwh=bill["consumption_kwh"],
-            amount=bill["amount"],
-            status=bill["status"],
-            created_at=bill["created_at"],
+    result = []
+    for bill in bills:
+        subscriber = users_collection.find_one({"_id": ObjectId(bill["subscriber_id"])})
+        subscriber_name = subscriber["name"] if subscriber else "Unknown Subscriber"
+
+        result.append(
+            BillOut(
+                id=str(bill["_id"]),
+                subscriber_id=bill["subscriber_id"],
+                meter_reading_id=bill["meter_reading_id"],
+                consumption_kwh=bill["consumption_kwh"],
+                amount=bill["amount"],
+                status=bill["status"],
+                created_at=bill["created_at"],
+                subscriber_name=subscriber_name,
+            )
         )
-        for bill in bills
-    ]
+
+    return result
