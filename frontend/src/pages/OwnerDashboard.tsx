@@ -126,7 +126,7 @@ function OwnerDashboard() {
       <div className="dash-content">
         <div className="dash-logo">⚡ WattShare</div>
         <div className="dash-page-title">
-          <Gauge size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Owner Dashboard
+          <Gauge size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Manager Dashboard
         </div>
 
         {subscribers.length === 0 ? (

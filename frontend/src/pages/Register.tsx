@@ -7,7 +7,6 @@ function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("subscriber");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -16,7 +15,7 @@ function Register() {
     setError("");
 
     try {
-      await api.post("/register", { name, email, password, role });
+      await api.post("/register", { name, email, password, role: "subscriber" });
       navigate("/");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
@@ -54,14 +53,6 @@ function Register() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <select
-            className="auth-input"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-          >
-            <option value="subscriber">Subscriber</option>
-            <option value="owner">Owner</option>
-          </select>
           <button className="auth-button" type="submit">
             Create Account
           </button>

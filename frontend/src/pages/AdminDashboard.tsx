@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users, Zap, Receipt, ShieldCheck, BarChart3, LogOut } from "lucide-react";
+import { Users, Zap, Receipt, ShieldCheck, BarChart3, LogOut, UserPlus } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
+import { isAxiosError } from "axios";
 import api from "../services/api";
 
 interface User {
@@ -29,6 +30,10 @@ interface Bill {
   amount: number;
   status: string;
   created_at: string;
+}
+
+function displayRole(role: string): string {
+  return role === "owner" ? "Manager" : role;
 }
 
 function statusPillClass(status: string): string {
@@ -68,9 +73,18 @@ function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [bills, setBills] = useState<Bill[]>([]);
+  const [managerName, setManagerName] = useState("");
+  const [managerEmail, setManagerEmail] = useState("");
+  const [managerPassword, setManagerPassword] = useState("");
+  const [managerMessage, setManagerMessage] = useState("");
+  const [managerError, setManagerError] = useState("");
+
+  const fetchUsers = () => {
+    api.get("/admin/users").then((response) => setUsers(response.data));
+  };
 
   useEffect(() => {
-    api.get("/admin/users").then((response) => setUsers(response.data));
+    fetchUsers();
     api
       .get("/admin/subscriptions")
       .then((response) => setSubscriptions(response.data));
@@ -82,8 +96,33 @@ function AdminDashboard() {
     navigate("/");
   };
 
+  const handleAddManager = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setManagerMessage("");
+    setManagerError("");
+
+    try {
+      await api.post("/admin/add-manager", {
+        name: managerName,
+        email: managerEmail,
+        password: managerPassword,
+      });
+      setManagerMessage("Manager account created successfully");
+      setManagerName("");
+      setManagerEmail("");
+      setManagerPassword("");
+      fetchUsers();
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        setManagerError(err.response.data.detail);
+      } else {
+        setManagerError("Failed to create manager account");
+      }
+    }
+  };
+
   const roleCounts = ["subscriber", "owner", "admin"].map((role) => ({
-    role: role.charAt(0).toUpperCase() + role.slice(1),
+    role: displayRole(role).charAt(0).toUpperCase() + displayRole(role).slice(1),
     count: users.filter((user) => user.role === role).length,
   }));
 
@@ -116,7 +155,7 @@ function AdminDashboard() {
                   </div>
                   <span className={statusPillClass(user.role)}>
                     <span className="pill-dot"></span>
-                    {user.role.toUpperCase()}
+                    {displayRole(user.role).toUpperCase()}
                   </span>
                 </div>
               ))}
@@ -128,6 +167,49 @@ function AdminDashboard() {
           className="dash-card"
           style={{ animation: "none" }}
           {...cardEntrance(1)}
+          whileHover={cardHover}
+        >
+          <h2 className="dash-card-title">
+            <UserPlus size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Add Manager
+          </h2>
+          <form onSubmit={handleAddManager}>
+            <input
+              className="auth-input"
+              type="text"
+              placeholder="Name"
+              value={managerName}
+              onChange={(e) => setManagerName(e.target.value)}
+            />
+            <input
+              className="auth-input"
+              type="email"
+              placeholder="Email"
+              value={managerEmail}
+              onChange={(e) => setManagerEmail(e.target.value)}
+            />
+            <input
+              className="auth-input"
+              type="password"
+              placeholder="Password"
+              value={managerPassword}
+              onChange={(e) => setManagerPassword(e.target.value)}
+            />
+            <motion.button
+              className="auth-button"
+              type="submit"
+              whileTap={{ scale: 0.97 }}
+            >
+              Add Manager
+            </motion.button>
+            {managerMessage && <p className="dash-success">{managerMessage}</p>}
+            {managerError && <p className="dash-error">{managerError}</p>}
+          </form>
+        </motion.div>
+
+        <motion.div
+          className="dash-card"
+          style={{ animation: "none" }}
+          {...cardEntrance(2)}
           whileHover={cardHover}
         >
           <h2 className="dash-card-title">
@@ -158,7 +240,7 @@ function AdminDashboard() {
         <motion.div
           className="dash-card"
           style={{ animation: "none" }}
-          {...cardEntrance(2)}
+          {...cardEntrance(3)}
           whileHover={cardHover}
         >
           <h2 className="dash-card-title">
@@ -187,7 +269,7 @@ function AdminDashboard() {
         <motion.div
           className="dash-card"
           style={{ animation: "none" }}
-          {...cardEntrance(3)}
+          {...cardEntrance(4)}
           whileHover={cardHover}
         >
           <h2 className="dash-card-title">
