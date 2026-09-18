@@ -39,6 +39,7 @@ class SubscriptionOut(BaseModel):
     ampere: int
     tariff_rate: float
     status: str
+    subscriber_name: Optional[str] = None
 
 class MeterReadingCreate(BaseModel):
     subscriber_id: str

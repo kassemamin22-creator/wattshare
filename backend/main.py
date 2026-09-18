@@ -138,17 +138,24 @@ def read_subscribers(current_user: dict = Depends(get_current_user)):
 
     subscriptions = subscriptions_collection.find()
 
-    return [
-        SubscriptionOut(
-            id=str(subscription["_id"]),
-            subscriber_id=subscription["subscriber_id"],
-            generator_name=subscription["generator_name"],
-            ampere=subscription["ampere"],
-            tariff_rate=subscription["tariff_rate"],
-            status=subscription["status"],
+    result = []
+    for subscription in subscriptions:
+        subscriber = users_collection.find_one({"_id": ObjectId(subscription["subscriber_id"])})
+        subscriber_name = subscriber["name"] if subscriber else "Unknown Subscriber"
+
+        result.append(
+            SubscriptionOut(
+                id=str(subscription["_id"]),
+                subscriber_id=subscription["subscriber_id"],
+                generator_name=subscription["generator_name"],
+                ampere=subscription["ampere"],
+                tariff_rate=subscription["tariff_rate"],
+                status=subscription["status"],
+                subscriber_name=subscriber_name,
+            )
         )
-        for subscription in subscriptions
-    ]
+
+    return result
 
 @app.post("/meter-reading", response_model=BillOut)
 def create_meter_reading(reading: MeterReadingCreate, current_user: dict = Depends(get_current_user)):
