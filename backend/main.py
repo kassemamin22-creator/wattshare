@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from typing import List
 import os
 
-from models import UserCreate, UserLogin, UserOut, UserRole, SubscriptionCreate, SubscriptionOut, MeterReadingCreate, BillOut, IssueCreate, IssueOut
+from models import UserCreate, UserLogin, UserOut, UserRole, ManagerCreate, SubscriptionCreate, SubscriptionOut, MeterReadingCreate, BillOut, IssueCreate, IssueOut
 from auth import hash_password, verify_password, create_access_token, get_current_user
 from bson import ObjectId
 from datetime import datetime
@@ -53,8 +53,8 @@ def db_check():
 
 @app.post("/register", response_model=UserOut)
 def register(user: UserCreate):
-    if user.role == UserRole.admin:
-        raise HTTPException(status_code=403, detail="Cannot self-register as admin")
+    if user.role != UserRole.subscriber:
+        raise HTTPException(status_code=403, detail="Only subscriber accounts can self-register")
 
     if users_collection.find_one({"email": user.email}):
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -345,6 +345,30 @@ def read_all_subscriptions(current_user: dict = Depends(get_current_user)):
         )
         for subscription in subscriptions
     ]
+
+@app.post("/admin/add-manager", response_model=UserOut)
+def add_manager(manager: ManagerCreate, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can add managers")
+
+    if users_collection.find_one({"email": manager.email}):
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    hashed_password = hash_password(manager.password)
+
+    result = users_collection.insert_one({
+        "name": manager.name,
+        "email": manager.email,
+        "password": hashed_password,
+        "role": UserRole.owner,
+    })
+
+    return UserOut(
+        id=str(result.inserted_id),
+        name=manager.name,
+        email=manager.email,
+        role=UserRole.owner,
+    )
 
 @app.get("/admin/bills", response_model=List[BillOut])
 def read_all_bills(current_user: dict = Depends(get_current_user)):
