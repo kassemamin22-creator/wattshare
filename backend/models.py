@@ -80,6 +80,7 @@ class BillOut(BaseModel):
     amount: float
     status: str
     created_at: datetime
+    due_date: datetime
     subscriber_name: Optional[str] = None
 
 class IssueCreate(BaseModel):

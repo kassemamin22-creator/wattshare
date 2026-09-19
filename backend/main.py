@@ -8,7 +8,7 @@ import os
 from models import UserCreate, UserLogin, UserOut, UserRole, ManagerCreate, SubscriptionCreate, SubscriptionOut, MeterReadingCreate, BillOut, IssueCreate, IssueOut, TariffUpdate, TariffOut
 from auth import hash_password, verify_password, create_access_token, get_current_user
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timedelta
 from sklearn.linear_model import LinearRegression
 import numpy as np
 
@@ -229,6 +229,7 @@ def create_meter_reading(reading: MeterReadingCreate, current_user: dict = Depen
     })
 
     created_at = datetime.utcnow()
+    due_date = created_at + timedelta(days=15)
     bill_result = bills_collection.insert_one({
         "subscriber_id": reading.subscriber_id,
         "meter_reading_id": str(reading_result.inserted_id),
@@ -236,6 +237,7 @@ def create_meter_reading(reading: MeterReadingCreate, current_user: dict = Depen
         "amount": amount,
         "status": "pending",
         "created_at": created_at,
+        "due_date": due_date,
     })
 
     return BillOut(
@@ -246,6 +248,7 @@ def create_meter_reading(reading: MeterReadingCreate, current_user: dict = Depen
         amount=amount,
         status="pending",
         created_at=created_at,
+        due_date=due_date,
     )
 
 @app.get("/bills/me", response_model=List[BillOut])
@@ -261,6 +264,7 @@ def read_my_bills(current_user: dict = Depends(get_current_user)):
             amount=bill["amount"],
             status=bill["status"],
             created_at=bill["created_at"],
+            due_date=bill.get("due_date", datetime.utcnow()),
         )
         for bill in bills
     ]
@@ -475,8 +479,31 @@ def read_all_bills(current_user: dict = Depends(get_current_user)):
                 amount=bill["amount"],
                 status=bill["status"],
                 created_at=bill["created_at"],
+                due_date=bill.get("due_date", datetime.utcnow()),
                 subscriber_name=subscriber_name,
             )
         )
 
     return result
+
+@app.patch("/bills/{bill_id}/mark-paid", response_model=BillOut)
+def mark_bill_paid(bill_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ("owner", "admin"):
+        raise HTTPException(status_code=403, detail="Only manager or admin can mark bills as paid")
+
+    bill = bills_collection.find_one({"_id": ObjectId(bill_id)})
+    if not bill:
+        raise HTTPException(status_code=404, detail="Bill not found")
+
+    bills_collection.update_one({"_id": ObjectId(bill_id)}, {"$set": {"status": "paid"}})
+
+    return BillOut(
+        id=str(bill["_id"]),
+        subscriber_id=bill["subscriber_id"],
+        meter_reading_id=bill["meter_reading_id"],
+        consumption_kwh=bill["consumption_kwh"],
+        amount=bill["amount"],
+        status="paid",
+        created_at=bill["created_at"],
+        due_date=bill.get("due_date", datetime.utcnow()),
+    )
