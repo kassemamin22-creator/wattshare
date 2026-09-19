@@ -1,7 +1,7 @@
 import { useEffect, useState, FormEvent, CSSProperties } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, animate } from "framer-motion";
-import { Zap, BarChart3, Receipt, MessageCircle, LogOut, Sparkles } from "lucide-react";
+import { Zap, BarChart3, Receipt, MessageCircle, LogOut, Sparkles, User, Pencil, Lock } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { isAxiosError } from "axios";
 import api from "../services/api";
@@ -94,6 +94,18 @@ function Dashboard() {
   const [editUnitNumber, setEditUnitNumber] = useState("");
   const [editMessage, setEditMessage] = useState("");
   const [editError, setEditError] = useState("");
+  const [profileName, setProfileName] = useState("");
+  const [profileEmail, setProfileEmail] = useState("");
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editProfileName, setEditProfileName] = useState("");
+  const [editProfileEmail, setEditProfileEmail] = useState("");
+  const [profileMessage, setProfileMessage] = useState("");
+  const [profileError, setProfileError] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [currentPasswordInput, setCurrentPasswordInput] = useState("");
+  const [newPasswordInput, setNewPasswordInput] = useState("");
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   useEffect(() => {
     api.get("/me").then((response) => setCurrentUser(response.data));
@@ -181,6 +193,78 @@ function Dashboard() {
         setEditError(err.response.data.detail);
       } else {
         setEditError("Failed to update subscription details");
+      }
+    }
+  };
+
+  const handleStartEditProfile = () => {
+    setEditProfileName(profileName);
+    setEditProfileEmail(profileEmail);
+    setProfileMessage("");
+    setProfileError("");
+    setIsEditingProfile(true);
+  };
+
+  const handleCancelEditProfile = () => {
+    setIsEditingProfile(false);
+    setProfileError("");
+  };
+
+  const handleSaveProfile = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setProfileMessage("");
+    setProfileError("");
+
+    try {
+      const response = await api.patch("/users/me", {
+        name: editProfileName,
+        email: editProfileEmail,
+      });
+      setProfileName(response.data.name);
+      setProfileEmail(response.data.email);
+      setIsEditingProfile(false);
+      setProfileMessage("Profile updated successfully");
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        setProfileError(err.response.data.detail);
+      } else {
+        setProfileError("Failed to update profile");
+      }
+    }
+  };
+
+  const handleStartChangePassword = () => {
+    setCurrentPasswordInput("");
+    setNewPasswordInput("");
+    setPasswordMessage("");
+    setPasswordError("");
+    setIsChangingPassword(true);
+  };
+
+  const handleCancelChangePassword = () => {
+    setIsChangingPassword(false);
+    setPasswordError("");
+  };
+
+  const handleSavePassword = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setPasswordMessage("");
+    setPasswordError("");
+
+    try {
+      const response = await api.patch("/users/me/password", {
+        current_password: currentPasswordInput,
+        new_password: newPasswordInput,
+      });
+      setCurrentPasswordInput("");
+      setNewPasswordInput("");
+      setIsChangingPassword(false);
+      setPasswordMessage(response.data.message || "Password updated successfully");
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        setPasswordError(err.response.data.detail);
+      } else {
+        setPasswordError("Failed to update password");
       }
     }
   };
@@ -518,6 +602,121 @@ function Dashboard() {
             {issueError && <p className="dash-error">{issueError}</p>}
           </form>
         </motion.div>
+
+        <motion.section
+          id="account-settings"
+          className="dash-card admin-section"
+          {...cardEntrance(6)}
+          whileHover={cardHover}
+        >
+          <h2 className="dash-card-title">
+            <User size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Account Settings
+          </h2>
+
+          <hr className="dash-divider" />
+          <p className="dash-label">PROFILE</p>
+          {!isEditingProfile ? (
+            <>
+              <p className="dash-value-lg">{profileName || "—"}</p>
+              <p className="bill-date">{profileEmail || "—"}</p>
+              <motion.button
+                className="dash-button-outline"
+                onClick={handleStartEditProfile}
+                whileTap={{ scale: 0.97 }}
+              >
+                <Pencil size={14} /> Edit Profile
+              </motion.button>
+            </>
+          ) : (
+            <form onSubmit={handleSaveProfile}>
+              <input
+                className="auth-input"
+                type="text"
+                placeholder="Name"
+                value={editProfileName}
+                onChange={(e) => setEditProfileName(e.target.value)}
+              />
+              <input
+                className="auth-input"
+                type="email"
+                placeholder="Email"
+                value={editProfileEmail}
+                onChange={(e) => setEditProfileEmail(e.target.value)}
+              />
+              <div style={{ display: "flex", gap: "0.75rem" }}>
+                <motion.button
+                  className="dash-button"
+                  type="submit"
+                  whileTap={{ scale: 0.97 }}
+                  style={{ flex: 1 }}
+                >
+                  Save
+                </motion.button>
+                <motion.button
+                  className="dash-button-outline"
+                  type="button"
+                  onClick={handleCancelEditProfile}
+                  whileTap={{ scale: 0.97 }}
+                  style={{ flex: 1, marginTop: 0 }}
+                >
+                  Cancel
+                </motion.button>
+              </div>
+            </form>
+          )}
+          {profileMessage && <p className="dash-success">{profileMessage}</p>}
+          {profileError && <p className="dash-error">{profileError}</p>}
+
+          <hr className="dash-divider" />
+          <p className="dash-label">PASSWORD</p>
+          {!isChangingPassword ? (
+            <motion.button
+              className="dash-button-outline"
+              onClick={handleStartChangePassword}
+              whileTap={{ scale: 0.97 }}
+            >
+              <Lock size={14} /> Change Password
+            </motion.button>
+          ) : (
+            <form onSubmit={handleSavePassword}>
+              <input
+                className="auth-input"
+                type="password"
+                placeholder="Current password"
+                value={currentPasswordInput}
+                onChange={(e) => setCurrentPasswordInput(e.target.value)}
+              />
+              <input
+                className="auth-input"
+                type="password"
+                placeholder="New password"
+                value={newPasswordInput}
+                onChange={(e) => setNewPasswordInput(e.target.value)}
+              />
+              <div style={{ display: "flex", gap: "0.75rem" }}>
+                <motion.button
+                  className="dash-button"
+                  type="submit"
+                  whileTap={{ scale: 0.97 }}
+                  style={{ flex: 1 }}
+                >
+                  Save
+                </motion.button>
+                <motion.button
+                  className="dash-button-outline"
+                  type="button"
+                  onClick={handleCancelChangePassword}
+                  whileTap={{ scale: 0.97 }}
+                  style={{ flex: 1, marginTop: 0 }}
+                >
+                  Cancel
+                </motion.button>
+              </div>
+            </form>
+          )}
+          {passwordMessage && <p className="dash-success">{passwordMessage}</p>}
+          {passwordError && <p className="dash-error">{passwordError}</p>}
+        </motion.section>
       </main>
     </div>
   );

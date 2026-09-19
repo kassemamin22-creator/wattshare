@@ -1,7 +1,7 @@
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState, FormEvent, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users, Zap, Receipt, ShieldCheck, BarChart3, LogOut, UserPlus, DollarSign, Trash2 } from "lucide-react";
+import { Users, Zap, Receipt, ShieldCheck, BarChart3, LogOut, UserPlus, DollarSign, Trash2, User, Pencil, Lock } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { isAxiosError } from "axios";
 import api from "../services/api";
@@ -81,6 +81,7 @@ const NAV_ITEMS = [
 
 function AdminDashboard() {
   const navigate = useNavigate();
+  const [currentUserId, setCurrentUserId] = useState("");
   const [users, setUsers] = useState<User[]>([]);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [bills, setBills] = useState<Bill[]>([]);
@@ -95,12 +96,29 @@ function AdminDashboard() {
   const [tariffError, setTariffError] = useState("");
   const [userMessage, setUserMessage] = useState("");
   const [userError, setUserError] = useState("");
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editUserName, setEditUserName] = useState("");
+  const [editUserEmail, setEditUserEmail] = useState("");
+  const [editUserRole, setEditUserRole] = useState("subscriber");
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editProfileName, setEditProfileName] = useState("");
+  const [editProfileEmail, setEditProfileEmail] = useState("");
+  const [profileMessage, setProfileMessage] = useState("");
+  const [profileError, setProfileError] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [currentPasswordInput, setCurrentPasswordInput] = useState("");
+  const [newPasswordInput, setNewPasswordInput] = useState("");
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  const selfUser = users.find((user) => user.id === currentUserId);
 
   const fetchUsers = () => {
     api.get("/admin/users").then((response) => setUsers(response.data));
   };
 
   useEffect(() => {
+    api.get("/me").then((response) => setCurrentUserId(response.data.id));
     fetchUsers();
     api
       .get("/admin/subscriptions")
@@ -194,6 +212,46 @@ function AdminDashboard() {
     }
   };
 
+  const handleStartEditUser = (user: User) => {
+    setEditingUserId(user.id);
+    setEditUserName(user.name);
+    setEditUserEmail(user.email);
+    setEditUserRole(user.role);
+    setUserMessage("");
+    setUserError("");
+  };
+
+  const handleCancelEditUser = () => {
+    setEditingUserId(null);
+  };
+
+  const handleSaveEditUser = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingUserId) return;
+
+    setUserMessage("");
+    setUserError("");
+
+    try {
+      const response = await api.patch(`/admin/users/${editingUserId}`, {
+        name: editUserName,
+        email: editUserEmail,
+        role: editUserRole,
+      });
+      setUsers((prev) =>
+        prev.map((user) => (user.id === editingUserId ? response.data : user))
+      );
+      setEditingUserId(null);
+      setUserMessage("User updated successfully");
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        setUserError(err.response.data.detail);
+      } else {
+        setUserError("Failed to update user");
+      }
+    }
+  };
+
   const handleToggleSubscriptionStatus = async (subscriptionId: string) => {
     try {
       const response = await api.patch(`/admin/subscriptions/${subscriptionId}/toggle-status`);
@@ -206,6 +264,83 @@ function AdminDashboard() {
       );
     } catch {
       // toggle-status failed; leave the subscription status as-is
+    }
+  };
+
+  const handleStartEditProfile = () => {
+    setEditProfileName(selfUser?.name || "");
+    setEditProfileEmail(selfUser?.email || "");
+    setProfileMessage("");
+    setProfileError("");
+    setIsEditingProfile(true);
+  };
+
+  const handleCancelEditProfile = () => {
+    setIsEditingProfile(false);
+    setProfileError("");
+  };
+
+  const handleSaveProfile = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setProfileMessage("");
+    setProfileError("");
+
+    try {
+      const response = await api.patch("/users/me", {
+        name: editProfileName,
+        email: editProfileEmail,
+      });
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === currentUserId
+            ? { ...user, name: response.data.name, email: response.data.email }
+            : user
+        )
+      );
+      setIsEditingProfile(false);
+      setProfileMessage("Profile updated successfully");
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        setProfileError(err.response.data.detail);
+      } else {
+        setProfileError("Failed to update profile");
+      }
+    }
+  };
+
+  const handleStartChangePassword = () => {
+    setCurrentPasswordInput("");
+    setNewPasswordInput("");
+    setPasswordMessage("");
+    setPasswordError("");
+    setIsChangingPassword(true);
+  };
+
+  const handleCancelChangePassword = () => {
+    setIsChangingPassword(false);
+    setPasswordError("");
+  };
+
+  const handleSavePassword = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setPasswordMessage("");
+    setPasswordError("");
+
+    try {
+      const response = await api.patch("/users/me/password", {
+        current_password: currentPasswordInput,
+        new_password: newPasswordInput,
+      });
+      setCurrentPasswordInput("");
+      setNewPasswordInput("");
+      setIsChangingPassword(false);
+      setPasswordMessage(response.data.message || "Password updated successfully");
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        setPasswordError(err.response.data.detail);
+      } else {
+        setPasswordError("Failed to update password");
+      }
     }
   };
 
@@ -339,25 +474,91 @@ function AdminDashboard() {
                 </thead>
                 <tbody>
                   {users.map((user) => (
-                    <tr key={user.id}>
-                      <td>{user.name}</td>
-                      <td>{user.email}</td>
-                      <td>
-                        <span className={statusPillClass(user.role)}>
-                          <span className="pill-dot"></span>
-                          {displayRole(user.role).toUpperCase()}
-                        </span>
-                      </td>
-                      <td>
-                        <motion.button
-                          className="admin-mobile-logout"
-                          onClick={() => handleDeleteUser(user)}
-                          whileTap={{ scale: 0.97 }}
-                        >
-                          <Trash2 size={14} /> Delete
-                        </motion.button>
-                      </td>
-                    </tr>
+                    <Fragment key={user.id}>
+                      <tr>
+                        <td>{user.name}</td>
+                        <td>{user.email}</td>
+                        <td>
+                          <span className={statusPillClass(user.role)}>
+                            <span className="pill-dot"></span>
+                            {displayRole(user.role).toUpperCase()}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ display: "flex", gap: "0.5rem" }}>
+                            <motion.button
+                              className="dash-button-outline"
+                              onClick={() => handleStartEditUser(user)}
+                              whileTap={{ scale: 0.97 }}
+                              style={{ marginTop: 0, width: "auto", padding: "0.5rem 0.75rem" }}
+                            >
+                              <Pencil size={14} />
+                            </motion.button>
+                            <motion.button
+                              className="admin-mobile-logout"
+                              onClick={() => handleDeleteUser(user)}
+                              whileTap={{ scale: 0.97 }}
+                            >
+                              <Trash2 size={14} /> Delete
+                            </motion.button>
+                          </div>
+                        </td>
+                      </tr>
+                      {editingUserId === user.id && (
+                        <tr>
+                          <td colSpan={4}>
+                            <form
+                              onSubmit={handleSaveEditUser}
+                              style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}
+                            >
+                              <input
+                                className="auth-input"
+                                type="text"
+                                placeholder="Name"
+                                value={editUserName}
+                                onChange={(e) => setEditUserName(e.target.value)}
+                                style={{ flex: "1 1 160px", marginBottom: 0 }}
+                              />
+                              <input
+                                className="auth-input"
+                                type="email"
+                                placeholder="Email"
+                                value={editUserEmail}
+                                onChange={(e) => setEditUserEmail(e.target.value)}
+                                style={{ flex: "1 1 200px", marginBottom: 0 }}
+                              />
+                              <select
+                                className="owner-select"
+                                value={editUserRole}
+                                onChange={(e) => setEditUserRole(e.target.value)}
+                                style={{ flex: "1 1 140px" }}
+                              >
+                                <option value="subscriber">Subscriber</option>
+                                <option value="owner">Manager</option>
+                                <option value="admin">Admin</option>
+                              </select>
+                              <motion.button
+                                className="auth-button owner-submit-button"
+                                type="submit"
+                                whileTap={{ scale: 0.97 }}
+                                style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
+                              >
+                                Save
+                              </motion.button>
+                              <motion.button
+                                className="dash-button-outline"
+                                type="button"
+                                onClick={handleCancelEditUser}
+                                whileTap={{ scale: 0.97 }}
+                                style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
+                              >
+                                Cancel
+                              </motion.button>
+                            </form>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
                   ))}
                 </tbody>
               </table>
@@ -558,6 +759,121 @@ function AdminDashboard() {
             {tariffMessage && <p className="dash-success">{tariffMessage}</p>}
             {tariffError && <p className="dash-error">{tariffError}</p>}
           </form>
+        </motion.section>
+
+        <motion.section
+          id="account-settings"
+          className="dash-card admin-section"
+          {...cardEntrance(9)}
+          whileHover={cardHover}
+        >
+          <h2 className="dash-card-title">
+            <User size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Account Settings
+          </h2>
+
+          <hr className="dash-divider" />
+          <p className="dash-label">PROFILE</p>
+          {!isEditingProfile ? (
+            <>
+              <p className="dash-value-lg">{selfUser?.name || "—"}</p>
+              <p className="bill-date">{selfUser?.email || "—"}</p>
+              <motion.button
+                className="dash-button-outline"
+                onClick={handleStartEditProfile}
+                whileTap={{ scale: 0.97 }}
+              >
+                <Pencil size={14} /> Edit Profile
+              </motion.button>
+            </>
+          ) : (
+            <form onSubmit={handleSaveProfile}>
+              <input
+                className="auth-input"
+                type="text"
+                placeholder="Name"
+                value={editProfileName}
+                onChange={(e) => setEditProfileName(e.target.value)}
+              />
+              <input
+                className="auth-input"
+                type="email"
+                placeholder="Email"
+                value={editProfileEmail}
+                onChange={(e) => setEditProfileEmail(e.target.value)}
+              />
+              <div style={{ display: "flex", gap: "0.75rem" }}>
+                <motion.button
+                  className="dash-button"
+                  type="submit"
+                  whileTap={{ scale: 0.97 }}
+                  style={{ flex: 1 }}
+                >
+                  Save
+                </motion.button>
+                <motion.button
+                  className="dash-button-outline"
+                  type="button"
+                  onClick={handleCancelEditProfile}
+                  whileTap={{ scale: 0.97 }}
+                  style={{ flex: 1, marginTop: 0 }}
+                >
+                  Cancel
+                </motion.button>
+              </div>
+            </form>
+          )}
+          {profileMessage && <p className="dash-success">{profileMessage}</p>}
+          {profileError && <p className="dash-error">{profileError}</p>}
+
+          <hr className="dash-divider" />
+          <p className="dash-label">PASSWORD</p>
+          {!isChangingPassword ? (
+            <motion.button
+              className="dash-button-outline"
+              onClick={handleStartChangePassword}
+              whileTap={{ scale: 0.97 }}
+            >
+              <Lock size={14} /> Change Password
+            </motion.button>
+          ) : (
+            <form onSubmit={handleSavePassword}>
+              <input
+                className="auth-input"
+                type="password"
+                placeholder="Current password"
+                value={currentPasswordInput}
+                onChange={(e) => setCurrentPasswordInput(e.target.value)}
+              />
+              <input
+                className="auth-input"
+                type="password"
+                placeholder="New password"
+                value={newPasswordInput}
+                onChange={(e) => setNewPasswordInput(e.target.value)}
+              />
+              <div style={{ display: "flex", gap: "0.75rem" }}>
+                <motion.button
+                  className="dash-button"
+                  type="submit"
+                  whileTap={{ scale: 0.97 }}
+                  style={{ flex: 1 }}
+                >
+                  Save
+                </motion.button>
+                <motion.button
+                  className="dash-button-outline"
+                  type="button"
+                  onClick={handleCancelChangePassword}
+                  whileTap={{ scale: 0.97 }}
+                  style={{ flex: 1, marginTop: 0 }}
+                >
+                  Cancel
+                </motion.button>
+              </div>
+            </form>
+          )}
+          {passwordMessage && <p className="dash-success">{passwordMessage}</p>}
+          {passwordError && <p className="dash-error">{passwordError}</p>}
         </motion.section>
       </main>
     </div>
