@@ -171,6 +171,21 @@ function AdminDashboard() {
     }
   };
 
+  const handleToggleSubscriptionStatus = async (subscriptionId: string) => {
+    try {
+      const response = await api.patch(`/admin/subscriptions/${subscriptionId}/toggle-status`);
+      setSubscriptions((prev) =>
+        prev.map((subscription) =>
+          subscription.id === subscriptionId
+            ? { ...subscription, status: response.data.status }
+            : subscription
+        )
+      );
+    } catch {
+      // toggle-status failed; leave the subscription status as-is
+    }
+  };
+
   const roleCounts = ["subscriber", "owner", "admin"].map((role) => ({
     role: displayRole(role).charAt(0).toUpperCase() + displayRole(role).slice(1),
     count: users.filter((user) => user.role === role).length,
@@ -336,6 +351,7 @@ function AdminDashboard() {
                     <th>Subscriber</th>
                     <th>Ampere</th>
                     <th>Status</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -348,6 +364,25 @@ function AdminDashboard() {
                           <span className="pill-dot"></span>
                           {subscription.status.toUpperCase()}
                         </span>
+                      </td>
+                      <td>
+                        {subscription.status === "active" ? (
+                          <motion.button
+                            className="admin-mobile-logout"
+                            onClick={() => handleToggleSubscriptionStatus(subscription.id)}
+                            whileTap={{ scale: 0.97 }}
+                          >
+                            Deactivate
+                          </motion.button>
+                        ) : (
+                          <motion.button
+                            className="auth-button owner-submit-button"
+                            onClick={() => handleToggleSubscriptionStatus(subscription.id)}
+                            whileTap={{ scale: 0.97 }}
+                          >
+                            Activate
+                          </motion.button>
+                        )}
                       </td>
                     </tr>
                   ))}
