@@ -34,6 +34,19 @@ class UserOut(BaseModel):
     email: str
     role: UserRole
 
+class UserUpdate(BaseModel):
+    name: str
+    email: EmailStr
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+
+class AdminUserUpdate(BaseModel):
+    name: str
+    email: EmailStr
+    role: UserRole
+
 class SubscriptionCreate(BaseModel):
     ampere: int
     address: str

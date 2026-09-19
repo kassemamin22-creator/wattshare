@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from typing import List
 import os
 
-from models import UserCreate, UserLogin, UserOut, UserRole, ManagerCreate, SubscriptionCreate, SubscriptionOut, SubscriptionUpdate, MeterReadingCreate, BillOut, IssueCreate, IssueOut, TariffUpdate, TariffOut
+from models import UserCreate, UserLogin, UserOut, UserUpdate, PasswordChange, AdminUserUpdate, UserRole, ManagerCreate, SubscriptionCreate, SubscriptionOut, SubscriptionUpdate, MeterReadingCreate, BillOut, IssueCreate, IssueOut, TariffUpdate, TariffOut
 from auth import hash_password, verify_password, create_access_token, get_current_user
 from bson import ObjectId
 from datetime import datetime, timedelta
@@ -103,6 +103,44 @@ def login(user: UserLogin):
 @app.get("/me")
 def read_current_user(current_user: dict = Depends(get_current_user)):
     return current_user
+
+@app.patch("/users/me", response_model=UserOut)
+def update_my_account(update: UserUpdate, current_user: dict = Depends(get_current_user)):
+    existing = users_collection.find_one({
+        "email": update.email,
+        "_id": {"$ne": ObjectId(current_user["id"])},
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already in use")
+
+    users_collection.update_one(
+        {"_id": ObjectId(current_user["id"])},
+        {"$set": {"name": update.name, "email": update.email}},
+    )
+
+    user = users_collection.find_one({"_id": ObjectId(current_user["id"])})
+
+    return UserOut(
+        id=str(user["_id"]),
+        name=user["name"],
+        email=user["email"],
+        role=user["role"],
+    )
+
+@app.patch("/users/me/password")
+def change_my_password(change: PasswordChange, current_user: dict = Depends(get_current_user)):
+    user = users_collection.find_one({"_id": ObjectId(current_user["id"])})
+
+    if not user or not verify_password(change.current_password, user["password"]):
+        raise HTTPException(status_code=401, detail="Current password is incorrect")
+
+    hashed_password = hash_password(change.new_password)
+    users_collection.update_one(
+        {"_id": ObjectId(current_user["id"])},
+        {"$set": {"password": hashed_password}},
+    )
+
+    return {"message": "Password updated successfully"}
 
 @app.get("/tariff", response_model=TariffOut)
 def read_tariff():
@@ -424,6 +462,37 @@ def read_all_users(current_user: dict = Depends(get_current_user)):
         )
         for user in users
     ]
+
+@app.patch("/admin/users/{user_id}", response_model=UserOut)
+def admin_update_user(user_id: str, update: AdminUserUpdate, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can update users")
+
+    if user_id == current_user["id"] and update.role != "admin":
+        raise HTTPException(status_code=400, detail="Cannot change your own admin role")
+
+    user = users_collection.find_one({"_id": ObjectId(user_id)})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    existing = users_collection.find_one({
+        "email": update.email,
+        "_id": {"$ne": ObjectId(user_id)},
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already in use")
+
+    users_collection.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"name": update.name, "email": update.email, "role": update.role}},
+    )
+
+    return UserOut(
+        id=user_id,
+        name=update.name,
+        email=update.email,
+        role=update.role,
+    )
 
 @app.delete("/admin/users/{user_id}")
 def delete_user(user_id: str, current_user: dict = Depends(get_current_user)):
