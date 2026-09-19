@@ -1,7 +1,7 @@
 import { useState, useEffect, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Zap } from "lucide-react";
+import { Zap, MapPin, Phone, Home } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "../services/api";
 
@@ -9,6 +9,12 @@ const FEATURE_PILLS = [
   { icon: "⚡", label: "Instant activation" },
   { icon: "📈", label: "Live usage tracking" },
   { icon: "🛡️", label: "Fair tariff billing" },
+];
+
+const PAYMENT_METHODS = [
+  { value: "cash", label: "Cash" },
+  { value: "whish", label: "Whish" },
+  { value: "omt", label: "OMT" },
 ];
 
 const PARTICLES = [
@@ -34,6 +40,10 @@ const PARTICLES = [
 
 function Subscribe() {
   const [ampere, setAmpere] = useState("");
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
+  const [unitNumber, setUnitNumber] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("cash");
   const [error, setError] = useState("");
   const [pricePerAmpere, setPricePerAmpere] = useState(0);
   const navigate = useNavigate();
@@ -49,7 +59,13 @@ function Subscribe() {
     setError("");
 
     try {
-      await api.post("/subscription", { ampere: Number(ampere) });
+      await api.post("/subscription", {
+        ampere: Number(ampere),
+        address,
+        phone,
+        unit_number: unitNumber,
+        payment_method: paymentMethod,
+      });
       navigate("/dashboard");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
@@ -93,6 +109,53 @@ function Subscribe() {
           <div className="auth-title">Subscribe to a Generator</div>
           <div className="auth-glass-card">
             <form onSubmit={handleSubmit}>
+              <div className="auth-input-wrap">
+                <MapPin size={16} className="auth-input-icon" />
+                <input
+                  className="auth-input"
+                  type="text"
+                  placeholder="Address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
+              </div>
+              <div className="auth-input-wrap">
+                <Phone size={16} className="auth-input-icon" />
+                <input
+                  className="auth-input"
+                  type="tel"
+                  placeholder="Phone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </div>
+              <div className="auth-input-wrap">
+                <Home size={16} className="auth-input-icon" />
+                <input
+                  className="auth-input"
+                  type="text"
+                  placeholder="Apt/Unit number"
+                  value={unitNumber}
+                  onChange={(e) => setUnitNumber(e.target.value)}
+                />
+              </div>
+              <p className="dash-label">Payment Method</p>
+              <div className="payment-method-group">
+                {PAYMENT_METHODS.map((method) => (
+                  <button
+                    key={method.value}
+                    type="button"
+                    className={
+                      paymentMethod === method.value
+                        ? "payment-method-pill payment-method-pill-active"
+                        : "payment-method-pill"
+                    }
+                    onClick={() => setPaymentMethod(method.value)}
+                  >
+                    {method.label}
+                  </button>
+                ))}
+              </div>
               <div className="auth-input-wrap">
                 <Zap size={16} className="auth-input-icon" />
                 <input

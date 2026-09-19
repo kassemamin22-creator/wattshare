@@ -101,6 +101,43 @@ body {
   margin: -0.25rem 0 0.75rem;
 }
 
+.payment-method-group {
+  display: flex;
+  gap: 0.6rem;
+  margin: 0.4rem 0 1rem;
+}
+
+.payment-method-pill {
+  flex: 1;
+  padding: 0.6rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: center;
+  box-sizing: border-box;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.payment-method-pill:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+.payment-method-pill-active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #0a1628;
+}
+
+.payment-method-pill-active:hover {
+  color: #0a1628;
+}
+
 .auth-button {
   width: 100%;
   padding: 0.85rem;
