@@ -58,6 +58,11 @@ function Subscribe() {
     e.preventDefault();
     setError("");
 
+    if (!address.trim() || !phone.trim()) {
+      setError("Address and phone are required");
+      return;
+    }
+
     try {
       await api.post("/subscription", {
         ampere: Number(ampere),
@@ -117,6 +122,7 @@ function Subscribe() {
                   placeholder="Address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
+                  required
                 />
               </div>
               <div className="auth-input-wrap">
@@ -127,6 +133,7 @@ function Subscribe() {
                   placeholder="Phone"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
+                  required
                 />
               </div>
               <div className="auth-input-wrap">
@@ -134,7 +141,7 @@ function Subscribe() {
                 <input
                   className="auth-input"
                   type="text"
-                  placeholder="Apt/Unit number"
+                  placeholder="Additional Details (optional) - Apt, floor, street landmark..."
                   value={unitNumber}
                   onChange={(e) => setUnitNumber(e.target.value)}
                 />
