@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from typing import List
 import os
 
-from models import UserCreate, UserLogin, UserOut, UserRole, ManagerCreate, SubscriptionCreate, SubscriptionOut, MeterReadingCreate, BillOut, IssueCreate, IssueOut, TariffUpdate, TariffOut
+from models import UserCreate, UserLogin, UserOut, UserRole, ManagerCreate, SubscriptionCreate, SubscriptionOut, SubscriptionUpdate, MeterReadingCreate, BillOut, IssueCreate, IssueOut, TariffUpdate, TariffOut
 from auth import hash_password, verify_password, create_access_token, get_current_user
 from bson import ObjectId
 from datetime import datetime, timedelta
@@ -165,6 +165,39 @@ def read_my_subscription(current_user: dict = Depends(get_current_user)):
         address=subscription.get("address", ""),
         phone=subscription.get("phone", ""),
         unit_number=subscription.get("unit_number", ""),
+        payment_method=subscription.get("payment_method", "cash"),
+        start_date=subscription.get("start_date", datetime.utcnow()),
+    )
+
+@app.patch("/subscription/me", response_model=SubscriptionOut)
+def update_my_subscription(update: SubscriptionUpdate, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "subscriber":
+        raise HTTPException(status_code=403, detail="Only subscribers can update their subscription details")
+
+    subscription = subscriptions_collection.find_one({"subscriber_id": current_user["id"]})
+    if not subscription:
+        raise HTTPException(status_code=404, detail="No subscription found")
+
+    subscriptions_collection.update_one(
+        {"subscriber_id": current_user["id"]},
+        {"$set": {
+            "address": update.address,
+            "phone": update.phone,
+            "unit_number": update.unit_number,
+        }},
+    )
+
+    return SubscriptionOut(
+        id=str(subscription["_id"]),
+        subscriber_id=subscription["subscriber_id"],
+        generator_name=subscription["generator_name"],
+        ampere=subscription["ampere"],
+        tariff_rate=subscription["tariff_rate"],
+        status=subscription["status"],
+        flat_fee=subscription.get("flat_fee", 0.0),
+        address=update.address,
+        phone=update.phone,
+        unit_number=update.unit_number,
         payment_method=subscription.get("payment_method", "cash"),
         start_date=subscription.get("start_date", datetime.utcnow()),
     )

@@ -56,6 +56,11 @@ class SubscriptionOut(BaseModel):
     start_date: datetime
     subscriber_name: Optional[str] = None
 
+class SubscriptionUpdate(BaseModel):
+    address: str
+    phone: str
+    unit_number: str
+
 class TariffUpdate(BaseModel):
     price_per_ampere: float
 
