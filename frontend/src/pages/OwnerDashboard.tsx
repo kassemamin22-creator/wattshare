@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users, BarChart3, AlertCircle, Gauge, LogOut } from "lucide-react";
+import { Users, BarChart3, AlertCircle, Gauge, LogOut, Receipt } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { isAxiosError } from "axios";
 import api from "../services/api";
@@ -22,6 +22,18 @@ interface Issue {
   description: string;
   status: string;
   created_at: string;
+  subscriber_name?: string;
+}
+
+interface Bill {
+  id: string;
+  subscriber_id: string;
+  meter_reading_id: string;
+  consumption_kwh: number;
+  amount: number;
+  status: string;
+  created_at: string;
+  due_date: string;
   subscriber_name?: string;
 }
 
@@ -60,6 +72,7 @@ const NAV_ITEMS = [
   { id: "subscribers", label: "Meter Reading", icon: Gauge },
   { id: "issues", label: "Reported Issues", icon: AlertCircle },
   { id: "chart", label: "Consumption Chart", icon: BarChart3 },
+  { id: "bills", label: "Bills", icon: Receipt },
 ];
 
 function OwnerDashboard() {
@@ -69,10 +82,12 @@ function OwnerDashboard() {
   const [messages, setMessages] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [issues, setIssues] = useState<Issue[]>([]);
+  const [bills, setBills] = useState<Bill[]>([]);
 
   useEffect(() => {
     api.get("/subscribers").then((response) => setSubscribers(response.data));
     api.get("/issues").then((response) => setIssues(response.data));
+    api.get("/admin/bills").then((response) => setBills(response.data));
   }, []);
 
   const handleLogout = () => {
@@ -94,6 +109,17 @@ function OwnerDashboard() {
       );
     } catch {
       // status update failed; leave the dropdown as-is
+    }
+  };
+
+  const handleMarkPaid = async (billId: string) => {
+    try {
+      await api.patch(`/bills/${billId}/mark-paid`);
+      setBills((prev) =>
+        prev.map((bill) => (bill.id === billId ? { ...bill, status: "paid" } : bill))
+      );
+    } catch {
+      // mark-paid failed; leave the bill status as-is
     }
   };
 
@@ -319,6 +345,62 @@ function OwnerDashboard() {
                           <option value="in progress">In Progress</option>
                           <option value="resolved">Resolved</option>
                         </motion.select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </motion.section>
+
+        <motion.section
+          id="bills"
+          className="dash-card admin-section"
+          {...cardEntrance(3)}
+          whileHover={cardHover}
+        >
+          <h2 className="dash-card-title">
+            <Receipt size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Bills
+          </h2>
+          {bills.length === 0 ? (
+            <p>No data yet</p>
+          ) : (
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Subscriber</th>
+                    <th>Consumption</th>
+                    <th>Due Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bills.map((bill) => (
+                    <tr key={bill.id}>
+                      <td>{bill.subscriber_name || bill.subscriber_id}</td>
+                      <td>{bill.consumption_kwh} kWh</td>
+                      <td>{new Date(bill.due_date).toLocaleDateString()}</td>
+                      <td>${bill.amount.toFixed(2)}</td>
+                      <td>
+                        <span className={statusPillClass(bill.status)}>
+                          <span className="pill-dot"></span>
+                          {bill.status.toUpperCase()}
+                        </span>
+                      </td>
+                      <td>
+                        {bill.status === "pending" && (
+                          <motion.button
+                            className="auth-button owner-submit-button"
+                            onClick={() => handleMarkPaid(bill.id)}
+                            whileTap={{ scale: 0.97 }}
+                          >
+                            Mark Paid
+                          </motion.button>
+                        )}
                       </td>
                     </tr>
                   ))}

@@ -28,6 +28,7 @@ interface Bill {
   amount: number;
   status: string;
   created_at: string;
+  due_date: string;
 }
 
 interface Prediction {
@@ -348,6 +349,7 @@ function Dashboard() {
                   <tr>
                     <th>kWh</th>
                     <th>Date</th>
+                    <th>Due Date</th>
                     <th>Amount</th>
                     <th>Status</th>
                   </tr>
@@ -357,6 +359,7 @@ function Dashboard() {
                     <tr key={bill.id}>
                       <td>{bill.consumption_kwh} kWh</td>
                       <td>{new Date(bill.created_at).toLocaleDateString()}</td>
+                      <td>{new Date(bill.due_date).toLocaleDateString()}</td>
                       <td>${bill.amount.toFixed(2)}</td>
                       <td>
                         <span className={statusPillClass(bill.status)}>

@@ -31,6 +31,7 @@ interface Bill {
   amount: number;
   status: string;
   created_at: string;
+  due_date: string;
   subscriber_name?: string;
 }
 
@@ -156,6 +157,17 @@ function AdminDashboard() {
       } else {
         setTariffError("Failed to update price");
       }
+    }
+  };
+
+  const handleMarkPaid = async (billId: string) => {
+    try {
+      await api.patch(`/bills/${billId}/mark-paid`);
+      setBills((prev) =>
+        prev.map((bill) => (bill.id === billId ? { ...bill, status: "paid" } : bill))
+      );
+    } catch {
+      // mark-paid failed; leave the bill status as-is
     }
   };
 
@@ -363,8 +375,10 @@ function AdminDashboard() {
                   <tr>
                     <th>Subscriber</th>
                     <th>Consumption</th>
+                    <th>Due Date</th>
                     <th>Amount</th>
                     <th>Status</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -372,12 +386,24 @@ function AdminDashboard() {
                     <tr key={bill.id}>
                       <td>{bill.subscriber_name || bill.subscriber_id}</td>
                       <td>{bill.consumption_kwh} kWh</td>
+                      <td>{new Date(bill.due_date).toLocaleDateString()}</td>
                       <td>${bill.amount.toFixed(2)}</td>
                       <td>
                         <span className={statusPillClass(bill.status)}>
                           <span className="pill-dot"></span>
                           {bill.status.toUpperCase()}
                         </span>
+                      </td>
+                      <td>
+                        {bill.status === "pending" && (
+                          <motion.button
+                            className="auth-button owner-submit-button"
+                            onClick={() => handleMarkPaid(bill.id)}
+                            whileTap={{ scale: 0.97 }}
+                          >
+                            Mark Paid
+                          </motion.button>
+                        )}
                       </td>
                     </tr>
                   ))}
