@@ -1,7 +1,7 @@
 import { useEffect, useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users, Zap, Receipt, ShieldCheck, BarChart3, LogOut, UserPlus, DollarSign } from "lucide-react";
+import { Users, Zap, Receipt, ShieldCheck, BarChart3, LogOut, UserPlus, DollarSign, Trash2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { isAxiosError } from "axios";
 import api from "../services/api";
@@ -93,6 +93,8 @@ function AdminDashboard() {
   const [tariffInput, setTariffInput] = useState("");
   const [tariffMessage, setTariffMessage] = useState("");
   const [tariffError, setTariffError] = useState("");
+  const [userMessage, setUserMessage] = useState("");
+  const [userError, setUserError] = useState("");
 
   const fetchUsers = () => {
     api.get("/admin/users").then((response) => setUsers(response.data));
@@ -168,6 +170,27 @@ function AdminDashboard() {
       );
     } catch {
       // mark-paid failed; leave the bill status as-is
+    }
+  };
+
+  const handleDeleteUser = async (user: User) => {
+    if (!window.confirm(`Are you sure you want to delete ${user.name}? This cannot be undone.`)) {
+      return;
+    }
+
+    setUserMessage("");
+    setUserError("");
+
+    try {
+      await api.delete(`/admin/users/${user.id}`);
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+      setUserMessage(`${user.name} deleted successfully`);
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        setUserError(err.response.data.detail);
+      } else {
+        setUserError("Failed to delete user");
+      }
     }
   };
 
@@ -311,6 +334,7 @@ function AdminDashboard() {
                     <th>Name</th>
                     <th>Email</th>
                     <th>Role</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -324,12 +348,23 @@ function AdminDashboard() {
                           {displayRole(user.role).toUpperCase()}
                         </span>
                       </td>
+                      <td>
+                        <motion.button
+                          className="admin-mobile-logout"
+                          onClick={() => handleDeleteUser(user)}
+                          whileTap={{ scale: 0.97 }}
+                        >
+                          <Trash2 size={14} /> Delete
+                        </motion.button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
+          {userMessage && <p className="dash-success">{userMessage}</p>}
+          {userError && <p className="dash-error">{userError}</p>}
         </motion.section>
 
         <motion.section
