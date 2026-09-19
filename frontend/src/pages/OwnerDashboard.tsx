@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users, BarChart3, AlertCircle, Gauge, LogOut, Receipt } from "lucide-react";
+import { Users, BarChart3, AlertCircle, Gauge, LogOut, Receipt, Search } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { isAxiosError } from "axios";
 import api from "../services/api";
@@ -13,6 +13,9 @@ interface Subscriber {
   ampere: number;
   tariff_rate: number;
   status: string;
+  address: string;
+  phone: string;
+  unit_number: string;
   subscriber_name?: string;
 }
 
@@ -83,6 +86,7 @@ function OwnerDashboard() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [issues, setIssues] = useState<Issue[]>([]);
   const [bills, setBills] = useState<Bill[]>([]);
+  const [subscriberSearch, setSubscriberSearch] = useState("");
 
   useEffect(() => {
     api.get("/subscribers").then((response) => setSubscribers(response.data));
@@ -156,6 +160,10 @@ function OwnerDashboard() {
     ampere: subscriber.ampere,
   }));
 
+  const filteredSubscribers = subscribers.filter((subscriber) =>
+    (subscriber.subscriber_name || "").toLowerCase().includes(subscriberSearch.toLowerCase())
+  );
+
   return (
     <div className="admin-shell">
       <aside className="admin-sidebar">
@@ -205,14 +213,29 @@ function OwnerDashboard() {
           <h2 className="dash-card-title">
             <Users size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Subscribers
           </h2>
+          <div className="auth-input-wrap">
+            <Search size={16} className="auth-input-icon" />
+            <input
+              className="auth-input"
+              type="text"
+              placeholder="Search by name..."
+              value={subscriberSearch}
+              onChange={(e) => setSubscriberSearch(e.target.value)}
+            />
+          </div>
           {subscribers.length === 0 ? (
             <p>No subscribers yet</p>
+          ) : filteredSubscribers.length === 0 ? (
+            <p>No subscribers match your search</p>
           ) : (
             <div className="admin-table-wrap">
               <table className="admin-table">
                 <thead>
                   <tr>
                     <th>Subscriber</th>
+                    <th>Address</th>
+                    <th>Phone</th>
+                    <th>Unit</th>
                     <th>Ampere</th>
                     <th>Status</th>
                     <th>Reading Input</th>
@@ -220,9 +243,12 @@ function OwnerDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {subscribers.map((subscriber) => (
+                  {filteredSubscribers.map((subscriber) => (
                     <tr key={subscriber.id}>
                       <td>{subscriber.subscriber_name || subscriber.subscriber_id}</td>
+                      <td>{subscriber.address}</td>
+                      <td>{subscriber.phone}</td>
+                      <td>{subscriber.unit_number}</td>
                       <td>{subscriber.ampere}A</td>
                       <td>
                         <span className={statusPillClass(subscriber.status)}>
