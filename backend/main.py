@@ -460,8 +460,8 @@ def add_manager(manager: ManagerCreate, current_user: dict = Depends(get_current
 
 @app.get("/admin/bills", response_model=List[BillOut])
 def read_all_bills(current_user: dict = Depends(get_current_user)):
-    if current_user["role"] != "admin":
-        raise HTTPException(status_code=403, detail="Only admin can access this")
+    if current_user["role"] not in ("admin", "owner"):
+        raise HTTPException(status_code=403, detail="Only manager or admin can view all bills")
 
     bills = bills_collection.find()
 
