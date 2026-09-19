@@ -1,7 +1,7 @@
 import { useEffect, useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users, Zap, Receipt, ShieldCheck, BarChart3, LogOut, UserPlus } from "lucide-react";
+import { Users, Zap, Receipt, ShieldCheck, BarChart3, LogOut, UserPlus, DollarSign } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { isAxiosError } from "axios";
 import api from "../services/api";
@@ -75,6 +75,7 @@ const NAV_ITEMS = [
   { id: "subscriptions", label: "Subscriptions", icon: Zap },
   { id: "bills", label: "Bills", icon: Receipt },
   { id: "add-manager", label: "Add Manager", icon: UserPlus },
+  { id: "pricing", label: "Pricing", icon: DollarSign },
 ];
 
 function AdminDashboard() {
@@ -87,6 +88,10 @@ function AdminDashboard() {
   const [managerPassword, setManagerPassword] = useState("");
   const [managerMessage, setManagerMessage] = useState("");
   const [managerError, setManagerError] = useState("");
+  const [tariffPrice, setTariffPrice] = useState<number | null>(null);
+  const [tariffInput, setTariffInput] = useState("");
+  const [tariffMessage, setTariffMessage] = useState("");
+  const [tariffError, setTariffError] = useState("");
 
   const fetchUsers = () => {
     api.get("/admin/users").then((response) => setUsers(response.data));
@@ -98,6 +103,10 @@ function AdminDashboard() {
       .get("/admin/subscriptions")
       .then((response) => setSubscriptions(response.data));
     api.get("/admin/bills").then((response) => setBills(response.data));
+    api.get("/tariff").then((response) => {
+      setTariffPrice(response.data.price_per_ampere);
+      setTariffInput(String(response.data.price_per_ampere));
+    });
   }, []);
 
   const handleLogout = () => {
@@ -126,6 +135,26 @@ function AdminDashboard() {
         setManagerError(err.response.data.detail);
       } else {
         setManagerError("Failed to create manager account");
+      }
+    }
+  };
+
+  const handleUpdateTariff = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setTariffMessage("");
+    setTariffError("");
+
+    try {
+      const response = await api.put("/admin/tariff", {
+        price_per_ampere: Number(tariffInput),
+      });
+      setTariffPrice(response.data.price_per_ampere);
+      setTariffMessage("Price updated successfully");
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        setTariffError(err.response.data.detail);
+      } else {
+        setTariffError("Failed to update price");
       }
     }
   };
@@ -398,6 +427,40 @@ function AdminDashboard() {
             </motion.button>
             {managerMessage && <p className="dash-success">{managerMessage}</p>}
             {managerError && <p className="dash-error">{managerError}</p>}
+          </form>
+        </motion.section>
+
+        <motion.section
+          id="pricing"
+          className="dash-card admin-section"
+          {...cardEntrance(8)}
+          whileHover={cardHover}
+        >
+          <h2 className="dash-card-title">
+            <DollarSign size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Pricing Control
+          </h2>
+          <p className="dash-label">CURRENT PRICE PER AMPERE</p>
+          <p className="dash-value-lg">
+            {tariffPrice !== null ? `$${tariffPrice.toFixed(2)}` : "Loading..."}
+          </p>
+          <form onSubmit={handleUpdateTariff} className="admin-manager-form">
+            <input
+              className="auth-input"
+              type="number"
+              step="0.01"
+              placeholder="Price per ampere"
+              value={tariffInput}
+              onChange={(e) => setTariffInput(e.target.value)}
+            />
+            <motion.button
+              className="auth-button"
+              type="submit"
+              whileTap={{ scale: 0.97 }}
+            >
+              Update Price
+            </motion.button>
+            {tariffMessage && <p className="dash-success">{tariffMessage}</p>}
+            {tariffError && <p className="dash-error">{tariffError}</p>}
           </form>
         </motion.section>
       </main>

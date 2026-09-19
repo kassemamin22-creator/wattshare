@@ -1,4 +1,4 @@
-import { useState, FormEvent } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Zap } from "lucide-react";
@@ -35,7 +35,14 @@ const PARTICLES = [
 function Subscribe() {
   const [ampere, setAmpere] = useState("");
   const [error, setError] = useState("");
+  const [pricePerAmpere, setPricePerAmpere] = useState(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    api.get("/tariff").then((response) => setPricePerAmpere(response.data.price_per_ampere));
+  }, []);
+
+  const estimatedFee = ampere ? Number(ampere) * pricePerAmpere : 0;
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -96,6 +103,9 @@ function Subscribe() {
                   onChange={(e) => setAmpere(e.target.value)}
                 />
               </div>
+              <p className="auth-fee-estimate">
+                Estimated monthly fee: ${estimatedFee.toFixed(2)}
+              </p>
               <div className="auth-button-ring">
                 <motion.button
                   className="auth-button"

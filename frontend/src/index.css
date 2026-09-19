@@ -95,6 +95,12 @@ body {
   color: var(--color-accent);
 }
 
+.auth-fee-estimate {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  margin: -0.25rem 0 0.75rem;
+}
+
 .auth-button {
   width: 100%;
   padding: 0.85rem;
