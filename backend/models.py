@@ -39,7 +39,14 @@ class SubscriptionOut(BaseModel):
     ampere: int
     tariff_rate: float
     status: str
+    flat_fee: float
     subscriber_name: Optional[str] = None
+
+class TariffUpdate(BaseModel):
+    price_per_ampere: float
+
+class TariffOut(BaseModel):
+    price_per_ampere: float
 
 class MeterReadingCreate(BaseModel):
     subscriber_id: str

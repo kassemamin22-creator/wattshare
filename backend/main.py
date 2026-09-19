@@ -1,11 +1,11 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from pymongo import MongoClient
+from pymongo import MongoClient, ReturnDocument
 from dotenv import load_dotenv
 from typing import List
 import os
 
-from models import UserCreate, UserLogin, UserOut, UserRole, ManagerCreate, SubscriptionCreate, SubscriptionOut, MeterReadingCreate, BillOut, IssueCreate, IssueOut
+from models import UserCreate, UserLogin, UserOut, UserRole, ManagerCreate, SubscriptionCreate, SubscriptionOut, MeterReadingCreate, BillOut, IssueCreate, IssueOut, TariffUpdate, TariffOut
 from auth import hash_password, verify_password, create_access_token, get_current_user
 from bson import ObjectId
 from datetime import datetime
@@ -25,9 +25,20 @@ subscriptions_collection = db["subscriptions"]
 meter_readings_collection = db["meter_readings"]
 bills_collection = db["bills"]
 issues_collection = db["issues"]
+settings_collection = db["settings"]
 
 GENERATOR_NAME = "Al-Kassir Diesel Generator"
 TARIFF_RATE = 0.484
+DEFAULT_PRICE_PER_AMPERE = 50.0
+
+def get_current_price_per_ampere() -> float:
+    settings = settings_collection.find_one_and_update(
+        {"_id": "pricing"},
+        {"$setOnInsert": {"price_per_ampere": DEFAULT_PRICE_PER_AMPERE}},
+        upsert=True,
+        return_document=ReturnDocument.AFTER,
+    )
+    return settings["price_per_ampere"]
 
 app = FastAPI()
 
@@ -93,16 +104,25 @@ def login(user: UserLogin):
 def read_current_user(current_user: dict = Depends(get_current_user)):
     return current_user
 
+@app.get("/tariff", response_model=TariffOut)
+def read_tariff():
+    price_per_ampere = get_current_price_per_ampere()
+    return TariffOut(price_per_ampere=price_per_ampere)
+
 @app.post("/subscription", response_model=SubscriptionOut)
 def create_subscription(subscription: SubscriptionCreate, current_user: dict = Depends(get_current_user)):
     if subscriptions_collection.find_one({"subscriber_id": current_user["id"]}):
         raise HTTPException(status_code=400, detail="Subscription already exists")
+
+    price_per_ampere = get_current_price_per_ampere()
+    flat_fee = subscription.ampere * price_per_ampere
 
     result = subscriptions_collection.insert_one({
         "subscriber_id": current_user["id"],
         "generator_name": GENERATOR_NAME,
         "ampere": subscription.ampere,
         "tariff_rate": TARIFF_RATE,
+        "flat_fee": flat_fee,
         "status": "active",
     })
 
@@ -112,6 +132,7 @@ def create_subscription(subscription: SubscriptionCreate, current_user: dict = D
         generator_name=GENERATOR_NAME,
         ampere=subscription.ampere,
         tariff_rate=TARIFF_RATE,
+        flat_fee=flat_fee,
         status="active",
     )
 
@@ -129,6 +150,7 @@ def read_my_subscription(current_user: dict = Depends(get_current_user)):
         ampere=subscription["ampere"],
         tariff_rate=subscription["tariff_rate"],
         status=subscription["status"],
+        flat_fee=subscription.get("flat_fee", 0.0),
     )
 
 @app.get("/subscribers", response_model=List[SubscriptionOut])
@@ -151,6 +173,7 @@ def read_subscribers(current_user: dict = Depends(get_current_user)):
                 ampere=subscription["ampere"],
                 tariff_rate=subscription["tariff_rate"],
                 status=subscription["status"],
+                flat_fee=subscription.get("flat_fee", 0.0),
                 subscriber_name=subscriber_name,
             )
         )
@@ -176,7 +199,7 @@ def create_meter_reading(reading: MeterReadingCreate, current_user: dict = Depen
     if consumption_kwh < 0:
         raise HTTPException(status_code=400, detail="New reading cannot be lower than previous reading")
 
-    amount = consumption_kwh * subscription["tariff_rate"]
+    amount = (consumption_kwh * subscription["tariff_rate"]) + subscription.get("flat_fee", 0.0)
 
     reading_result = meter_readings_collection.insert_one({
         "subscriber_id": reading.subscriber_id,
@@ -361,11 +384,25 @@ def read_all_subscriptions(current_user: dict = Depends(get_current_user)):
                 ampere=subscription["ampere"],
                 tariff_rate=subscription["tariff_rate"],
                 status=subscription["status"],
+                flat_fee=subscription.get("flat_fee", 0.0),
                 subscriber_name=subscriber_name,
             )
         )
 
     return result
+
+@app.put("/admin/tariff", response_model=TariffOut)
+def update_tariff(tariff: TariffUpdate, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can update pricing")
+
+    settings_collection.find_one_and_update(
+        {"_id": "pricing"},
+        {"$set": {"price_per_ampere": tariff.price_per_ampere}},
+        upsert=True,
+    )
+
+    return TariffOut(price_per_ampere=tariff.price_per_ampere)
 
 @app.post("/admin/add-manager", response_model=UserOut)
 def add_manager(manager: ManagerCreate, current_user: dict = Depends(get_current_user)):
