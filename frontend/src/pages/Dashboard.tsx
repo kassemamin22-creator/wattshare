@@ -18,6 +18,9 @@ interface Subscription {
   ampere: number;
   tariff_rate: number;
   status: string;
+  address: string;
+  phone: string;
+  unit_number: string;
 }
 
 interface Bill {
@@ -85,6 +88,12 @@ function Dashboard() {
   const [issueMessage, setIssueMessage] = useState("");
   const [issueError, setIssueError] = useState("");
   const [displayedForecast, setDisplayedForecast] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editAddress, setEditAddress] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editUnitNumber, setEditUnitNumber] = useState("");
+  const [editMessage, setEditMessage] = useState("");
+  const [editError, setEditError] = useState("");
 
   useEffect(() => {
     api.get("/me").then((response) => setCurrentUser(response.data));
@@ -134,6 +143,44 @@ function Dashboard() {
         setIssueError(err.response.data.detail);
       } else {
         setIssueError("Failed to report issue");
+      }
+    }
+  };
+
+  const handleStartEditing = () => {
+    if (!subscription) return;
+    setEditAddress(subscription.address);
+    setEditPhone(subscription.phone);
+    setEditUnitNumber(subscription.unit_number);
+    setEditMessage("");
+    setEditError("");
+    setIsEditing(true);
+  };
+
+  const handleCancelEditing = () => {
+    setIsEditing(false);
+    setEditError("");
+  };
+
+  const handleSaveEditing = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setEditMessage("");
+    setEditError("");
+
+    try {
+      const response = await api.patch("/subscription/me", {
+        address: editAddress,
+        phone: editPhone,
+        unit_number: editUnitNumber,
+      });
+      setSubscription(response.data);
+      setIsEditing(false);
+      setEditMessage("Subscription details updated successfully");
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        setEditError(err.response.data.detail);
+      } else {
+        setEditError("Failed to update subscription details");
       }
     }
   };
@@ -237,6 +284,77 @@ function Dashboard() {
                   </span>
                 </div>
               </div>
+              <hr className="dash-divider" />
+              {!isEditing ? (
+                <>
+                  <div className="dash-cols">
+                    <div className="dash-col">
+                      <p className="dash-label">ADDRESS</p>
+                      <p className="dash-value-lg">{subscription.address}</p>
+                    </div>
+                    <div className="dash-col">
+                      <p className="dash-label">PHONE</p>
+                      <p className="dash-value-lg">{subscription.phone}</p>
+                    </div>
+                    <div className="dash-col">
+                      <p className="dash-label">UNIT</p>
+                      <p className="dash-value-lg">{subscription.unit_number}</p>
+                    </div>
+                  </div>
+                  <motion.button
+                    className="dash-button-outline"
+                    onClick={handleStartEditing}
+                    whileTap={{ scale: 0.97 }}
+                  >
+                    Edit Details
+                  </motion.button>
+                </>
+              ) : (
+                <form onSubmit={handleSaveEditing}>
+                  <input
+                    className="auth-input"
+                    type="text"
+                    placeholder="Address"
+                    value={editAddress}
+                    onChange={(e) => setEditAddress(e.target.value)}
+                  />
+                  <input
+                    className="auth-input"
+                    type="tel"
+                    placeholder="Phone"
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                  />
+                  <input
+                    className="auth-input"
+                    type="text"
+                    placeholder="Apt/Unit number"
+                    value={editUnitNumber}
+                    onChange={(e) => setEditUnitNumber(e.target.value)}
+                  />
+                  <div style={{ display: "flex", gap: "0.75rem" }}>
+                    <motion.button
+                      className="dash-button"
+                      type="submit"
+                      whileTap={{ scale: 0.97 }}
+                      style={{ flex: 1 }}
+                    >
+                      Save
+                    </motion.button>
+                    <motion.button
+                      className="dash-button-outline"
+                      type="button"
+                      onClick={handleCancelEditing}
+                      whileTap={{ scale: 0.97 }}
+                      style={{ flex: 1, marginTop: 0 }}
+                    >
+                      Cancel
+                    </motion.button>
+                  </div>
+                </form>
+              )}
+              {editMessage && <p className="dash-success">{editMessage}</p>}
+              {editError && <p className="dash-error">{editError}</p>}
             </>
           ) : hasSubscription ? (
             <p>Loading...</p>
