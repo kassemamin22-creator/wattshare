@@ -392,6 +392,26 @@ def read_all_users(current_user: dict = Depends(get_current_user)):
         for user in users
     ]
 
+@app.delete("/admin/users/{user_id}")
+def delete_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can delete users")
+
+    if user_id == current_user["id"]:
+        raise HTTPException(status_code=400, detail="Cannot delete your own account")
+
+    user = users_collection.find_one({"_id": ObjectId(user_id)})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    users_collection.delete_one({"_id": ObjectId(user_id)})
+    subscriptions_collection.delete_many({"subscriber_id": user_id})
+    bills_collection.delete_many({"subscriber_id": user_id})
+    meter_readings_collection.delete_many({"subscriber_id": user_id})
+    issues_collection.delete_many({"subscriber_id": user_id})
+
+    return {"message": "User and related data deleted successfully"}
+
 @app.get("/admin/subscriptions", response_model=List[SubscriptionOut])
 def read_all_subscriptions(current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "admin":
