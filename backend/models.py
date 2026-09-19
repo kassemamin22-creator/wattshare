@@ -8,6 +8,11 @@ class UserRole(str, Enum):
     owner = "owner"
     admin = "admin"
 
+class PaymentMethod(str, Enum):
+    cash = "cash"
+    whish = "whish"
+    omt = "omt"
+
 class UserCreate(BaseModel):
     name: str
     email: EmailStr
@@ -31,6 +36,10 @@ class UserOut(BaseModel):
 
 class SubscriptionCreate(BaseModel):
     ampere: int
+    address: str
+    phone: str
+    unit_number: str
+    payment_method: PaymentMethod
 
 class SubscriptionOut(BaseModel):
     id: str
@@ -40,6 +49,11 @@ class SubscriptionOut(BaseModel):
     tariff_rate: float
     status: str
     flat_fee: float
+    address: str
+    phone: str
+    unit_number: str
+    payment_method: PaymentMethod
+    start_date: datetime
     subscriber_name: Optional[str] = None
 
 class TariffUpdate(BaseModel):

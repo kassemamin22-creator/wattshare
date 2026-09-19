@@ -116,6 +116,7 @@ def create_subscription(subscription: SubscriptionCreate, current_user: dict = D
 
     price_per_ampere = get_current_price_per_ampere()
     flat_fee = subscription.ampere * price_per_ampere
+    start_date = datetime.utcnow()
 
     result = subscriptions_collection.insert_one({
         "subscriber_id": current_user["id"],
@@ -123,6 +124,11 @@ def create_subscription(subscription: SubscriptionCreate, current_user: dict = D
         "ampere": subscription.ampere,
         "tariff_rate": TARIFF_RATE,
         "flat_fee": flat_fee,
+        "address": subscription.address,
+        "phone": subscription.phone,
+        "unit_number": subscription.unit_number,
+        "payment_method": subscription.payment_method,
+        "start_date": start_date,
         "status": "active",
     })
 
@@ -133,6 +139,11 @@ def create_subscription(subscription: SubscriptionCreate, current_user: dict = D
         ampere=subscription.ampere,
         tariff_rate=TARIFF_RATE,
         flat_fee=flat_fee,
+        address=subscription.address,
+        phone=subscription.phone,
+        unit_number=subscription.unit_number,
+        payment_method=subscription.payment_method,
+        start_date=start_date,
         status="active",
     )
 
@@ -151,6 +162,11 @@ def read_my_subscription(current_user: dict = Depends(get_current_user)):
         tariff_rate=subscription["tariff_rate"],
         status=subscription["status"],
         flat_fee=subscription.get("flat_fee", 0.0),
+        address=subscription.get("address", ""),
+        phone=subscription.get("phone", ""),
+        unit_number=subscription.get("unit_number", ""),
+        payment_method=subscription.get("payment_method", "cash"),
+        start_date=subscription.get("start_date", datetime.utcnow()),
     )
 
 @app.get("/subscribers", response_model=List[SubscriptionOut])
@@ -174,6 +190,11 @@ def read_subscribers(current_user: dict = Depends(get_current_user)):
                 tariff_rate=subscription["tariff_rate"],
                 status=subscription["status"],
                 flat_fee=subscription.get("flat_fee", 0.0),
+                address=subscription.get("address", ""),
+                phone=subscription.get("phone", ""),
+                unit_number=subscription.get("unit_number", ""),
+                payment_method=subscription.get("payment_method", "cash"),
+                start_date=subscription.get("start_date", datetime.utcnow()),
                 subscriber_name=subscriber_name,
             )
         )
@@ -385,6 +406,11 @@ def read_all_subscriptions(current_user: dict = Depends(get_current_user)):
                 tariff_rate=subscription["tariff_rate"],
                 status=subscription["status"],
                 flat_fee=subscription.get("flat_fee", 0.0),
+                address=subscription.get("address", ""),
+                phone=subscription.get("phone", ""),
+                unit_number=subscription.get("unit_number", ""),
+                payment_method=subscription.get("payment_method", "cash"),
+                start_date=subscription.get("start_date", datetime.utcnow()),
                 subscriber_name=subscriber_name,
             )
         )
