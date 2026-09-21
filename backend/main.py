@@ -27,7 +27,7 @@ bills_collection = db["bills"]
 issues_collection = db["issues"]
 settings_collection = db["settings"]
 
-GENERATOR_NAME = "Al-Kassir Diesel Generator"
+GENERATOR_NAME = "AK Power"
 TARIFF_RATE = 0.484
 DEFAULT_PRICE_PER_AMPERE = 50.0
 
