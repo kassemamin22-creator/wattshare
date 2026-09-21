@@ -1,7 +1,7 @@
 import { useEffect, useState, FormEvent, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Users, Zap, Receipt, ShieldCheck, BarChart3, LogOut, UserPlus, DollarSign, Trash2, User, Pencil, Lock } from "lucide-react";
+import { motion, animate } from "framer-motion";
+import { Users, Zap, Receipt, ShieldCheck, BarChart3, LogOut, UserPlus, DollarSign, Trash2, User, Pencil, Lock, Loader2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { isAxiosError } from "axios";
 import api from "../services/api";
@@ -60,6 +60,7 @@ const CARD_STAGGER = 0.08;
 const cardHover = {
   scale: 1.015,
   y: -4,
+  boxShadow: "0 14px 32px rgba(0, 0, 0, 0.45)",
   transition: { type: "spring" as const, stiffness: 300, damping: 20 },
 };
 
@@ -69,6 +70,45 @@ function cardEntrance(index: number) {
     animate: { opacity: 1, y: 0 },
     transition: { duration: 0.4, delay: index * CARD_STAGGER, ease: "easeOut" as const },
   };
+}
+
+function rowEntrance(index: number) {
+  return {
+    initial: { opacity: 0, y: 8 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.3, delay: index * 0.04, ease: "easeOut" as const },
+  };
+}
+
+const rowHover = { scale: 1.01 };
+
+interface CountUpValueProps {
+  value: number;
+  decimals?: number;
+  prefix?: string;
+  suffix?: string;
+}
+
+function CountUpValue({ value, decimals = 0, prefix = "", suffix = "" }: CountUpValueProps) {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    const controls = animate(0, value, {
+      duration: 0.8,
+      ease: "easeOut",
+      onUpdate: (latest) => setDisplayValue(latest),
+    });
+
+    return () => controls.stop();
+  }, [value]);
+
+  return (
+    <>
+      {prefix}
+      {displayValue.toFixed(decimals)}
+      {suffix}
+    </>
+  );
 }
 
 const NAV_ITEMS = [
@@ -101,29 +141,38 @@ function AdminDashboard() {
   const [managerPassword, setManagerPassword] = useState("");
   const [managerMessage, setManagerMessage] = useState("");
   const [managerError, setManagerError] = useState("");
+  const [isAddingManager, setIsAddingManager] = useState(false);
   const [tariffPrice, setTariffPrice] = useState<number | null>(null);
   const [tariffInput, setTariffInput] = useState("");
   const [tariffMessage, setTariffMessage] = useState("");
   const [tariffError, setTariffError] = useState("");
+  const [isUpdatingTariff, setIsUpdatingTariff] = useState(false);
   const [userMessage, setUserMessage] = useState("");
   const [userError, setUserError] = useState("");
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editUserName, setEditUserName] = useState("");
   const [editUserEmail, setEditUserEmail] = useState("");
   const [editUserRole, setEditUserRole] = useState("subscriber");
+  const [isSavingUser, setIsSavingUser] = useState(false);
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+  const [togglingSubscriptionId, setTogglingSubscriptionId] = useState<string | null>(null);
+  const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
   const [resetPasswordInput, setResetPasswordInput] = useState("");
   const [resetPasswordMessage, setResetPasswordMessage] = useState("");
   const [resetPasswordError, setResetPasswordError] = useState("");
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editProfileName, setEditProfileName] = useState("");
   const [editProfileEmail, setEditProfileEmail] = useState("");
   const [profileMessage, setProfileMessage] = useState("");
   const [profileError, setProfileError] = useState("");
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [currentPasswordInput, setCurrentPasswordInput] = useState("");
   const [newPasswordInput, setNewPasswordInput] = useState("");
   const [passwordMessage, setPasswordMessage] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
 
   const selfUser = users.find((user) => user.id === currentUserId);
 
@@ -153,6 +202,7 @@ function AdminDashboard() {
     e.preventDefault();
     setManagerMessage("");
     setManagerError("");
+    setIsAddingManager(true);
 
     try {
       await api.post("/admin/add-manager", {
@@ -171,6 +221,8 @@ function AdminDashboard() {
       } else {
         setManagerError("Failed to create manager account");
       }
+    } finally {
+      setIsAddingManager(false);
     }
   };
 
@@ -178,6 +230,7 @@ function AdminDashboard() {
     e.preventDefault();
     setTariffMessage("");
     setTariffError("");
+    setIsUpdatingTariff(true);
 
     try {
       const response = await api.put("/admin/tariff", {
@@ -191,10 +244,13 @@ function AdminDashboard() {
       } else {
         setTariffError("Failed to update price");
       }
+    } finally {
+      setIsUpdatingTariff(false);
     }
   };
 
   const handleMarkPaid = async (billId: string) => {
+    setMarkingPaidId(billId);
     try {
       await api.patch(`/bills/${billId}/mark-paid`);
       setBills((prev) =>
@@ -202,6 +258,8 @@ function AdminDashboard() {
       );
     } catch {
       // mark-paid failed; leave the bill status as-is
+    } finally {
+      setMarkingPaidId(null);
     }
   };
 
@@ -212,6 +270,7 @@ function AdminDashboard() {
 
     setUserMessage("");
     setUserError("");
+    setDeletingUserId(user.id);
 
     try {
       await api.delete(`/admin/users/${user.id}`);
@@ -223,6 +282,8 @@ function AdminDashboard() {
       } else {
         setUserError("Failed to delete user");
       }
+    } finally {
+      setDeletingUserId(null);
     }
   };
 
@@ -251,6 +312,7 @@ function AdminDashboard() {
 
     setUserMessage("");
     setUserError("");
+    setIsSavingUser(true);
 
     try {
       const response = await api.patch(`/admin/users/${editingUserId}`, {
@@ -269,6 +331,8 @@ function AdminDashboard() {
       } else {
         setUserError("Failed to update user");
       }
+    } finally {
+      setIsSavingUser(false);
     }
   };
 
@@ -277,6 +341,7 @@ function AdminDashboard() {
 
     setResetPasswordMessage("");
     setResetPasswordError("");
+    setIsResettingPassword(true);
 
     try {
       await api.patch(`/admin/users/${editingUserId}/reset-password`, {
@@ -290,10 +355,13 @@ function AdminDashboard() {
       } else {
         setResetPasswordError("Failed to reset password");
       }
+    } finally {
+      setIsResettingPassword(false);
     }
   };
 
   const handleToggleSubscriptionStatus = async (subscriptionId: string) => {
+    setTogglingSubscriptionId(subscriptionId);
     try {
       const response = await api.patch(`/admin/subscriptions/${subscriptionId}/toggle-status`);
       setSubscriptions((prev) =>
@@ -305,6 +373,8 @@ function AdminDashboard() {
       );
     } catch {
       // toggle-status failed; leave the subscription status as-is
+    } finally {
+      setTogglingSubscriptionId(null);
     }
   };
 
@@ -325,6 +395,7 @@ function AdminDashboard() {
     e.preventDefault();
     setProfileMessage("");
     setProfileError("");
+    setIsSavingProfile(true);
 
     try {
       const response = await api.patch("/users/me", {
@@ -346,6 +417,8 @@ function AdminDashboard() {
       } else {
         setProfileError("Failed to update profile");
       }
+    } finally {
+      setIsSavingProfile(false);
     }
   };
 
@@ -366,6 +439,7 @@ function AdminDashboard() {
     e.preventDefault();
     setPasswordMessage("");
     setPasswordError("");
+    setIsSavingPassword(true);
 
     try {
       const response = await api.patch("/users/me/password", {
@@ -382,6 +456,8 @@ function AdminDashboard() {
       } else {
         setPasswordError("Failed to update password");
       }
+    } finally {
+      setIsSavingPassword(false);
     }
   };
 
@@ -468,7 +544,7 @@ function AdminDashboard() {
           >
             <p className="dash-label">Subscribers</p>
             <p className="stat-number-amber">
-              {users.filter((user) => user.role === "subscriber").length}
+              <CountUpValue value={users.filter((user) => user.role === "subscriber").length} />
             </p>
           </motion.div>
 
@@ -479,14 +555,14 @@ function AdminDashboard() {
           >
             <p className="dash-label">Managers</p>
             <p className="stat-number-cyan">
-              {users.filter((user) => user.role === "owner").length}
+              <CountUpValue value={users.filter((user) => user.role === "owner").length} />
             </p>
           </motion.div>
 
           <motion.div className="stat-card" {...cardEntrance(2)} whileHover={cardHover}>
             <p className="dash-label">Admins</p>
             <p className="dash-value-lg">
-              {users.filter((user) => user.role === "admin").length}
+              <CountUpValue value={users.filter((user) => user.role === "admin").length} />
             </p>
           </motion.div>
 
@@ -544,9 +620,9 @@ function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((user) => (
+                  {users.map((user, index) => (
                     <Fragment key={user.id}>
-                      <tr>
+                      <motion.tr {...rowEntrance(index)} whileHover={rowHover}>
                         <td>{user.name}</td>
                         <td>{user.email}</td>
                         <td>
@@ -560,6 +636,7 @@ function AdminDashboard() {
                             <motion.button
                               className="dash-button-outline"
                               onClick={() => handleStartEditUser(user)}
+                              whileHover={{ scale: 1.03 }}
                               whileTap={{ scale: 0.97 }}
                               style={{ marginTop: 0, width: "auto", padding: "0.5rem 0.75rem" }}
                             >
@@ -568,13 +645,21 @@ function AdminDashboard() {
                             <motion.button
                               className="admin-mobile-logout"
                               onClick={() => handleDeleteUser(user)}
+                              whileHover={{ scale: 1.03 }}
                               whileTap={{ scale: 0.97 }}
+                              disabled={deletingUserId === user.id}
                             >
-                              <Trash2 size={14} /> Delete
+                              {deletingUserId === user.id ? (
+                                <Loader2 size={14} className="btn-spinner" />
+                              ) : (
+                                <>
+                                  <Trash2 size={14} /> Delete
+                                </>
+                              )}
                             </motion.button>
                           </div>
                         </td>
-                      </tr>
+                      </motion.tr>
                       {editingUserId === user.id && (
                         <tr>
                           <td colSpan={4}>
@@ -611,15 +696,18 @@ function AdminDashboard() {
                               <motion.button
                                 className="auth-button owner-submit-button"
                                 type="submit"
+                                whileHover={{ scale: 1.03 }}
                                 whileTap={{ scale: 0.97 }}
+                                disabled={isSavingUser}
                                 style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
                               >
-                                Save
+                                {isSavingUser ? <Loader2 size={14} className="btn-spinner" /> : "Save"}
                               </motion.button>
                               <motion.button
                                 className="dash-button-outline"
                                 type="button"
                                 onClick={handleCancelEditUser}
+                                whileHover={{ scale: 1.03 }}
                                 whileTap={{ scale: 0.97 }}
                                 style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
                               >
@@ -649,10 +737,18 @@ function AdminDashboard() {
                                 className="dash-button-outline"
                                 type="button"
                                 onClick={handleResetPassword}
+                                whileHover={{ scale: 1.03 }}
                                 whileTap={{ scale: 0.97 }}
+                                disabled={isResettingPassword}
                                 style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
                               >
-                                <Lock size={14} /> Reset Password
+                                {isResettingPassword ? (
+                                  <Loader2 size={14} className="btn-spinner" />
+                                ) : (
+                                  <>
+                                    <Lock size={14} /> Reset Password
+                                  </>
+                                )}
                               </motion.button>
                               {resetPasswordMessage && (
                                 <span className="dash-success" style={{ fontSize: "0.85rem" }}>
@@ -701,8 +797,8 @@ function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {subscriptions.map((subscription) => (
-                    <tr key={subscription.id}>
+                  {subscriptions.map((subscription, index) => (
+                    <motion.tr key={subscription.id} {...rowEntrance(index)} whileHover={rowHover}>
                       <td>{subscription.subscriber_name || subscription.subscriber_id}</td>
                       <td>{subscription.ampere}A</td>
                       <td>
@@ -716,21 +812,33 @@ function AdminDashboard() {
                           <motion.button
                             className="admin-mobile-logout"
                             onClick={() => handleToggleSubscriptionStatus(subscription.id)}
+                            whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.97 }}
+                            disabled={togglingSubscriptionId === subscription.id}
                           >
-                            Deactivate
+                            {togglingSubscriptionId === subscription.id ? (
+                              <Loader2 size={14} className="btn-spinner" />
+                            ) : (
+                              "Deactivate"
+                            )}
                           </motion.button>
                         ) : (
                           <motion.button
                             className="auth-button owner-submit-button"
                             onClick={() => handleToggleSubscriptionStatus(subscription.id)}
+                            whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.97 }}
+                            disabled={togglingSubscriptionId === subscription.id}
                           >
-                            Activate
+                            {togglingSubscriptionId === subscription.id ? (
+                              <Loader2 size={14} className="btn-spinner" />
+                            ) : (
+                              "Activate"
+                            )}
                           </motion.button>
                         )}
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
                 </tbody>
               </table>
@@ -763,8 +871,8 @@ function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {bills.map((bill) => (
-                    <tr key={bill.id}>
+                  {bills.map((bill, index) => (
+                    <motion.tr key={bill.id} {...rowEntrance(index)} whileHover={rowHover}>
                       <td>{bill.subscriber_name || bill.subscriber_id}</td>
                       <td>{bill.consumption_kwh} kWh</td>
                       <td>{new Date(bill.due_date).toLocaleDateString()}</td>
@@ -780,13 +888,19 @@ function AdminDashboard() {
                           <motion.button
                             className="auth-button owner-submit-button"
                             onClick={() => handleMarkPaid(bill.id)}
+                            whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.97 }}
+                            disabled={markingPaidId === bill.id}
                           >
-                            Mark Paid
+                            {markingPaidId === bill.id ? (
+                              <Loader2 size={14} className="btn-spinner" />
+                            ) : (
+                              "Mark Paid"
+                            )}
                           </motion.button>
                         )}
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
                 </tbody>
               </table>
@@ -828,9 +942,11 @@ function AdminDashboard() {
             <motion.button
               className="auth-button"
               type="submit"
+              whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
+              disabled={isAddingManager}
             >
-              Add Manager
+              {isAddingManager ? <Loader2 size={16} className="btn-spinner" /> : "Add Manager"}
             </motion.button>
             {managerMessage && <p className="dash-success">{managerMessage}</p>}
             {managerError && <p className="dash-error">{managerError}</p>}
@@ -848,7 +964,11 @@ function AdminDashboard() {
           </h2>
           <p className="dash-label">CURRENT PRICE PER AMPERE</p>
           <p className="dash-value-lg">
-            {tariffPrice !== null ? `$${tariffPrice.toFixed(2)}` : "Loading..."}
+            {tariffPrice !== null ? (
+              <CountUpValue value={tariffPrice} decimals={2} prefix="$" />
+            ) : (
+              "Loading..."
+            )}
           </p>
           <form onSubmit={handleUpdateTariff} className="admin-manager-form">
             <input
@@ -862,9 +982,11 @@ function AdminDashboard() {
             <motion.button
               className="auth-button"
               type="submit"
+              whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
+              disabled={isUpdatingTariff}
             >
-              Update Price
+              {isUpdatingTariff ? <Loader2 size={16} className="btn-spinner" /> : "Update Price"}
             </motion.button>
             {tariffMessage && <p className="dash-success">{tariffMessage}</p>}
             {tariffError && <p className="dash-error">{tariffError}</p>}
@@ -890,6 +1012,7 @@ function AdminDashboard() {
               <motion.button
                 className="dash-button-outline"
                 onClick={handleStartEditProfile}
+                whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
                 <Pencil size={14} /> Edit Profile
@@ -915,15 +1038,18 @@ function AdminDashboard() {
                 <motion.button
                   className="dash-button"
                   type="submit"
+                  whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
+                  disabled={isSavingProfile}
                   style={{ flex: 1 }}
                 >
-                  Save
+                  {isSavingProfile ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
                 </motion.button>
                 <motion.button
                   className="dash-button-outline"
                   type="button"
                   onClick={handleCancelEditProfile}
+                  whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   style={{ flex: 1, marginTop: 0 }}
                 >
@@ -941,6 +1067,7 @@ function AdminDashboard() {
             <motion.button
               className="dash-button-outline"
               onClick={handleStartChangePassword}
+              whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
             >
               <Lock size={14} /> Change Password
@@ -965,15 +1092,18 @@ function AdminDashboard() {
                 <motion.button
                   className="dash-button"
                   type="submit"
+                  whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
+                  disabled={isSavingPassword}
                   style={{ flex: 1 }}
                 >
-                  Save
+                  {isSavingPassword ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
                 </motion.button>
                 <motion.button
                   className="dash-button-outline"
                   type="button"
                   onClick={handleCancelChangePassword}
+                  whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   style={{ flex: 1, marginTop: 0 }}
                 >

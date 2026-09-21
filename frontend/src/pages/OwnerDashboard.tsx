@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users, BarChart3, AlertCircle, Gauge, LogOut, Receipt, Search } from "lucide-react";
+import { Users, BarChart3, AlertCircle, Gauge, LogOut, Receipt, Search, Loader2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { isAxiosError } from "axios";
 import api from "../services/api";
@@ -59,6 +59,7 @@ const CARD_STAGGER = 0.08;
 const cardHover = {
   scale: 1.015,
   y: -4,
+  boxShadow: "0 14px 32px rgba(0, 0, 0, 0.45)",
   transition: { type: "spring" as const, stiffness: 300, damping: 20 },
 };
 
@@ -69,6 +70,16 @@ function cardEntrance(index: number) {
     transition: { duration: 0.4, delay: index * CARD_STAGGER, ease: "easeOut" as const },
   };
 }
+
+function rowEntrance(index: number) {
+  return {
+    initial: { opacity: 0, y: 8 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.3, delay: index * 0.04, ease: "easeOut" as const },
+  };
+}
+
+const rowHover = { scale: 1.01 };
 
 const NAV_ITEMS = [
   { id: "subscribers", label: "Subscribers", icon: Users },
@@ -98,6 +109,8 @@ function OwnerDashboard() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [bills, setBills] = useState<Bill[]>([]);
   const [subscriberSearch, setSubscriberSearch] = useState("");
+  const [submittingReadingId, setSubmittingReadingId] = useState<string | null>(null);
+  const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
 
   useEffect(() => {
     api.get("/subscribers").then((response) => setSubscribers(response.data));
@@ -128,6 +141,7 @@ function OwnerDashboard() {
   };
 
   const handleMarkPaid = async (billId: string) => {
+    setMarkingPaidId(billId);
     try {
       await api.patch(`/bills/${billId}/mark-paid`);
       setBills((prev) =>
@@ -135,12 +149,15 @@ function OwnerDashboard() {
       );
     } catch {
       // mark-paid failed; leave the bill status as-is
+    } finally {
+      setMarkingPaidId(null);
     }
   };
 
   const handleSubmitReading = async (subscriberId: string) => {
     setMessages((prev) => ({ ...prev, [subscriberId]: "" }));
     setErrors((prev) => ({ ...prev, [subscriberId]: "" }));
+    setSubmittingReadingId(subscriberId);
 
     try {
       await api.post("/meter-reading", {
@@ -163,6 +180,8 @@ function OwnerDashboard() {
           [subscriberId]: "Failed to submit reading",
         }));
       }
+    } finally {
+      setSubmittingReadingId(null);
     }
   };
 
@@ -284,8 +303,8 @@ function OwnerDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredSubscribers.map((subscriber) => (
-                    <tr key={subscriber.id}>
+                  {filteredSubscribers.map((subscriber, index) => (
+                    <motion.tr key={subscriber.id} {...rowEntrance(index)} whileHover={rowHover}>
                       <td>{subscriber.subscriber_name || subscriber.subscriber_id}</td>
                       <td>{subscriber.address}</td>
                       <td>{subscriber.phone}</td>
@@ -312,9 +331,15 @@ function OwnerDashboard() {
                         <motion.button
                           className="auth-button owner-submit-button"
                           onClick={() => handleSubmitReading(subscriber.subscriber_id)}
+                          whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
+                          disabled={submittingReadingId === subscriber.subscriber_id}
                         >
-                          Submit Reading
+                          {submittingReadingId === subscriber.subscriber_id ? (
+                            <Loader2 size={14} className="btn-spinner" />
+                          ) : (
+                            "Submit Reading"
+                          )}
                         </motion.button>
                         {messages[subscriber.subscriber_id] && (
                           <p className="dash-success">
@@ -327,7 +352,7 @@ function OwnerDashboard() {
                           </p>
                         )}
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
                 </tbody>
               </table>
@@ -390,8 +415,8 @@ function OwnerDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {issues.map((issue) => (
-                    <tr key={issue.id}>
+                  {issues.map((issue, index) => (
+                    <motion.tr key={issue.id} {...rowEntrance(index)} whileHover={rowHover}>
                       <td>{issue.subscriber_name || "Unknown"}</td>
                       <td>{issue.description}</td>
                       <td>{new Date(issue.created_at).toLocaleString()}</td>
@@ -413,7 +438,7 @@ function OwnerDashboard() {
                           <option value="resolved">Resolved</option>
                         </motion.select>
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
                 </tbody>
               </table>
@@ -446,8 +471,8 @@ function OwnerDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {bills.map((bill) => (
-                    <tr key={bill.id}>
+                  {bills.map((bill, index) => (
+                    <motion.tr key={bill.id} {...rowEntrance(index)} whileHover={rowHover}>
                       <td>{bill.subscriber_name || bill.subscriber_id}</td>
                       <td>{bill.consumption_kwh} kWh</td>
                       <td>{new Date(bill.due_date).toLocaleDateString()}</td>
@@ -463,13 +488,19 @@ function OwnerDashboard() {
                           <motion.button
                             className="auth-button owner-submit-button"
                             onClick={() => handleMarkPaid(bill.id)}
+                            whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.97 }}
+                            disabled={markingPaidId === bill.id}
                           >
-                            Mark Paid
+                            {markingPaidId === bill.id ? (
+                              <Loader2 size={14} className="btn-spinner" />
+                            ) : (
+                              "Mark Paid"
+                            )}
                           </motion.button>
                         )}
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
                 </tbody>
               </table>

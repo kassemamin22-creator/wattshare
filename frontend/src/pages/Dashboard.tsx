@@ -1,7 +1,7 @@
 import { useEffect, useState, FormEvent, CSSProperties } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, animate } from "framer-motion";
-import { Zap, BarChart3, Receipt, MessageCircle, LogOut, Sparkles, User, Pencil, Lock } from "lucide-react";
+import { Zap, BarChart3, Receipt, MessageCircle, LogOut, Sparkles, User, Pencil, Lock, Loader2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { isAxiosError } from "axios";
 import api from "../services/api";
@@ -58,6 +58,7 @@ const CARD_STAGGER = 0.08;
 const cardHover = {
   scale: 1.015,
   y: -4,
+  boxShadow: "0 14px 32px rgba(0, 0, 0, 0.45)",
   transition: { type: "spring" as const, stiffness: 300, damping: 20 },
 };
 
@@ -67,6 +68,45 @@ function cardEntrance(index: number) {
     animate: { opacity: 1, y: 0 },
     transition: { duration: 0.4, delay: index * CARD_STAGGER, ease: "easeOut" as const },
   };
+}
+
+function rowEntrance(index: number) {
+  return {
+    initial: { opacity: 0, y: 8 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.3, delay: index * 0.04, ease: "easeOut" as const },
+  };
+}
+
+const rowHover = { scale: 1.01 };
+
+interface CountUpValueProps {
+  value: number;
+  decimals?: number;
+  prefix?: string;
+  suffix?: string;
+}
+
+function CountUpValue({ value, decimals = 0, prefix = "", suffix = "" }: CountUpValueProps) {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    const controls = animate(0, value, {
+      duration: 0.8,
+      ease: "easeOut",
+      onUpdate: (latest) => setDisplayValue(latest),
+    });
+
+    return () => controls.stop();
+  }, [value]);
+
+  return (
+    <>
+      {prefix}
+      {displayValue.toFixed(decimals)}
+      {suffix}
+    </>
+  );
 }
 
 const NAV_ITEMS = [
@@ -105,6 +145,8 @@ function Dashboard() {
   const [editUnitNumber, setEditUnitNumber] = useState("");
   const [editMessage, setEditMessage] = useState("");
   const [editError, setEditError] = useState("");
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [isSubmittingIssue, setIsSubmittingIssue] = useState(false);
   const [profileName, setProfileName] = useState("");
   const [profileEmail, setProfileEmail] = useState("");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -112,11 +154,13 @@ function Dashboard() {
   const [editProfileEmail, setEditProfileEmail] = useState("");
   const [profileMessage, setProfileMessage] = useState("");
   const [profileError, setProfileError] = useState("");
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [currentPasswordInput, setCurrentPasswordInput] = useState("");
   const [newPasswordInput, setNewPasswordInput] = useState("");
   const [passwordMessage, setPasswordMessage] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
 
   useEffect(() => {
     api.get("/me").then((response) => setCurrentUser(response.data));
@@ -156,6 +200,7 @@ function Dashboard() {
     e.preventDefault();
     setIssueMessage("");
     setIssueError("");
+    setIsSubmittingIssue(true);
 
     try {
       await api.post("/issues", { description: issueDescription });
@@ -167,6 +212,8 @@ function Dashboard() {
       } else {
         setIssueError("Failed to report issue");
       }
+    } finally {
+      setIsSubmittingIssue(false);
     }
   };
 
@@ -189,6 +236,7 @@ function Dashboard() {
     e.preventDefault();
     setEditMessage("");
     setEditError("");
+    setIsSavingEdit(true);
 
     try {
       const response = await api.patch("/subscription/me", {
@@ -205,6 +253,8 @@ function Dashboard() {
       } else {
         setEditError("Failed to update subscription details");
       }
+    } finally {
+      setIsSavingEdit(false);
     }
   };
 
@@ -225,6 +275,7 @@ function Dashboard() {
     e.preventDefault();
     setProfileMessage("");
     setProfileError("");
+    setIsSavingProfile(true);
 
     try {
       const response = await api.patch("/users/me", {
@@ -241,6 +292,8 @@ function Dashboard() {
       } else {
         setProfileError("Failed to update profile");
       }
+    } finally {
+      setIsSavingProfile(false);
     }
   };
 
@@ -261,6 +314,7 @@ function Dashboard() {
     e.preventDefault();
     setPasswordMessage("");
     setPasswordError("");
+    setIsSavingPassword(true);
 
     try {
       const response = await api.patch("/users/me/password", {
@@ -277,6 +331,8 @@ function Dashboard() {
       } else {
         setPasswordError("Failed to update password");
       }
+    } finally {
+      setIsSavingPassword(false);
     }
   };
 
@@ -429,6 +485,7 @@ function Dashboard() {
                   <motion.button
                     className="dash-button-outline"
                     onClick={handleStartEditing}
+                    whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                   >
                     Edit Details
@@ -461,15 +518,18 @@ function Dashboard() {
                     <motion.button
                       className="dash-button"
                       type="submit"
+                      whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
+                      disabled={isSavingEdit}
                       style={{ flex: 1 }}
                     >
-                      Save
+                      {isSavingEdit ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
                     </motion.button>
                     <motion.button
                       className="dash-button-outline"
                       type="button"
                       onClick={handleCancelEditing}
+                      whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
                       style={{ flex: 1, marginTop: 0 }}
                     >
@@ -503,7 +563,9 @@ function Dashboard() {
             <p className="dash-label">
               <BarChart3 size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> TOTAL CONSUMPTION
             </p>
-            <p className="stat-number-cyan">{totalConsumption} kWh</p>
+            <p className="stat-number-cyan">
+              <CountUpValue value={totalConsumption} suffix=" kWh" />
+            </p>
           </motion.div>
           <motion.div
             className="stat-card stat-card-amber"
@@ -512,7 +574,9 @@ function Dashboard() {
             whileHover={cardHover}
           >
             <p className="dash-label">CURRENT BALANCE</p>
-            <p className="stat-number-amber">{currentBalance.toFixed(2)} USD</p>
+            <p className="stat-number-amber">
+              <CountUpValue value={currentBalance} decimals={2} suffix=" USD" />
+            </p>
           </motion.div>
         </div>
 
@@ -598,8 +662,8 @@ function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {bills.map((bill) => (
-                    <tr key={bill.id}>
+                  {bills.map((bill, index) => (
+                    <motion.tr key={bill.id} {...rowEntrance(index)} whileHover={rowHover}>
                       <td>{bill.consumption_kwh} kWh</td>
                       <td>{new Date(bill.created_at).toLocaleDateString()}</td>
                       <td>{new Date(bill.due_date).toLocaleDateString()}</td>
@@ -610,7 +674,7 @@ function Dashboard() {
                           {bill.status.toUpperCase()}
                         </span>
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
                 </tbody>
               </table>
@@ -636,8 +700,14 @@ function Dashboard() {
               onChange={(e) => setIssueDescription(e.target.value)}
               rows={3}
             />
-            <motion.button className="dash-button" type="submit" whileTap={{ scale: 0.97 }}>
-              Submit Report
+            <motion.button
+              className="dash-button"
+              type="submit"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              disabled={isSubmittingIssue}
+            >
+              {isSubmittingIssue ? <Loader2 size={16} className="btn-spinner" /> : "Submit Report"}
             </motion.button>
             {issueMessage && <p className="dash-success">{issueMessage}</p>}
             {issueError && <p className="dash-error">{issueError}</p>}
@@ -663,6 +733,7 @@ function Dashboard() {
               <motion.button
                 className="dash-button-outline"
                 onClick={handleStartEditProfile}
+                whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
                 <Pencil size={14} /> Edit Profile
@@ -688,15 +759,18 @@ function Dashboard() {
                 <motion.button
                   className="dash-button"
                   type="submit"
+                  whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
+                  disabled={isSavingProfile}
                   style={{ flex: 1 }}
                 >
-                  Save
+                  {isSavingProfile ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
                 </motion.button>
                 <motion.button
                   className="dash-button-outline"
                   type="button"
                   onClick={handleCancelEditProfile}
+                  whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   style={{ flex: 1, marginTop: 0 }}
                 >
@@ -714,6 +788,7 @@ function Dashboard() {
             <motion.button
               className="dash-button-outline"
               onClick={handleStartChangePassword}
+              whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
             >
               <Lock size={14} /> Change Password
@@ -738,15 +813,18 @@ function Dashboard() {
                 <motion.button
                   className="dash-button"
                   type="submit"
+                  whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
+                  disabled={isSavingPassword}
                   style={{ flex: 1 }}
                 >
-                  Save
+                  {isSavingPassword ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
                 </motion.button>
                 <motion.button
                   className="dash-button-outline"
                   type="button"
                   onClick={handleCancelChangePassword}
+                  whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   style={{ flex: 1, marginTop: 0 }}
                 >
