@@ -96,7 +96,7 @@ function OwnerDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/");
+    navigate("/login");
   };
 
   const handleReadingChange = (subscriberId: string, value: string) => {

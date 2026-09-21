@@ -17,17 +17,17 @@ function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const token = localStorage.getItem("token");
 
   if (!token) {
-    return <Navigate to="/" />;
+    return <Navigate to="/login" />;
   }
 
   if (allowedRoles) {
     try {
       const decoded = jwtDecode<DecodedToken>(token);
       if (!allowedRoles.includes(decoded.role)) {
-        return <Navigate to="/" />;
+        return <Navigate to="/login" />;
       }
     } catch {
-      return <Navigate to="/" />;
+      return <Navigate to="/login" />;
     }
   }
 

@@ -45,7 +45,7 @@ function Register() {
 
     try {
       await api.post("/register", { name, email, password, role: "subscriber" });
-      navigate("/");
+      navigate("/login");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
         setError(err.response.data.detail);
@@ -131,7 +131,7 @@ function Register() {
               {error && <div className="auth-error">{error}</div>}
             </form>
           </div>
-          <Link className="auth-link" to="/">
+          <Link className="auth-link" to="/login">
             Already have an account? Log In
           </Link>
         </motion.div>

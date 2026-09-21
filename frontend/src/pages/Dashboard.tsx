@@ -138,7 +138,7 @@ function Dashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/");
+    navigate("/login");
   };
 
   const handleReportIssue = async (e: FormEvent<HTMLFormElement>) => {
