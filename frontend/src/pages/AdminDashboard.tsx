@@ -1,10 +1,12 @@
 import { useEffect, useState, FormEvent, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, animate } from "framer-motion";
+import { motion, animate, AnimatePresence } from "framer-motion";
 import { Users, Zap, Receipt, ShieldCheck, BarChart3, LogOut, UserPlus, DollarSign, Trash2, User, Pencil, Lock, Loader2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { isAxiosError } from "axios";
 import api from "../services/api";
+import { useToast } from "../hooks/useToast";
+import ConfirmModal from "../components/ConfirmModal";
 
 interface User {
   id: string;
@@ -131,6 +133,7 @@ const navItemVariants = {
 
 function AdminDashboard() {
   const navigate = useNavigate();
+  const showToast = useToast();
   const [currentUserId, setCurrentUserId] = useState("");
   const [activeNavIndex, setActiveNavIndex] = useState(0);
   const [users, setUsers] = useState<User[]>([]);
@@ -139,39 +142,28 @@ function AdminDashboard() {
   const [managerName, setManagerName] = useState("");
   const [managerEmail, setManagerEmail] = useState("");
   const [managerPassword, setManagerPassword] = useState("");
-  const [managerMessage, setManagerMessage] = useState("");
-  const [managerError, setManagerError] = useState("");
   const [isAddingManager, setIsAddingManager] = useState(false);
   const [tariffPrice, setTariffPrice] = useState<number | null>(null);
   const [tariffInput, setTariffInput] = useState("");
-  const [tariffMessage, setTariffMessage] = useState("");
-  const [tariffError, setTariffError] = useState("");
   const [isUpdatingTariff, setIsUpdatingTariff] = useState(false);
-  const [userMessage, setUserMessage] = useState("");
-  const [userError, setUserError] = useState("");
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editUserName, setEditUserName] = useState("");
   const [editUserEmail, setEditUserEmail] = useState("");
   const [editUserRole, setEditUserRole] = useState("subscriber");
   const [isSavingUser, setIsSavingUser] = useState(false);
+  const [userPendingDelete, setUserPendingDelete] = useState<User | null>(null);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [togglingSubscriptionId, setTogglingSubscriptionId] = useState<string | null>(null);
   const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
   const [resetPasswordInput, setResetPasswordInput] = useState("");
-  const [resetPasswordMessage, setResetPasswordMessage] = useState("");
-  const [resetPasswordError, setResetPasswordError] = useState("");
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editProfileName, setEditProfileName] = useState("");
   const [editProfileEmail, setEditProfileEmail] = useState("");
-  const [profileMessage, setProfileMessage] = useState("");
-  const [profileError, setProfileError] = useState("");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [currentPasswordInput, setCurrentPasswordInput] = useState("");
   const [newPasswordInput, setNewPasswordInput] = useState("");
-  const [passwordMessage, setPasswordMessage] = useState("");
-  const [passwordError, setPasswordError] = useState("");
   const [isSavingPassword, setIsSavingPassword] = useState(false);
 
   const selfUser = users.find((user) => user.id === currentUserId);
@@ -200,8 +192,6 @@ function AdminDashboard() {
 
   const handleAddManager = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setManagerMessage("");
-    setManagerError("");
     setIsAddingManager(true);
 
     try {
@@ -210,16 +200,16 @@ function AdminDashboard() {
         email: managerEmail,
         password: managerPassword,
       });
-      setManagerMessage("Manager account created successfully");
+      showToast("Manager account created successfully", "success");
       setManagerName("");
       setManagerEmail("");
       setManagerPassword("");
       fetchUsers();
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
-        setManagerError(err.response.data.detail);
+        showToast(err.response.data.detail, "error");
       } else {
-        setManagerError("Failed to create manager account");
+        showToast("Failed to create manager account", "error");
       }
     } finally {
       setIsAddingManager(false);
@@ -228,8 +218,6 @@ function AdminDashboard() {
 
   const handleUpdateTariff = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setTariffMessage("");
-    setTariffError("");
     setIsUpdatingTariff(true);
 
     try {
@@ -237,12 +225,12 @@ function AdminDashboard() {
         price_per_ampere: Number(tariffInput),
       });
       setTariffPrice(response.data.price_per_ampere);
-      setTariffMessage("Price updated successfully");
+      showToast("Price updated successfully", "success");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
-        setTariffError(err.response.data.detail);
+        showToast(err.response.data.detail, "error");
       } else {
-        setTariffError("Failed to update price");
+        showToast("Failed to update price", "error");
       }
     } finally {
       setIsUpdatingTariff(false);
@@ -263,27 +251,33 @@ function AdminDashboard() {
     }
   };
 
-  const handleDeleteUser = async (user: User) => {
-    if (!window.confirm(`Are you sure you want to delete ${user.name}? This cannot be undone.`)) {
-      return;
-    }
+  const handleRequestDeleteUser = (user: User) => {
+    setUserPendingDelete(user);
+  };
 
-    setUserMessage("");
-    setUserError("");
+  const handleCancelDeleteUser = () => {
+    setUserPendingDelete(null);
+  };
+
+  const handleConfirmDeleteUser = async () => {
+    if (!userPendingDelete) return;
+    const user = userPendingDelete;
+
     setDeletingUserId(user.id);
 
     try {
       await api.delete(`/admin/users/${user.id}`);
       setUsers((prev) => prev.filter((u) => u.id !== user.id));
-      setUserMessage(`${user.name} deleted successfully`);
+      showToast(`${user.name} deleted successfully`, "success");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
-        setUserError(err.response.data.detail);
+        showToast(err.response.data.detail, "error");
       } else {
-        setUserError("Failed to delete user");
+        showToast("Failed to delete user", "error");
       }
     } finally {
       setDeletingUserId(null);
+      setUserPendingDelete(null);
     }
   };
 
@@ -292,26 +286,18 @@ function AdminDashboard() {
     setEditUserName(user.name);
     setEditUserEmail(user.email);
     setEditUserRole(user.role);
-    setUserMessage("");
-    setUserError("");
     setResetPasswordInput("");
-    setResetPasswordMessage("");
-    setResetPasswordError("");
   };
 
   const handleCancelEditUser = () => {
     setEditingUserId(null);
     setResetPasswordInput("");
-    setResetPasswordMessage("");
-    setResetPasswordError("");
   };
 
   const handleSaveEditUser = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editingUserId) return;
 
-    setUserMessage("");
-    setUserError("");
     setIsSavingUser(true);
 
     try {
@@ -324,12 +310,12 @@ function AdminDashboard() {
         prev.map((user) => (user.id === editingUserId ? response.data : user))
       );
       setEditingUserId(null);
-      setUserMessage("User updated successfully");
+      showToast("User updated successfully", "success");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
-        setUserError(err.response.data.detail);
+        showToast(err.response.data.detail, "error");
       } else {
-        setUserError("Failed to update user");
+        showToast("Failed to update user", "error");
       }
     } finally {
       setIsSavingUser(false);
@@ -339,21 +325,19 @@ function AdminDashboard() {
   const handleResetPassword = async () => {
     if (!editingUserId) return;
 
-    setResetPasswordMessage("");
-    setResetPasswordError("");
     setIsResettingPassword(true);
 
     try {
       await api.patch(`/admin/users/${editingUserId}/reset-password`, {
         new_password: resetPasswordInput,
       });
-      setResetPasswordMessage("Password reset successfully");
+      showToast("Password reset successfully", "success");
       setResetPasswordInput("");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
-        setResetPasswordError(err.response.data.detail);
+        showToast(err.response.data.detail, "error");
       } else {
-        setResetPasswordError("Failed to reset password");
+        showToast("Failed to reset password", "error");
       }
     } finally {
       setIsResettingPassword(false);
@@ -381,20 +365,15 @@ function AdminDashboard() {
   const handleStartEditProfile = () => {
     setEditProfileName(selfUser?.name || "");
     setEditProfileEmail(selfUser?.email || "");
-    setProfileMessage("");
-    setProfileError("");
     setIsEditingProfile(true);
   };
 
   const handleCancelEditProfile = () => {
     setIsEditingProfile(false);
-    setProfileError("");
   };
 
   const handleSaveProfile = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setProfileMessage("");
-    setProfileError("");
     setIsSavingProfile(true);
 
     try {
@@ -410,12 +389,12 @@ function AdminDashboard() {
         )
       );
       setIsEditingProfile(false);
-      setProfileMessage("Profile updated successfully");
+      showToast("Profile updated successfully", "success");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
-        setProfileError(err.response.data.detail);
+        showToast(err.response.data.detail, "error");
       } else {
-        setProfileError("Failed to update profile");
+        showToast("Failed to update profile", "error");
       }
     } finally {
       setIsSavingProfile(false);
@@ -425,20 +404,15 @@ function AdminDashboard() {
   const handleStartChangePassword = () => {
     setCurrentPasswordInput("");
     setNewPasswordInput("");
-    setPasswordMessage("");
-    setPasswordError("");
     setIsChangingPassword(true);
   };
 
   const handleCancelChangePassword = () => {
     setIsChangingPassword(false);
-    setPasswordError("");
   };
 
   const handleSavePassword = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setPasswordMessage("");
-    setPasswordError("");
     setIsSavingPassword(true);
 
     try {
@@ -449,12 +423,12 @@ function AdminDashboard() {
       setCurrentPasswordInput("");
       setNewPasswordInput("");
       setIsChangingPassword(false);
-      setPasswordMessage(response.data.message || "Password updated successfully");
+      showToast(response.data.message || "Password updated successfully", "success");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
-        setPasswordError(err.response.data.detail);
+        showToast(err.response.data.detail, "error");
       } else {
-        setPasswordError("Failed to update password");
+        showToast("Failed to update password", "error");
       }
     } finally {
       setIsSavingPassword(false);
@@ -644,7 +618,7 @@ function AdminDashboard() {
                             </motion.button>
                             <motion.button
                               className="admin-mobile-logout"
-                              onClick={() => handleDeleteUser(user)}
+                              onClick={() => handleRequestDeleteUser(user)}
                               whileHover={{ scale: 1.03 }}
                               whileTap={{ scale: 0.97 }}
                               disabled={deletingUserId === user.id}
@@ -660,118 +634,122 @@ function AdminDashboard() {
                           </div>
                         </td>
                       </motion.tr>
-                      {editingUserId === user.id && (
-                        <tr>
-                          <td colSpan={4}>
-                            <form
-                              onSubmit={handleSaveEditUser}
-                              style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}
-                            >
-                              <input
-                                className="auth-input"
-                                type="text"
-                                placeholder="Name"
-                                value={editUserName}
-                                onChange={(e) => setEditUserName(e.target.value)}
-                                style={{ flex: "1 1 160px", marginBottom: 0 }}
-                              />
-                              <input
-                                className="auth-input"
-                                type="email"
-                                placeholder="Email"
-                                value={editUserEmail}
-                                onChange={(e) => setEditUserEmail(e.target.value)}
-                                style={{ flex: "1 1 200px", marginBottom: 0 }}
-                              />
-                              <select
-                                className="owner-select"
-                                value={editUserRole}
-                                onChange={(e) => setEditUserRole(e.target.value)}
-                                style={{ flex: "1 1 140px" }}
+                      <AnimatePresence initial={false}>
+                        {editingUserId === user.id && (
+                          <motion.tr
+                            key="edit-row"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <td colSpan={4}>
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.25, ease: "easeInOut" }}
+                                style={{ overflow: "hidden" }}
                               >
-                                <option value="subscriber">Subscriber</option>
-                                <option value="owner">Manager</option>
-                                <option value="admin">Admin</option>
-                              </select>
-                              <motion.button
-                                className="auth-button owner-submit-button"
-                                type="submit"
-                                whileHover={{ scale: 1.03 }}
-                                whileTap={{ scale: 0.97 }}
-                                disabled={isSavingUser}
-                                style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
-                              >
-                                {isSavingUser ? <Loader2 size={14} className="btn-spinner" /> : "Save"}
-                              </motion.button>
-                              <motion.button
-                                className="dash-button-outline"
-                                type="button"
-                                onClick={handleCancelEditUser}
-                                whileHover={{ scale: 1.03 }}
-                                whileTap={{ scale: 0.97 }}
-                                style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
-                              >
-                                Cancel
-                              </motion.button>
-                            </form>
-                            <div
-                              style={{
-                                display: "flex",
-                                gap: "0.75rem",
-                                flexWrap: "wrap",
-                                alignItems: "center",
-                                marginTop: "0.75rem",
-                                paddingTop: "0.75rem",
-                                borderTop: "1px solid var(--color-border)",
-                              }}
-                            >
-                              <input
-                                className="auth-input"
-                                type="password"
-                                placeholder="New Password"
-                                value={resetPasswordInput}
-                                onChange={(e) => setResetPasswordInput(e.target.value)}
-                                style={{ flex: "1 1 200px", marginBottom: 0 }}
-                              />
-                              <motion.button
-                                className="dash-button-outline"
-                                type="button"
-                                onClick={handleResetPassword}
-                                whileHover={{ scale: 1.03 }}
-                                whileTap={{ scale: 0.97 }}
-                                disabled={isResettingPassword}
-                                style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
-                              >
-                                {isResettingPassword ? (
-                                  <Loader2 size={14} className="btn-spinner" />
-                                ) : (
-                                  <>
-                                    <Lock size={14} /> Reset Password
-                                  </>
-                                )}
-                              </motion.button>
-                              {resetPasswordMessage && (
-                                <span className="dash-success" style={{ fontSize: "0.85rem" }}>
-                                  {resetPasswordMessage}
-                                </span>
-                              )}
-                              {resetPasswordError && (
-                                <span className="dash-error" style={{ fontSize: "0.85rem" }}>
-                                  {resetPasswordError}
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
+                                <form
+                                  onSubmit={handleSaveEditUser}
+                                  style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}
+                                >
+                                  <input
+                                    className="auth-input"
+                                    type="text"
+                                    placeholder="Name"
+                                    value={editUserName}
+                                    onChange={(e) => setEditUserName(e.target.value)}
+                                    style={{ flex: "1 1 160px", marginBottom: 0 }}
+                                  />
+                                  <input
+                                    className="auth-input"
+                                    type="email"
+                                    placeholder="Email"
+                                    value={editUserEmail}
+                                    onChange={(e) => setEditUserEmail(e.target.value)}
+                                    style={{ flex: "1 1 200px", marginBottom: 0 }}
+                                  />
+                                  <select
+                                    className="owner-select"
+                                    value={editUserRole}
+                                    onChange={(e) => setEditUserRole(e.target.value)}
+                                    style={{ flex: "1 1 140px" }}
+                                  >
+                                    <option value="subscriber">Subscriber</option>
+                                    <option value="owner">Manager</option>
+                                    <option value="admin">Admin</option>
+                                  </select>
+                                  <motion.button
+                                    className="auth-button owner-submit-button"
+                                    type="submit"
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    disabled={isSavingUser}
+                                    style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
+                                  >
+                                    {isSavingUser ? <Loader2 size={14} className="btn-spinner" /> : "Save"}
+                                  </motion.button>
+                                  <motion.button
+                                    className="dash-button-outline"
+                                    type="button"
+                                    onClick={handleCancelEditUser}
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
+                                  >
+                                    Cancel
+                                  </motion.button>
+                                </form>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    gap: "0.75rem",
+                                    flexWrap: "wrap",
+                                    alignItems: "center",
+                                    marginTop: "0.75rem",
+                                    paddingTop: "0.75rem",
+                                    borderTop: "1px solid var(--color-border)",
+                                  }}
+                                >
+                                  <input
+                                    className="auth-input"
+                                    type="password"
+                                    placeholder="New Password"
+                                    value={resetPasswordInput}
+                                    onChange={(e) => setResetPasswordInput(e.target.value)}
+                                    style={{ flex: "1 1 200px", marginBottom: 0 }}
+                                  />
+                                  <motion.button
+                                    className="dash-button-outline"
+                                    type="button"
+                                    onClick={handleResetPassword}
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    disabled={isResettingPassword}
+                                    style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
+                                  >
+                                    {isResettingPassword ? (
+                                      <Loader2 size={14} className="btn-spinner" />
+                                    ) : (
+                                      <>
+                                        <Lock size={14} /> Reset Password
+                                      </>
+                                    )}
+                                  </motion.button>
+                                </div>
+                              </motion.div>
+                            </td>
+                          </motion.tr>
+                        )}
+                      </AnimatePresence>
                     </Fragment>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
-          {userMessage && <p className="dash-success">{userMessage}</p>}
-          {userError && <p className="dash-error">{userError}</p>}
         </motion.section>
 
         <motion.section
@@ -948,8 +926,6 @@ function AdminDashboard() {
             >
               {isAddingManager ? <Loader2 size={16} className="btn-spinner" /> : "Add Manager"}
             </motion.button>
-            {managerMessage && <p className="dash-success">{managerMessage}</p>}
-            {managerError && <p className="dash-error">{managerError}</p>}
           </form>
         </motion.section>
 
@@ -988,8 +964,6 @@ function AdminDashboard() {
             >
               {isUpdatingTariff ? <Loader2 size={16} className="btn-spinner" /> : "Update Price"}
             </motion.button>
-            {tariffMessage && <p className="dash-success">{tariffMessage}</p>}
-            {tariffError && <p className="dash-error">{tariffError}</p>}
           </form>
         </motion.section>
 
@@ -1005,7 +979,7 @@ function AdminDashboard() {
 
           <hr className="dash-divider" />
           <p className="dash-label">PROFILE</p>
-          {!isEditingProfile ? (
+          {!isEditingProfile && (
             <>
               <p className="dash-value-lg">{selfUser?.name || "—"}</p>
               <p className="bill-date">{selfUser?.email || "—"}</p>
@@ -1018,52 +992,62 @@ function AdminDashboard() {
                 <Pencil size={14} /> Edit Profile
               </motion.button>
             </>
-          ) : (
-            <form onSubmit={handleSaveProfile}>
-              <input
-                className="auth-input"
-                type="text"
-                placeholder="Name"
-                value={editProfileName}
-                onChange={(e) => setEditProfileName(e.target.value)}
-              />
-              <input
-                className="auth-input"
-                type="email"
-                placeholder="Email"
-                value={editProfileEmail}
-                onChange={(e) => setEditProfileEmail(e.target.value)}
-              />
-              <div style={{ display: "flex", gap: "0.75rem" }}>
-                <motion.button
-                  className="dash-button"
-                  type="submit"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  disabled={isSavingProfile}
-                  style={{ flex: 1 }}
-                >
-                  {isSavingProfile ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
-                </motion.button>
-                <motion.button
-                  className="dash-button-outline"
-                  type="button"
-                  onClick={handleCancelEditProfile}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{ flex: 1, marginTop: 0 }}
-                >
-                  Cancel
-                </motion.button>
-              </div>
-            </form>
           )}
-          {profileMessage && <p className="dash-success">{profileMessage}</p>}
-          {profileError && <p className="dash-error">{profileError}</p>}
+          <AnimatePresence initial={false}>
+            {isEditingProfile && (
+              <motion.div
+                key="edit-profile-form"
+                initial={{ height: 0, opacity: 0, y: -8 }}
+                animate={{ height: "auto", opacity: 1, y: 0 }}
+                exit={{ height: 0, opacity: 0, y: -8 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                style={{ overflow: "hidden" }}
+              >
+                <form onSubmit={handleSaveProfile}>
+                  <input
+                    className="auth-input"
+                    type="text"
+                    placeholder="Name"
+                    value={editProfileName}
+                    onChange={(e) => setEditProfileName(e.target.value)}
+                  />
+                  <input
+                    className="auth-input"
+                    type="email"
+                    placeholder="Email"
+                    value={editProfileEmail}
+                    onChange={(e) => setEditProfileEmail(e.target.value)}
+                  />
+                  <div style={{ display: "flex", gap: "0.75rem" }}>
+                    <motion.button
+                      className="dash-button"
+                      type="submit"
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      disabled={isSavingProfile}
+                      style={{ flex: 1 }}
+                    >
+                      {isSavingProfile ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
+                    </motion.button>
+                    <motion.button
+                      className="dash-button-outline"
+                      type="button"
+                      onClick={handleCancelEditProfile}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      style={{ flex: 1, marginTop: 0 }}
+                    >
+                      Cancel
+                    </motion.button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <hr className="dash-divider" />
           <p className="dash-label">PASSWORD</p>
-          {!isChangingPassword ? (
+          {!isChangingPassword && (
             <motion.button
               className="dash-button-outline"
               onClick={handleStartChangePassword}
@@ -1072,50 +1056,75 @@ function AdminDashboard() {
             >
               <Lock size={14} /> Change Password
             </motion.button>
-          ) : (
-            <form onSubmit={handleSavePassword}>
-              <input
-                className="auth-input"
-                type="password"
-                placeholder="Current password"
-                value={currentPasswordInput}
-                onChange={(e) => setCurrentPasswordInput(e.target.value)}
-              />
-              <input
-                className="auth-input"
-                type="password"
-                placeholder="New password"
-                value={newPasswordInput}
-                onChange={(e) => setNewPasswordInput(e.target.value)}
-              />
-              <div style={{ display: "flex", gap: "0.75rem" }}>
-                <motion.button
-                  className="dash-button"
-                  type="submit"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  disabled={isSavingPassword}
-                  style={{ flex: 1 }}
-                >
-                  {isSavingPassword ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
-                </motion.button>
-                <motion.button
-                  className="dash-button-outline"
-                  type="button"
-                  onClick={handleCancelChangePassword}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{ flex: 1, marginTop: 0 }}
-                >
-                  Cancel
-                </motion.button>
-              </div>
-            </form>
           )}
-          {passwordMessage && <p className="dash-success">{passwordMessage}</p>}
-          {passwordError && <p className="dash-error">{passwordError}</p>}
+          <AnimatePresence initial={false}>
+            {isChangingPassword && (
+              <motion.div
+                key="change-password-form"
+                initial={{ height: 0, opacity: 0, y: -8 }}
+                animate={{ height: "auto", opacity: 1, y: 0 }}
+                exit={{ height: 0, opacity: 0, y: -8 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                style={{ overflow: "hidden" }}
+              >
+                <form onSubmit={handleSavePassword}>
+                  <input
+                    className="auth-input"
+                    type="password"
+                    placeholder="Current password"
+                    value={currentPasswordInput}
+                    onChange={(e) => setCurrentPasswordInput(e.target.value)}
+                  />
+                  <input
+                    className="auth-input"
+                    type="password"
+                    placeholder="New password"
+                    value={newPasswordInput}
+                    onChange={(e) => setNewPasswordInput(e.target.value)}
+                  />
+                  <div style={{ display: "flex", gap: "0.75rem" }}>
+                    <motion.button
+                      className="dash-button"
+                      type="submit"
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      disabled={isSavingPassword}
+                      style={{ flex: 1 }}
+                    >
+                      {isSavingPassword ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
+                    </motion.button>
+                    <motion.button
+                      className="dash-button-outline"
+                      type="button"
+                      onClick={handleCancelChangePassword}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      style={{ flex: 1, marginTop: 0 }}
+                    >
+                      Cancel
+                    </motion.button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.section>
       </main>
+
+      <ConfirmModal
+        open={userPendingDelete !== null}
+        title="Delete user"
+        message={
+          userPendingDelete
+            ? `Are you sure you want to delete ${userPendingDelete.name}? This cannot be undone.`
+            : ""
+        }
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        danger
+        onConfirm={handleConfirmDeleteUser}
+        onCancel={handleCancelDeleteUser}
+      />
     </div>
   );
 }

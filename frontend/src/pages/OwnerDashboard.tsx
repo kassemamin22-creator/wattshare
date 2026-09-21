@@ -5,6 +5,7 @@ import { Users, BarChart3, AlertCircle, Gauge, LogOut, Receipt, Search, Loader2 
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { isAxiosError } from "axios";
 import api from "../services/api";
+import { useToast } from "../hooks/useToast";
 
 interface Subscriber {
   id: string;
@@ -101,11 +102,10 @@ const navItemVariants = {
 
 function OwnerDashboard() {
   const navigate = useNavigate();
+  const showToast = useToast();
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [activeNavIndex, setActiveNavIndex] = useState(0);
   const [readingValues, setReadingValues] = useState<Record<string, string>>({});
-  const [messages, setMessages] = useState<Record<string, string>>({});
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [issues, setIssues] = useState<Issue[]>([]);
   const [bills, setBills] = useState<Bill[]>([]);
   const [subscriberSearch, setSubscriberSearch] = useState("");
@@ -155,8 +155,6 @@ function OwnerDashboard() {
   };
 
   const handleSubmitReading = async (subscriberId: string) => {
-    setMessages((prev) => ({ ...prev, [subscriberId]: "" }));
-    setErrors((prev) => ({ ...prev, [subscriberId]: "" }));
     setSubmittingReadingId(subscriberId);
 
     try {
@@ -164,21 +162,12 @@ function OwnerDashboard() {
         subscriber_id: subscriberId,
         reading_value: Number(readingValues[subscriberId]),
       });
-      setMessages((prev) => ({
-        ...prev,
-        [subscriberId]: "Reading submitted, bill generated",
-      }));
+      showToast("Reading submitted, bill generated", "success");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
-        setErrors((prev) => ({
-          ...prev,
-          [subscriberId]: err.response!.data.detail,
-        }));
+        showToast(err.response!.data.detail, "error");
       } else {
-        setErrors((prev) => ({
-          ...prev,
-          [subscriberId]: "Failed to submit reading",
-        }));
+        showToast("Failed to submit reading", "error");
       }
     } finally {
       setSubmittingReadingId(null);
@@ -341,16 +330,6 @@ function OwnerDashboard() {
                             "Submit Reading"
                           )}
                         </motion.button>
-                        {messages[subscriber.subscriber_id] && (
-                          <p className="dash-success">
-                            {messages[subscriber.subscriber_id]}
-                          </p>
-                        )}
-                        {errors[subscriber.subscriber_id] && (
-                          <p className="dash-error">
-                            {errors[subscriber.subscriber_id]}
-                          </p>
-                        )}
                       </td>
                     </motion.tr>
                   ))}

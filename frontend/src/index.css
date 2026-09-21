@@ -1821,3 +1821,124 @@ body {
     animation-duration: 18s;
   }
 }
+
+.toast-stack {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-width: 360px;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  background: rgba(17, 31, 54, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  font-size: 0.88rem;
+  color: var(--color-text);
+  box-sizing: border-box;
+}
+
+.toast-success {
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.toast-success .toast-icon {
+  color: var(--color-success);
+}
+
+.toast-error {
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.toast-error .toast-icon {
+  color: var(--color-danger);
+}
+
+.toast-icon {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.toast-message {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.toast-close {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.toast-close:hover {
+  color: var(--color-text);
+}
+
+.confirm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  background: rgba(10, 22, 40, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.confirm-modal {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 1.75rem;
+  max-width: 380px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+}
+
+.confirm-modal-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.confirm-modal-message {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 1.5rem;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .toast-stack {
+    left: 1rem;
+    right: 1rem;
+    max-width: none;
+  }
+}

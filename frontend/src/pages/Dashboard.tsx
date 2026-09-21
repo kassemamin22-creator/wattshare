@@ -1,10 +1,11 @@
 import { useEffect, useState, FormEvent, CSSProperties } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion, animate } from "framer-motion";
+import { motion, animate, AnimatePresence } from "framer-motion";
 import { Zap, BarChart3, Receipt, MessageCircle, LogOut, Sparkles, User, Pencil, Lock, Loader2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { isAxiosError } from "axios";
 import api from "../services/api";
+import { useToast } from "../hooks/useToast";
 
 interface CurrentUser {
   id: string;
@@ -129,6 +130,7 @@ const navItemVariants = {
 
 function Dashboard() {
   const navigate = useNavigate();
+  const showToast = useToast();
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [activeNavIndex, setActiveNavIndex] = useState(0);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -136,15 +138,11 @@ function Dashboard() {
   const [bills, setBills] = useState<Bill[]>([]);
   const [prediction, setPrediction] = useState<Prediction | null>(null);
   const [issueDescription, setIssueDescription] = useState("");
-  const [issueMessage, setIssueMessage] = useState("");
-  const [issueError, setIssueError] = useState("");
   const [displayedForecast, setDisplayedForecast] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [editAddress, setEditAddress] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editUnitNumber, setEditUnitNumber] = useState("");
-  const [editMessage, setEditMessage] = useState("");
-  const [editError, setEditError] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [isSubmittingIssue, setIsSubmittingIssue] = useState(false);
   const [profileName, setProfileName] = useState("");
@@ -152,14 +150,10 @@ function Dashboard() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editProfileName, setEditProfileName] = useState("");
   const [editProfileEmail, setEditProfileEmail] = useState("");
-  const [profileMessage, setProfileMessage] = useState("");
-  const [profileError, setProfileError] = useState("");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [currentPasswordInput, setCurrentPasswordInput] = useState("");
   const [newPasswordInput, setNewPasswordInput] = useState("");
-  const [passwordMessage, setPasswordMessage] = useState("");
-  const [passwordError, setPasswordError] = useState("");
   const [isSavingPassword, setIsSavingPassword] = useState(false);
 
   useEffect(() => {
@@ -198,19 +192,17 @@ function Dashboard() {
 
   const handleReportIssue = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIssueMessage("");
-    setIssueError("");
     setIsSubmittingIssue(true);
 
     try {
       await api.post("/issues", { description: issueDescription });
-      setIssueMessage("Issue reported successfully");
+      showToast("Issue reported successfully", "success");
       setIssueDescription("");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
-        setIssueError(err.response.data.detail);
+        showToast(err.response.data.detail, "error");
       } else {
-        setIssueError("Failed to report issue");
+        showToast("Failed to report issue", "error");
       }
     } finally {
       setIsSubmittingIssue(false);
@@ -222,20 +214,15 @@ function Dashboard() {
     setEditAddress(subscription.address);
     setEditPhone(subscription.phone);
     setEditUnitNumber(subscription.unit_number);
-    setEditMessage("");
-    setEditError("");
     setIsEditing(true);
   };
 
   const handleCancelEditing = () => {
     setIsEditing(false);
-    setEditError("");
   };
 
   const handleSaveEditing = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setEditMessage("");
-    setEditError("");
     setIsSavingEdit(true);
 
     try {
@@ -246,12 +233,12 @@ function Dashboard() {
       });
       setSubscription(response.data);
       setIsEditing(false);
-      setEditMessage("Subscription details updated successfully");
+      showToast("Subscription details updated successfully", "success");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
-        setEditError(err.response.data.detail);
+        showToast(err.response.data.detail, "error");
       } else {
-        setEditError("Failed to update subscription details");
+        showToast("Failed to update subscription details", "error");
       }
     } finally {
       setIsSavingEdit(false);
@@ -261,20 +248,15 @@ function Dashboard() {
   const handleStartEditProfile = () => {
     setEditProfileName(profileName);
     setEditProfileEmail(profileEmail);
-    setProfileMessage("");
-    setProfileError("");
     setIsEditingProfile(true);
   };
 
   const handleCancelEditProfile = () => {
     setIsEditingProfile(false);
-    setProfileError("");
   };
 
   const handleSaveProfile = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setProfileMessage("");
-    setProfileError("");
     setIsSavingProfile(true);
 
     try {
@@ -285,12 +267,12 @@ function Dashboard() {
       setProfileName(response.data.name);
       setProfileEmail(response.data.email);
       setIsEditingProfile(false);
-      setProfileMessage("Profile updated successfully");
+      showToast("Profile updated successfully", "success");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
-        setProfileError(err.response.data.detail);
+        showToast(err.response.data.detail, "error");
       } else {
-        setProfileError("Failed to update profile");
+        showToast("Failed to update profile", "error");
       }
     } finally {
       setIsSavingProfile(false);
@@ -300,20 +282,15 @@ function Dashboard() {
   const handleStartChangePassword = () => {
     setCurrentPasswordInput("");
     setNewPasswordInput("");
-    setPasswordMessage("");
-    setPasswordError("");
     setIsChangingPassword(true);
   };
 
   const handleCancelChangePassword = () => {
     setIsChangingPassword(false);
-    setPasswordError("");
   };
 
   const handleSavePassword = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setPasswordMessage("");
-    setPasswordError("");
     setIsSavingPassword(true);
 
     try {
@@ -324,12 +301,12 @@ function Dashboard() {
       setCurrentPasswordInput("");
       setNewPasswordInput("");
       setIsChangingPassword(false);
-      setPasswordMessage(response.data.message || "Password updated successfully");
+      showToast(response.data.message || "Password updated successfully", "success");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
-        setPasswordError(err.response.data.detail);
+        showToast(err.response.data.detail, "error");
       } else {
-        setPasswordError("Failed to update password");
+        showToast("Failed to update password", "error");
       }
     } finally {
       setIsSavingPassword(false);
@@ -466,7 +443,7 @@ function Dashboard() {
                 </div>
               </div>
               <hr className="dash-divider" />
-              {!isEditing ? (
+              {!isEditing && (
                 <>
                   <div className="dash-cols">
                     <div className="dash-col">
@@ -491,55 +468,65 @@ function Dashboard() {
                     Edit Details
                   </motion.button>
                 </>
-              ) : (
-                <form onSubmit={handleSaveEditing}>
-                  <input
-                    className="auth-input"
-                    type="text"
-                    placeholder="Address"
-                    value={editAddress}
-                    onChange={(e) => setEditAddress(e.target.value)}
-                  />
-                  <input
-                    className="auth-input"
-                    type="tel"
-                    placeholder="Phone"
-                    value={editPhone}
-                    onChange={(e) => setEditPhone(e.target.value)}
-                  />
-                  <input
-                    className="auth-input"
-                    type="text"
-                    placeholder="Apt/Unit number"
-                    value={editUnitNumber}
-                    onChange={(e) => setEditUnitNumber(e.target.value)}
-                  />
-                  <div style={{ display: "flex", gap: "0.75rem" }}>
-                    <motion.button
-                      className="dash-button"
-                      type="submit"
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      disabled={isSavingEdit}
-                      style={{ flex: 1 }}
-                    >
-                      {isSavingEdit ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
-                    </motion.button>
-                    <motion.button
-                      className="dash-button-outline"
-                      type="button"
-                      onClick={handleCancelEditing}
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      style={{ flex: 1, marginTop: 0 }}
-                    >
-                      Cancel
-                    </motion.button>
-                  </div>
-                </form>
               )}
-              {editMessage && <p className="dash-success">{editMessage}</p>}
-              {editError && <p className="dash-error">{editError}</p>}
+              <AnimatePresence initial={false}>
+                {isEditing && (
+                  <motion.div
+                    key="edit-subscription-form"
+                    initial={{ height: 0, opacity: 0, y: -8 }}
+                    animate={{ height: "auto", opacity: 1, y: 0 }}
+                    exit={{ height: 0, opacity: 0, y: -8 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <form onSubmit={handleSaveEditing}>
+                      <input
+                        className="auth-input"
+                        type="text"
+                        placeholder="Address"
+                        value={editAddress}
+                        onChange={(e) => setEditAddress(e.target.value)}
+                      />
+                      <input
+                        className="auth-input"
+                        type="tel"
+                        placeholder="Phone"
+                        value={editPhone}
+                        onChange={(e) => setEditPhone(e.target.value)}
+                      />
+                      <input
+                        className="auth-input"
+                        type="text"
+                        placeholder="Apt/Unit number"
+                        value={editUnitNumber}
+                        onChange={(e) => setEditUnitNumber(e.target.value)}
+                      />
+                      <div style={{ display: "flex", gap: "0.75rem" }}>
+                        <motion.button
+                          className="dash-button"
+                          type="submit"
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          disabled={isSavingEdit}
+                          style={{ flex: 1 }}
+                        >
+                          {isSavingEdit ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
+                        </motion.button>
+                        <motion.button
+                          className="dash-button-outline"
+                          type="button"
+                          onClick={handleCancelEditing}
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          style={{ flex: 1, marginTop: 0 }}
+                        >
+                          Cancel
+                        </motion.button>
+                      </div>
+                    </form>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </>
           ) : hasSubscription ? (
             <p>Loading...</p>
@@ -709,8 +696,6 @@ function Dashboard() {
             >
               {isSubmittingIssue ? <Loader2 size={16} className="btn-spinner" /> : "Submit Report"}
             </motion.button>
-            {issueMessage && <p className="dash-success">{issueMessage}</p>}
-            {issueError && <p className="dash-error">{issueError}</p>}
           </form>
         </motion.div>
 
@@ -726,7 +711,7 @@ function Dashboard() {
 
           <hr className="dash-divider" />
           <p className="dash-label">PROFILE</p>
-          {!isEditingProfile ? (
+          {!isEditingProfile && (
             <>
               <p className="dash-value-lg">{profileName || "—"}</p>
               <p className="bill-date">{profileEmail || "—"}</p>
@@ -739,52 +724,62 @@ function Dashboard() {
                 <Pencil size={14} /> Edit Profile
               </motion.button>
             </>
-          ) : (
-            <form onSubmit={handleSaveProfile}>
-              <input
-                className="auth-input"
-                type="text"
-                placeholder="Name"
-                value={editProfileName}
-                onChange={(e) => setEditProfileName(e.target.value)}
-              />
-              <input
-                className="auth-input"
-                type="email"
-                placeholder="Email"
-                value={editProfileEmail}
-                onChange={(e) => setEditProfileEmail(e.target.value)}
-              />
-              <div style={{ display: "flex", gap: "0.75rem" }}>
-                <motion.button
-                  className="dash-button"
-                  type="submit"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  disabled={isSavingProfile}
-                  style={{ flex: 1 }}
-                >
-                  {isSavingProfile ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
-                </motion.button>
-                <motion.button
-                  className="dash-button-outline"
-                  type="button"
-                  onClick={handleCancelEditProfile}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{ flex: 1, marginTop: 0 }}
-                >
-                  Cancel
-                </motion.button>
-              </div>
-            </form>
           )}
-          {profileMessage && <p className="dash-success">{profileMessage}</p>}
-          {profileError && <p className="dash-error">{profileError}</p>}
+          <AnimatePresence initial={false}>
+            {isEditingProfile && (
+              <motion.div
+                key="edit-profile-form"
+                initial={{ height: 0, opacity: 0, y: -8 }}
+                animate={{ height: "auto", opacity: 1, y: 0 }}
+                exit={{ height: 0, opacity: 0, y: -8 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                style={{ overflow: "hidden" }}
+              >
+                <form onSubmit={handleSaveProfile}>
+                  <input
+                    className="auth-input"
+                    type="text"
+                    placeholder="Name"
+                    value={editProfileName}
+                    onChange={(e) => setEditProfileName(e.target.value)}
+                  />
+                  <input
+                    className="auth-input"
+                    type="email"
+                    placeholder="Email"
+                    value={editProfileEmail}
+                    onChange={(e) => setEditProfileEmail(e.target.value)}
+                  />
+                  <div style={{ display: "flex", gap: "0.75rem" }}>
+                    <motion.button
+                      className="dash-button"
+                      type="submit"
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      disabled={isSavingProfile}
+                      style={{ flex: 1 }}
+                    >
+                      {isSavingProfile ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
+                    </motion.button>
+                    <motion.button
+                      className="dash-button-outline"
+                      type="button"
+                      onClick={handleCancelEditProfile}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      style={{ flex: 1, marginTop: 0 }}
+                    >
+                      Cancel
+                    </motion.button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <hr className="dash-divider" />
           <p className="dash-label">PASSWORD</p>
-          {!isChangingPassword ? (
+          {!isChangingPassword && (
             <motion.button
               className="dash-button-outline"
               onClick={handleStartChangePassword}
@@ -793,48 +788,58 @@ function Dashboard() {
             >
               <Lock size={14} /> Change Password
             </motion.button>
-          ) : (
-            <form onSubmit={handleSavePassword}>
-              <input
-                className="auth-input"
-                type="password"
-                placeholder="Current password"
-                value={currentPasswordInput}
-                onChange={(e) => setCurrentPasswordInput(e.target.value)}
-              />
-              <input
-                className="auth-input"
-                type="password"
-                placeholder="New password"
-                value={newPasswordInput}
-                onChange={(e) => setNewPasswordInput(e.target.value)}
-              />
-              <div style={{ display: "flex", gap: "0.75rem" }}>
-                <motion.button
-                  className="dash-button"
-                  type="submit"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  disabled={isSavingPassword}
-                  style={{ flex: 1 }}
-                >
-                  {isSavingPassword ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
-                </motion.button>
-                <motion.button
-                  className="dash-button-outline"
-                  type="button"
-                  onClick={handleCancelChangePassword}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{ flex: 1, marginTop: 0 }}
-                >
-                  Cancel
-                </motion.button>
-              </div>
-            </form>
           )}
-          {passwordMessage && <p className="dash-success">{passwordMessage}</p>}
-          {passwordError && <p className="dash-error">{passwordError}</p>}
+          <AnimatePresence initial={false}>
+            {isChangingPassword && (
+              <motion.div
+                key="change-password-form"
+                initial={{ height: 0, opacity: 0, y: -8 }}
+                animate={{ height: "auto", opacity: 1, y: 0 }}
+                exit={{ height: 0, opacity: 0, y: -8 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                style={{ overflow: "hidden" }}
+              >
+                <form onSubmit={handleSavePassword}>
+                  <input
+                    className="auth-input"
+                    type="password"
+                    placeholder="Current password"
+                    value={currentPasswordInput}
+                    onChange={(e) => setCurrentPasswordInput(e.target.value)}
+                  />
+                  <input
+                    className="auth-input"
+                    type="password"
+                    placeholder="New password"
+                    value={newPasswordInput}
+                    onChange={(e) => setNewPasswordInput(e.target.value)}
+                  />
+                  <div style={{ display: "flex", gap: "0.75rem" }}>
+                    <motion.button
+                      className="dash-button"
+                      type="submit"
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      disabled={isSavingPassword}
+                      style={{ flex: 1 }}
+                    >
+                      {isSavingPassword ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
+                    </motion.button>
+                    <motion.button
+                      className="dash-button-outline"
+                      type="button"
+                      onClick={handleCancelChangePassword}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      style={{ flex: 1, marginTop: 0 }}
+                    >
+                      Cancel
+                    </motion.button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.section>
       </main>
     </div>
