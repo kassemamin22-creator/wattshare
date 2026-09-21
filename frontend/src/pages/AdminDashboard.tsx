@@ -1,4 +1,4 @@
-import { useEffect, useState, FormEvent, Fragment } from "react";
+import { useEffect, useState, type FormEvent, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, animate, AnimatePresence } from "framer-motion";
 import { Users, Zap, Receipt, ShieldCheck, BarChart3, LogOut, UserPlus, DollarSign, Trash2, User, Pencil, Lock, Loader2 } from "lucide-react";

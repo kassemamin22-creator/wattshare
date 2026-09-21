@@ -1,4 +1,4 @@
-import { useEffect, useState, FormEvent, CSSProperties } from "react";
+import { useEffect, useState, type FormEvent, type CSSProperties } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, animate, AnimatePresence } from "framer-motion";
 import { Zap, BarChart3, Receipt, MessageCircle, LogOut, Sparkles, User, Pencil, Lock, Loader2 } from "lucide-react";
