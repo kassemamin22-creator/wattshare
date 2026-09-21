@@ -83,7 +83,14 @@ function Register() {
         >
           <div className="auth-logo-wrap">
             <div className="auth-logo-glow"></div>
-            <div className="auth-logo">⚡ WattShare</div>
+            <button
+              className="auth-logo"
+              type="button"
+              onClick={() => navigate("/")}
+              style={{ background: "none", border: "none", cursor: "pointer", font: "inherit", color: "inherit" }}
+            >
+              ⚡ WattShare
+            </button>
           </div>
           <div className="auth-title">Create Account</div>
           <div className="auth-glass-card">
