@@ -100,6 +100,9 @@ function AdminDashboard() {
   const [editUserName, setEditUserName] = useState("");
   const [editUserEmail, setEditUserEmail] = useState("");
   const [editUserRole, setEditUserRole] = useState("subscriber");
+  const [resetPasswordInput, setResetPasswordInput] = useState("");
+  const [resetPasswordMessage, setResetPasswordMessage] = useState("");
+  const [resetPasswordError, setResetPasswordError] = useState("");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editProfileName, setEditProfileName] = useState("");
   const [editProfileEmail, setEditProfileEmail] = useState("");
@@ -219,10 +222,16 @@ function AdminDashboard() {
     setEditUserRole(user.role);
     setUserMessage("");
     setUserError("");
+    setResetPasswordInput("");
+    setResetPasswordMessage("");
+    setResetPasswordError("");
   };
 
   const handleCancelEditUser = () => {
     setEditingUserId(null);
+    setResetPasswordInput("");
+    setResetPasswordMessage("");
+    setResetPasswordError("");
   };
 
   const handleSaveEditUser = async (e: FormEvent<HTMLFormElement>) => {
@@ -248,6 +257,27 @@ function AdminDashboard() {
         setUserError(err.response.data.detail);
       } else {
         setUserError("Failed to update user");
+      }
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!editingUserId) return;
+
+    setResetPasswordMessage("");
+    setResetPasswordError("");
+
+    try {
+      await api.patch(`/admin/users/${editingUserId}/reset-password`, {
+        new_password: resetPasswordInput,
+      });
+      setResetPasswordMessage("Password reset successfully");
+      setResetPasswordInput("");
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        setResetPasswordError(err.response.data.detail);
+      } else {
+        setResetPasswordError("Failed to reset password");
       }
     }
   };
@@ -555,6 +585,45 @@ function AdminDashboard() {
                                 Cancel
                               </motion.button>
                             </form>
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "0.75rem",
+                                flexWrap: "wrap",
+                                alignItems: "center",
+                                marginTop: "0.75rem",
+                                paddingTop: "0.75rem",
+                                borderTop: "1px solid var(--color-border)",
+                              }}
+                            >
+                              <input
+                                className="auth-input"
+                                type="password"
+                                placeholder="New Password"
+                                value={resetPasswordInput}
+                                onChange={(e) => setResetPasswordInput(e.target.value)}
+                                style={{ flex: "1 1 200px", marginBottom: 0 }}
+                              />
+                              <motion.button
+                                className="dash-button-outline"
+                                type="button"
+                                onClick={handleResetPassword}
+                                whileTap={{ scale: 0.97 }}
+                                style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
+                              >
+                                <Lock size={14} /> Reset Password
+                              </motion.button>
+                              {resetPasswordMessage && (
+                                <span className="dash-success" style={{ fontSize: "0.85rem" }}>
+                                  {resetPasswordMessage}
+                                </span>
+                              )}
+                              {resetPasswordError && (
+                                <span className="dash-error" style={{ fontSize: "0.85rem" }}>
+                                  {resetPasswordError}
+                                </span>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       )}
