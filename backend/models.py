@@ -47,6 +47,9 @@ class AdminUserUpdate(BaseModel):
     email: EmailStr
     role: UserRole
 
+class AdminPasswordReset(BaseModel):
+    new_password: str
+
 class SubscriptionCreate(BaseModel):
     ampere: int
     address: str
