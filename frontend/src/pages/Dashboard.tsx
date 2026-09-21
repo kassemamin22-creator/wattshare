@@ -77,9 +77,20 @@ const NAV_ITEMS = [
   { id: "report-issue", label: "Report Issue", icon: MessageCircle },
 ];
 
+const navContainerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.06, delayChildren: 0.15 } },
+};
+
+const navItemVariants = {
+  hidden: { opacity: 0, x: -12 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.35, ease: "easeOut" as const } },
+};
+
 function Dashboard() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [activeNavIndex, setActiveNavIndex] = useState(0);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [hasSubscription, setHasSubscription] = useState(true);
   const [bills, setBills] = useState<Bill[]>([]);
@@ -296,21 +307,51 @@ function Dashboard() {
   return (
     <div className="admin-shell">
       <aside className="admin-sidebar">
-        <div className="admin-sidebar-logo">⚡ WattShare</div>
-        <nav className="admin-nav">
-          {NAV_ITEMS.map((item) => {
+        <div className="admin-sidebar-logo">
+          <span className="admin-sidebar-logo-bolt">⚡</span> WattShare
+        </div>
+        <motion.nav
+          className="admin-nav"
+          variants={navContainerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {NAV_ITEMS.map((item, index) => {
             const Icon = item.icon;
+            const isActive = activeNavIndex === index;
             return (
-              <a key={item.id} href={`#${item.id}`} className="admin-nav-link">
-                <Icon size={18} />
-                {item.label}
-              </a>
+              <motion.a
+                key={item.id}
+                href={`#${item.id}`}
+                className={isActive ? "admin-nav-link is-active" : "admin-nav-link"}
+                onClick={() => setActiveNavIndex(index)}
+                variants={navItemVariants}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                {isActive && (
+                  <motion.span
+                    layoutId="admin-nav-active-pill"
+                    className="admin-nav-pill"
+                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                  />
+                )}
+                <motion.span
+                  className="admin-nav-icon"
+                  whileHover={{ rotate: -10, scale: 1.15 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                >
+                  <Icon size={18} />
+                </motion.span>
+                <span className="admin-nav-label">{item.label}</span>
+              </motion.a>
             );
           })}
-        </nav>
+        </motion.nav>
         <motion.button
           className="dash-button-logout"
           onClick={handleLogout}
+          whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
         >
           <LogOut size={18} /> Log Out

@@ -825,12 +825,14 @@ body {
   font-size: 0.9rem;
   cursor: pointer;
   box-sizing: border-box;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
 }
 
 .dash-button-logout:hover {
-  background-color: rgba(239, 68, 68, 0.1);
+  background-color: rgba(239, 68, 68, 0.18);
   border-color: var(--color-danger);
+  color: #ffffff;
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3), 0 4px 14px rgba(239, 68, 68, 0.25);
 }
 
 .dash-success {
@@ -973,6 +975,23 @@ body {
   margin-bottom: 2rem;
 }
 
+.admin-sidebar-logo-bolt {
+  display: inline-block;
+  animation: admin-logo-pulse 3s ease-in-out infinite;
+}
+
+@keyframes admin-logo-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0px rgba(245, 166, 35, 0.5));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 6px rgba(245, 166, 35, 0.85));
+    transform: scale(1.1);
+  }
+}
+
 .admin-nav {
   display: flex;
   flex-direction: column;
@@ -981,6 +1000,8 @@ body {
 }
 
 .admin-nav-link {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -996,6 +1017,34 @@ body {
 .admin-nav-link:hover {
   background-color: var(--color-surface-2);
   color: var(--color-text);
+}
+
+.admin-nav-link.is-active {
+  color: var(--color-text);
+}
+
+.admin-nav-link.is-active:hover {
+  background-color: transparent;
+}
+
+.admin-nav-pill {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(245, 166, 35, 0.16), rgba(34, 211, 238, 0.1));
+  border: 1px solid rgba(245, 166, 35, 0.35);
+}
+
+.admin-nav-icon {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+}
+
+.admin-nav-label {
+  position: relative;
+  z-index: 1;
 }
 
 .admin-mobile-bar {
