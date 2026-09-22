@@ -614,6 +614,7 @@ function Dashboard() {
           {prediction && prediction.prediction !== null ? (
             <>
               <p className="forecast-amount">${displayedForecast.toFixed(2)}</p>
+              <p className="forecast-hint">This is an estimate of your next bill, based on your past electricity usage.</p>
               <p className="forecast-message">{prediction.message}</p>
               <div className="forecast-bar-track">
                 <div className="forecast-bar-fill" style={forecastBarStyle}></div>

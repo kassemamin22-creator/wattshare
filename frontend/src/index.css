@@ -675,6 +675,13 @@ body {
   margin: 0.35rem 0 0;
 }
 
+.forecast-hint {
+  color: var(--color-text-muted);
+  opacity: 0.75;
+  font-size: 0.7rem;
+  margin: 0.35rem 0 0;
+}
+
 .forecast-message {
   color: var(--color-text-muted);
   font-size: 0.85rem;
