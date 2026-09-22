@@ -92,6 +92,7 @@ class SubscriptionUpdate(BaseModel):
     building: str
     phone: str
     unit_number: str
+    ampere: Optional[int] = None
 
 class TariffUpdate(BaseModel):
     price_per_ampere: float

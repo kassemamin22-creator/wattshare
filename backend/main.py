@@ -651,6 +651,10 @@ def update_subscription_by_admin(subscription_id: str, update: SubscriptionUpdat
     if not subscription:
         raise HTTPException(status_code=404, detail="Subscription not found")
 
+    new_ampere = update.ampere if update.ampere is not None else subscription["ampere"]
+    price_per_ampere = get_current_price_per_ampere()
+    flat_fee = new_ampere * price_per_ampere
+
     subscriptions_collection.update_one(
         {"_id": ObjectId(subscription_id)},
         {"$set": {
@@ -658,6 +662,8 @@ def update_subscription_by_admin(subscription_id: str, update: SubscriptionUpdat
             "building": update.building,
             "phone": update.phone,
             "unit_number": update.unit_number,
+            "ampere": new_ampere,
+            "flat_fee": flat_fee,
         }},
     )
 
@@ -668,10 +674,10 @@ def update_subscription_by_admin(subscription_id: str, update: SubscriptionUpdat
         id=str(subscription["_id"]),
         subscriber_id=subscription["subscriber_id"],
         generator_name=subscription["generator_name"],
-        ampere=subscription["ampere"],
+        ampere=new_ampere,
         tariff_rate=subscription["tariff_rate"],
         status=subscription["status"],
-        flat_fee=subscription.get("flat_fee", 0.0),
+        flat_fee=flat_fee,
         address=update.address,
         building=update.building,
         phone=update.phone,
