@@ -138,6 +138,7 @@ function OwnerDashboard() {
   const [editSubscriptionBuilding, setEditSubscriptionBuilding] = useState("");
   const [editSubscriptionPhone, setEditSubscriptionPhone] = useState("");
   const [editSubscriptionUnitNumber, setEditSubscriptionUnitNumber] = useState("");
+  const [editSubscriptionAmpere, setEditSubscriptionAmpere] = useState("");
   const [isSavingSubscription, setIsSavingSubscription] = useState(false);
 
   const fetchSubscribers = () => {
@@ -237,6 +238,7 @@ function OwnerDashboard() {
     setEditSubscriptionBuilding(subscriber.building);
     setEditSubscriptionPhone(subscriber.phone);
     setEditSubscriptionUnitNumber(subscriber.unit_number);
+    setEditSubscriptionAmpere(String(subscriber.ampere));
   };
 
   const handleCancelEditSubscription = () => {
@@ -255,6 +257,7 @@ function OwnerDashboard() {
         building: editSubscriptionBuilding,
         phone: editSubscriptionPhone,
         unit_number: editSubscriptionUnitNumber,
+        ampere: Number(editSubscriptionAmpere),
       });
       showToast("Subscriber updated successfully", "success");
       setEditingSubscriptionId(null);
@@ -552,6 +555,14 @@ function OwnerDashboard() {
                                     placeholder="Apt/Unit number"
                                     value={editSubscriptionUnitNumber}
                                     onChange={(e) => setEditSubscriptionUnitNumber(e.target.value)}
+                                    style={{ flex: "1 1 160px", marginBottom: 0 }}
+                                  />
+                                  <input
+                                    className="auth-input"
+                                    type="number"
+                                    placeholder="Ampere"
+                                    value={editSubscriptionAmpere}
+                                    onChange={(e) => setEditSubscriptionAmpere(e.target.value)}
                                     style={{ flex: "1 1 160px", marginBottom: 0 }}
                                   />
                                   <motion.button
