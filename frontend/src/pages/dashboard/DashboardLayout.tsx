@@ -1,7 +1,7 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Zap, BarChart3, Sparkles, Receipt, MessageCircle, LogOut, User } from "lucide-react";
+import { Zap, BarChart3, Sparkles, Receipt, MessageCircle, LogOut, Settings } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "../../services/api";
 
@@ -59,7 +59,6 @@ export interface DashboardContext {
 const NAV_ITEMS = [
   { path: "chart", label: "Consumption Chart", icon: BarChart3 },
   { path: "subscription", label: "Subscription", icon: Zap },
-  { path: "account-settings", label: "Account Settings", icon: User },
   { path: "forecast", label: "AI Forecast", icon: Sparkles },
   { path: "billing", label: "Billing History", icon: Receipt },
   { path: "report-issue", label: "Report Issue", icon: MessageCircle },
@@ -76,6 +75,8 @@ const navItemVariants = {
 };
 
 const MotionLink = motion(Link);
+
+const ACCOUNT_SETTINGS_PATH = "/dashboard/account-settings";
 
 function DashboardLayout() {
   const navigate = useNavigate();
@@ -184,14 +185,44 @@ function DashboardLayout() {
             );
           })}
         </motion.nav>
-        <motion.button
-          className="dash-button-logout"
-          onClick={handleLogout}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-        >
-          <LogOut size={18} /> Log Out
-        </motion.button>
+
+        <div>
+          <hr className="dash-divider" />
+          <MotionLink
+            to={ACCOUNT_SETTINGS_PATH}
+            className={
+              location.pathname === ACCOUNT_SETTINGS_PATH
+                ? "admin-nav-link is-active"
+                : "admin-nav-link"
+            }
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            {location.pathname === ACCOUNT_SETTINGS_PATH && (
+              <motion.span
+                layoutId="admin-nav-active-pill"
+                className="admin-nav-pill"
+                transition={{ type: "spring", stiffness: 380, damping: 32 }}
+              />
+            )}
+            <motion.span
+              className="admin-nav-icon"
+              whileHover={{ rotate: -10, scale: 1.15 }}
+              transition={{ type: "spring", stiffness: 400, damping: 15 }}
+            >
+              <Settings size={18} />
+            </motion.span>
+            <span className="admin-nav-label">Account Settings</span>
+          </MotionLink>
+          <motion.button
+            className="dash-button-logout"
+            onClick={handleLogout}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <LogOut size={18} /> Log Out
+          </motion.button>
+        </div>
       </aside>
 
       <div className="admin-mobile-bar">
