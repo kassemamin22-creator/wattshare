@@ -24,6 +24,16 @@ class ManagerCreate(BaseModel):
     email: EmailStr
     password: str
 
+class SubscriberCreate(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+    address: str
+    phone: str
+    unit_number: str
+    ampere: int
+    payment_method: PaymentMethod
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str

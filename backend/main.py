@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from typing import List
 import os
 
-from models import UserCreate, UserLogin, UserOut, UserUpdate, PasswordChange, AdminUserUpdate, AdminPasswordReset, UserRole, ManagerCreate, SubscriptionCreate, SubscriptionOut, SubscriptionUpdate, MeterReadingCreate, BillOut, IssueCreate, IssueOut, TariffUpdate, TariffOut
+from models import UserCreate, UserLogin, UserOut, UserUpdate, PasswordChange, AdminUserUpdate, AdminPasswordReset, UserRole, ManagerCreate, SubscriberCreate, SubscriptionCreate, SubscriptionOut, SubscriptionUpdate, MeterReadingCreate, BillOut, IssueCreate, IssueOut, TariffUpdate, TariffOut
 from auth import hash_password, verify_password, create_access_token, get_current_user
 from bson import ObjectId
 from datetime import datetime, timedelta
@@ -729,6 +729,51 @@ def add_manager(manager: ManagerCreate, current_user: dict = Depends(get_current
         name=manager.name,
         email=normalized_email,
         role=UserRole.owner,
+    )
+
+@app.post("/admin/add-subscriber", response_model=UserOut)
+def add_subscriber(subscriber: SubscriberCreate, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ("admin", "owner"):
+        raise HTTPException(status_code=403, detail="Only admin or manager can access this")
+
+    normalized_email = subscriber.email.lower().strip()
+
+    if users_collection.find_one({"email": normalized_email}):
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    hashed_password = hash_password(subscriber.password)
+
+    result = users_collection.insert_one({
+        "name": subscriber.name,
+        "email": normalized_email,
+        "password": hashed_password,
+        "role": UserRole.subscriber,
+    })
+
+    subscriber_id = str(result.inserted_id)
+    price_per_ampere = get_current_price_per_ampere()
+    flat_fee = subscriber.ampere * price_per_ampere
+
+    subscriptions_collection.insert_one({
+        "subscriber_id": subscriber_id,
+        "generator_name": GENERATOR_NAME,
+        "ampere": subscriber.ampere,
+        "tariff_rate": TARIFF_RATE,
+        "flat_fee": flat_fee,
+        "address": subscriber.address,
+        "phone": subscriber.phone,
+        "unit_number": subscriber.unit_number,
+        "payment_method": subscriber.payment_method,
+        "start_date": datetime.utcnow(),
+        "status": "active",
+    })
+
+    return UserOut(
+        id=subscriber_id,
+        name=subscriber.name,
+        email=normalized_email,
+        role=UserRole.subscriber,
+        subscription_status="active",
     )
 
 @app.get("/admin/bills", response_model=List[BillOut])
