@@ -1,7 +1,7 @@
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Users, Zap, Receipt, ShieldCheck, UserPlus, DollarSign, LogOut, Settings } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Users, Zap, Receipt, ShieldCheck, UserPlus, DollarSign, LogOut, Settings, Menu, X } from "lucide-react";
 import api from "../../services/api";
 
 export interface User {
@@ -93,6 +93,7 @@ function AdminDashboardLayout() {
   const [bills, setBills] = useState<Bill[]>([]);
   const [revenue, setRevenue] = useState<Revenue | null>(null);
   const [tariffPrice, setTariffPrice] = useState<number | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const fetchUsers = () => {
     api.get("/admin/users").then((response) => setUsers(response.data));
@@ -120,6 +121,71 @@ function AdminDashboardLayout() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
+  };
+
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
+  const renderNavLinks = (pillLayoutId: string, onNavigate?: () => void): ReactNode =>
+    NAV_ITEMS.map((item) => {
+      const Icon = item.icon;
+      const fullPath = `/admin/${item.path}`;
+      const isActive = location.pathname === fullPath;
+      return (
+        <MotionLink
+          key={item.path}
+          to={fullPath}
+          className={isActive ? "admin-nav-link is-active" : "admin-nav-link"}
+          variants={navItemVariants}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={onNavigate}
+        >
+          {isActive && (
+            <motion.span
+              layoutId={pillLayoutId}
+              className="admin-nav-pill"
+              transition={{ type: "spring", stiffness: 380, damping: 32 }}
+            />
+          )}
+          <motion.span
+            className="admin-nav-icon"
+            whileHover={{ rotate: -10, scale: 1.15 }}
+            transition={{ type: "spring", stiffness: 400, damping: 15 }}
+          >
+            <Icon size={18} />
+          </motion.span>
+          <span className="admin-nav-label">{item.label}</span>
+        </MotionLink>
+      );
+    });
+
+  const renderAccountSettingsLink = (pillLayoutId: string, onNavigate?: () => void): ReactNode => {
+    const isActive = location.pathname === ACCOUNT_SETTINGS_PATH;
+    return (
+      <MotionLink
+        to={ACCOUNT_SETTINGS_PATH}
+        className={isActive ? "admin-nav-link is-active" : "admin-nav-link"}
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.97 }}
+        onClick={onNavigate}
+      >
+        {isActive && (
+          <motion.span
+            layoutId={pillLayoutId}
+            className="admin-nav-pill"
+            transition={{ type: "spring", stiffness: 380, damping: 32 }}
+          />
+        )}
+        <motion.span
+          className="admin-nav-icon"
+          whileHover={{ rotate: -10, scale: 1.15 }}
+          transition={{ type: "spring", stiffness: 400, damping: 15 }}
+        >
+          <Settings size={18} />
+        </motion.span>
+        <span className="admin-nav-label">Account Settings</span>
+      </MotionLink>
+    );
   };
 
   const context: AdminDashboardContext = {
@@ -150,67 +216,12 @@ function AdminDashboardLayout() {
           initial="hidden"
           animate="visible"
         >
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
-            const fullPath = `/admin/${item.path}`;
-            const isActive = location.pathname === fullPath;
-            return (
-              <MotionLink
-                key={item.path}
-                to={fullPath}
-                className={isActive ? "admin-nav-link is-active" : "admin-nav-link"}
-                variants={navItemVariants}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-              >
-                {isActive && (
-                  <motion.span
-                    layoutId="admin-nav-active-pill"
-                    className="admin-nav-pill"
-                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
-                  />
-                )}
-                <motion.span
-                  className="admin-nav-icon"
-                  whileHover={{ rotate: -10, scale: 1.15 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                >
-                  <Icon size={18} />
-                </motion.span>
-                <span className="admin-nav-label">{item.label}</span>
-              </MotionLink>
-            );
-          })}
+          {renderNavLinks("admin-nav-active-pill")}
         </motion.nav>
 
         <div>
           <hr className="dash-divider" />
-          <MotionLink
-            to={ACCOUNT_SETTINGS_PATH}
-            className={
-              location.pathname === ACCOUNT_SETTINGS_PATH
-                ? "admin-nav-link is-active"
-                : "admin-nav-link"
-            }
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            {location.pathname === ACCOUNT_SETTINGS_PATH && (
-              <motion.span
-                layoutId="admin-nav-active-pill"
-                className="admin-nav-pill"
-                transition={{ type: "spring", stiffness: 380, damping: 32 }}
-              />
-            )}
-            <motion.span
-              className="admin-nav-icon"
-              whileHover={{ rotate: -10, scale: 1.15 }}
-              transition={{ type: "spring", stiffness: 400, damping: 15 }}
-            >
-              <Settings size={18} />
-            </motion.span>
-            <span className="admin-nav-label">Account Settings</span>
-          </MotionLink>
+          {renderAccountSettingsLink("admin-nav-active-pill")}
           <motion.button
             className="dash-button-logout"
             onClick={handleLogout}
@@ -223,6 +234,14 @@ function AdminDashboardLayout() {
       </aside>
 
       <div className="admin-mobile-bar">
+        <motion.button
+          className="admin-mobile-menu-toggle"
+          onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+          whileTap={{ scale: 0.94 }}
+          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+        >
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </motion.button>
         <div className="admin-sidebar-logo admin-mobile-logo">⚡ WattShare</div>
         <motion.button
           className="admin-mobile-logout"
@@ -232,6 +251,57 @@ function AdminDashboardLayout() {
           <LogOut size={16} /> Log Out
         </motion.button>
       </div>
+
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            <motion.div
+              className="mobile-nav-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={closeMobileMenu}
+            />
+            <motion.div
+              className="mobile-nav-drawer"
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+            >
+              <div className="mobile-nav-drawer-header">
+                <div className="admin-sidebar-logo" style={{ margin: 0 }}>
+                  <span className="admin-sidebar-logo-bolt">⚡</span> WattShare
+                </div>
+                <motion.button
+                  className="admin-mobile-menu-toggle"
+                  onClick={closeMobileMenu}
+                  whileTap={{ scale: 0.94 }}
+                  aria-label="Close menu"
+                >
+                  <X size={20} />
+                </motion.button>
+              </div>
+              <nav className="admin-nav">
+                {renderNavLinks("mobile-nav-active-pill", closeMobileMenu)}
+              </nav>
+              <div>
+                <hr className="dash-divider" />
+                {renderAccountSettingsLink("mobile-nav-active-pill", closeMobileMenu)}
+                <motion.button
+                  className="dash-button-logout"
+                  onClick={handleLogout}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <LogOut size={18} /> Log Out
+                </motion.button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <main className="admin-main">
         <div className="dash-page-title">
