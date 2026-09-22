@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent, Fragment } from "react";
+import { useEffect, useMemo, useState, type FormEvent, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, BarChart3, AlertCircle, Gauge, LogOut, Receipt, Search, Loader2, UserCheck, UserPlus, Pencil } from "lucide-react";
@@ -120,6 +120,7 @@ function OwnerDashboard() {
   const [bills, setBills] = useState<Bill[]>([]);
   const [subscriberSearch, setSubscriberSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"active" | "all" | "pending" | "inactive">("active");
+  const [buildingFilter, setBuildingFilter] = useState("");
   const [submittingReadingId, setSubmittingReadingId] = useState<string | null>(null);
   const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
   const [pendingSubscriptions, setPendingSubscriptions] = useState<Subscriber[]>([]);
@@ -336,12 +337,20 @@ function OwnerDashboard() {
     ampere: subscriber.ampere,
   }));
 
+  const uniqueBuildings = useMemo(() => {
+    const buildings = subscribers
+      .map((subscriber) => subscriber.building)
+      .filter((building): building is string => Boolean(building));
+    return Array.from(new Set(buildings)).sort();
+  }, [subscribers]);
+
   const filteredSubscribers = subscribers.filter((subscriber) => {
     const matchesSearch = (subscriber.subscriber_name || "")
       .toLowerCase()
       .includes(subscriberSearch.toLowerCase());
     const matchesStatus = statusFilter === "all" || subscriber.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesBuilding = buildingFilter === "" || subscriber.building === buildingFilter;
+    return matchesSearch && matchesStatus && matchesBuilding;
   });
 
   const ampereChangeRequests = subscribers.filter(
@@ -449,6 +458,20 @@ function OwnerDashboard() {
               <option value="all">All</option>
               <option value="pending">Pending</option>
               <option value="inactive">Inactive</option>
+            </select>
+            <p className="dash-label" style={{ margin: 0 }}>BUILDING</p>
+            <select
+              className="owner-select"
+              value={buildingFilter}
+              onChange={(e) => setBuildingFilter(e.target.value)}
+              style={{ flex: "0 1 160px" }}
+            >
+              <option value="">All Buildings</option>
+              {uniqueBuildings.map((building) => (
+                <option key={building} value={building}>
+                  {building}
+                </option>
+              ))}
             </select>
           </div>
           {subscribers.length === 0 ? (
