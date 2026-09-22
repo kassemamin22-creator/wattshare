@@ -403,19 +403,48 @@ function Dashboard() {
       </div>
 
       <main className="admin-main">
-        <div className="dash-header">
-          <div className="dash-greeting">
-            <p className="dash-greeting-text">Hello, {displayName}</p>
-            {subscription && (
-              <span className="pill pill-success pill-live">
-                {subscription.ampere}A ACTIVE
-              </span>
-            )}
+        {!hasSubscription ? (
+          <div
+            style={{
+              minHeight: "70vh",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              gap: "1rem",
+            }}
+          >
+            <Zap size={40} className="dash-icon" style={{ color: "var(--color-accent)" }} />
+            <p className="dash-card-title" style={{ margin: 0 }}>
+              You don't have an active subscription yet
+            </p>
+            <p className="forecast-message" style={{ margin: 0 }}>
+              Subscribe to a generator to start tracking your usage and bills.
+            </p>
+            <Link
+              className="dash-button"
+              to="/subscribe"
+              style={{ textDecoration: "none", boxSizing: "border-box", marginTop: "0.5rem" }}
+            >
+              Subscribe Now
+            </Link>
           </div>
-          <div className="dash-avatar">{avatarInitial}</div>
-        </div>
+        ) : (
+          <>
+            <div className="dash-header">
+              <div className="dash-greeting">
+                <p className="dash-greeting-text">Hello, {displayName}</p>
+                {subscription && (
+                  <span className="pill pill-success pill-live">
+                    {subscription.ampere}A ACTIVE
+                  </span>
+                )}
+              </div>
+              <div className="dash-avatar">{avatarInitial}</div>
+            </div>
 
-        <motion.div
+            <motion.div
           id="subscription"
           className="dash-card admin-section"
           style={{ animation: "none" }}
@@ -842,6 +871,8 @@ function Dashboard() {
             )}
           </AnimatePresence>
         </motion.section>
+          </>
+        )}
       </main>
     </div>
   );
