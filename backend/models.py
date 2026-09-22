@@ -86,6 +86,7 @@ class SubscriptionOut(BaseModel):
     start_date: datetime
     subscriber_name: Optional[str] = None
     last_reading: Optional[float] = None
+    pending_ampere_change: Optional[int] = None
 
 class SubscriptionUpdate(BaseModel):
     address: str
@@ -93,6 +94,9 @@ class SubscriptionUpdate(BaseModel):
     phone: str
     unit_number: str
     ampere: Optional[int] = None
+
+class AmpereChangeRequest(BaseModel):
+    ampere: int
 
 class TariffUpdate(BaseModel):
     price_per_ampere: float

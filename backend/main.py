@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from typing import List
 import os
 
-from models import UserCreate, UserLogin, UserOut, UserUpdate, PasswordChange, AdminUserUpdate, AdminPasswordReset, UserRole, ManagerCreate, SubscriberCreate, SubscriptionCreate, SubscriptionOut, SubscriptionUpdate, MeterReadingCreate, BillOut, RevenueOut, IssueCreate, IssueOut, TariffUpdate, TariffOut
+from models import UserCreate, UserLogin, UserOut, UserUpdate, PasswordChange, AdminUserUpdate, AdminPasswordReset, UserRole, ManagerCreate, SubscriberCreate, SubscriptionCreate, SubscriptionOut, SubscriptionUpdate, AmpereChangeRequest, MeterReadingCreate, BillOut, RevenueOut, IssueCreate, IssueOut, TariffUpdate, TariffOut
 from auth import hash_password, verify_password, create_access_token, get_current_user
 from bson import ObjectId
 from datetime import datetime, timedelta
@@ -217,7 +217,24 @@ def read_my_subscription(current_user: dict = Depends(get_current_user)):
         unit_number=subscription.get("unit_number", ""),
         payment_method=subscription.get("payment_method", "cash"),
         start_date=subscription.get("start_date", datetime.utcnow()),
+        pending_ampere_change=subscription.get("pending_ampere_change"),
     )
+
+@app.post("/subscription/me/request-ampere-change")
+def request_ampere_change(request: AmpereChangeRequest, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "subscriber":
+        raise HTTPException(status_code=403, detail="Only subscribers can request an ampere change")
+
+    subscription = subscriptions_collection.find_one({"subscriber_id": current_user["id"]})
+    if not subscription:
+        raise HTTPException(status_code=404, detail="No subscription found")
+
+    subscriptions_collection.update_one(
+        {"subscriber_id": current_user["id"]},
+        {"$set": {"pending_ampere_change": request.ampere}},
+    )
+
+    return {"message": "Ampere change requested", "pending_ampere_change": request.ampere}
 
 @app.patch("/subscription/me", response_model=SubscriptionOut)
 def update_my_subscription(update: SubscriptionUpdate, current_user: dict = Depends(get_current_user)):
@@ -289,6 +306,7 @@ def read_subscribers(current_user: dict = Depends(get_current_user)):
                 start_date=subscription.get("start_date", datetime.utcnow()),
                 subscriber_name=subscriber_name,
                 last_reading=last_reading_value,
+                pending_ampere_change=subscription.get("pending_ampere_change"),
             )
         )
 
@@ -602,6 +620,7 @@ def read_all_subscriptions(current_user: dict = Depends(get_current_user)):
                 payment_method=subscription.get("payment_method", "cash"),
                 start_date=subscription.get("start_date", datetime.utcnow()),
                 subscriber_name=subscriber_name,
+                pending_ampere_change=subscription.get("pending_ampere_change"),
             )
         )
 
@@ -640,6 +659,7 @@ def toggle_subscription_status(subscription_id: str, current_user: dict = Depend
         payment_method=subscription.get("payment_method", "cash"),
         start_date=subscription.get("start_date", datetime.utcnow()),
         subscriber_name=subscriber_name,
+        pending_ampere_change=subscription.get("pending_ampere_change"),
     )
 
 @app.patch("/admin/subscriptions/{subscription_id}", response_model=SubscriptionOut)
@@ -685,7 +705,35 @@ def update_subscription_by_admin(subscription_id: str, update: SubscriptionUpdat
         payment_method=subscription.get("payment_method", "cash"),
         start_date=subscription.get("start_date", datetime.utcnow()),
         subscriber_name=subscriber_name,
+        pending_ampere_change=subscription.get("pending_ampere_change"),
     )
+
+@app.patch("/admin/subscriptions/{subscription_id}/approve-ampere-change")
+def approve_ampere_change(subscription_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ("admin", "owner"):
+        raise HTTPException(status_code=403, detail="Only admin or manager can access this")
+
+    subscription = subscriptions_collection.find_one({"_id": ObjectId(subscription_id)})
+    if not subscription:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+
+    pending_ampere_change = subscription.get("pending_ampere_change")
+    if pending_ampere_change is None:
+        raise HTTPException(status_code=400, detail="No pending ampere change for this subscription")
+
+    price_per_ampere = get_current_price_per_ampere()
+    flat_fee = pending_ampere_change * price_per_ampere
+
+    subscriptions_collection.update_one(
+        {"_id": ObjectId(subscription_id)},
+        {"$set": {
+            "ampere": pending_ampere_change,
+            "flat_fee": flat_fee,
+            "pending_ampere_change": None,
+        }},
+    )
+
+    return {"message": "Ampere change approved", "ampere": pending_ampere_change, "flat_fee": flat_fee}
 
 @app.get("/owner/subscriptions/pending", response_model=List[SubscriptionOut])
 def read_pending_subscriptions(current_user: dict = Depends(get_current_user)):
@@ -715,6 +763,7 @@ def read_pending_subscriptions(current_user: dict = Depends(get_current_user)):
                 payment_method=subscription.get("payment_method", "cash"),
                 start_date=subscription.get("start_date", datetime.utcnow()),
                 subscriber_name=subscriber_name,
+                pending_ampere_change=subscription.get("pending_ampere_change"),
             )
         )
 
@@ -752,6 +801,7 @@ def approve_subscription(subscription_id: str, current_user: dict = Depends(get_
         payment_method=subscription.get("payment_method", "cash"),
         start_date=subscription.get("start_date", datetime.utcnow()),
         subscriber_name=subscriber_name,
+        pending_ampere_change=subscription.get("pending_ampere_change"),
     )
 
 @app.put("/admin/tariff", response_model=TariffOut)
