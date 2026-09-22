@@ -476,154 +476,70 @@ function Dashboard() {
               <div className="dash-avatar">{avatarInitial}</div>
             </div>
 
-            <motion.section
-          id="account-settings"
+            <div className="admin-stats-grid">
+          <motion.div
+            className="stat-card stat-card-cyan"
+            style={{ animation: "none" }}
+            {...cardEntrance(0)}
+            whileHover={cardHover}
+          >
+            <p className="dash-label">
+              <BarChart3 size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> TOTAL CONSUMPTION
+            </p>
+            <p className="stat-number-cyan">
+              <CountUpValue value={totalConsumption} suffix=" kWh" />
+            </p>
+          </motion.div>
+          <motion.div
+            className="stat-card stat-card-amber"
+            style={{ animation: "none" }}
+            {...cardEntrance(1)}
+            whileHover={cardHover}
+          >
+            <p className="dash-label">CURRENT BALANCE</p>
+            <p className="stat-number-amber">
+              <CountUpValue value={currentBalance} decimals={2} suffix=" USD" />
+            </p>
+          </motion.div>
+        </div>
+
+        <motion.div
+          id="chart"
           className="dash-card admin-section"
-          {...cardEntrance(0)}
+          style={{ animation: "none" }}
+          {...cardEntrance(2)}
           whileHover={cardHover}
         >
           <h2 className="dash-card-title">
-            <User size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Account Settings
+            <BarChart3 size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Consumption Trend
           </h2>
-
-          <hr className="dash-divider" />
-          <p className="dash-label">PROFILE</p>
-          {!isEditingProfile && (
-            <>
-              <p className="dash-value-lg">{profileName || "—"}</p>
-              <p className="bill-date">{profileEmail || "—"}</p>
-              <motion.button
-                className="dash-button-outline"
-                onClick={handleStartEditProfile}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-              >
-                <Pencil size={14} /> Edit Profile
-              </motion.button>
-            </>
+          {bills.length < 2 ? (
+            <p className="forecast-message">Chart will appear once you have more billing history</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis dataKey="date" tick={{ fill: "var(--color-text-muted)", fontSize: 11 }} />
+                <YAxis hide={true} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--color-surface-2)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: "8px",
+                    color: "var(--color-text)",
+                  }}
+                />
+                <Bar dataKey="consumption_kwh" fill="var(--color-cyan)" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           )}
-          <AnimatePresence initial={false}>
-            {isEditingProfile && (
-              <motion.div
-                key="edit-profile-form"
-                initial={{ height: 0, opacity: 0, y: -8 }}
-                animate={{ height: "auto", opacity: 1, y: 0 }}
-                exit={{ height: 0, opacity: 0, y: -8 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                style={{ overflow: "hidden" }}
-              >
-                <form onSubmit={handleSaveProfile}>
-                  <input
-                    className="auth-input"
-                    type="text"
-                    placeholder="Name"
-                    value={editProfileName}
-                    onChange={(e) => setEditProfileName(e.target.value)}
-                  />
-                  <input
-                    className="auth-input"
-                    type="email"
-                    placeholder="Email"
-                    value={editProfileEmail}
-                    onChange={(e) => setEditProfileEmail(e.target.value)}
-                  />
-                  <div style={{ display: "flex", gap: "0.75rem" }}>
-                    <motion.button
-                      className="dash-button"
-                      type="submit"
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      disabled={isSavingProfile}
-                      style={{ flex: 1 }}
-                    >
-                      {isSavingProfile ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
-                    </motion.button>
-                    <motion.button
-                      className="dash-button-outline"
-                      type="button"
-                      onClick={handleCancelEditProfile}
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      style={{ flex: 1, marginTop: 0 }}
-                    >
-                      Cancel
-                    </motion.button>
-                  </div>
-                </form>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <hr className="dash-divider" />
-          <p className="dash-label">PASSWORD</p>
-          {!isChangingPassword && (
-            <motion.button
-              className="dash-button-outline"
-              onClick={handleStartChangePassword}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <Lock size={14} /> Change Password
-            </motion.button>
-          )}
-          <AnimatePresence initial={false}>
-            {isChangingPassword && (
-              <motion.div
-                key="change-password-form"
-                initial={{ height: 0, opacity: 0, y: -8 }}
-                animate={{ height: "auto", opacity: 1, y: 0 }}
-                exit={{ height: 0, opacity: 0, y: -8 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                style={{ overflow: "hidden" }}
-              >
-                <form onSubmit={handleSavePassword}>
-                  <input
-                    className="auth-input"
-                    type="password"
-                    placeholder="Current password"
-                    value={currentPasswordInput}
-                    onChange={(e) => setCurrentPasswordInput(e.target.value)}
-                  />
-                  <input
-                    className="auth-input"
-                    type="password"
-                    placeholder="New password"
-                    value={newPasswordInput}
-                    onChange={(e) => setNewPasswordInput(e.target.value)}
-                  />
-                  <div style={{ display: "flex", gap: "0.75rem" }}>
-                    <motion.button
-                      className="dash-button"
-                      type="submit"
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      disabled={isSavingPassword}
-                      style={{ flex: 1 }}
-                    >
-                      {isSavingPassword ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
-                    </motion.button>
-                    <motion.button
-                      className="dash-button-outline"
-                      type="button"
-                      onClick={handleCancelChangePassword}
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      style={{ flex: 1, marginTop: 0 }}
-                    >
-                      Cancel
-                    </motion.button>
-                  </div>
-                </form>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.section>
+        </motion.div>
 
             <motion.div
           id="subscription"
           className="dash-card admin-section"
           style={{ animation: "none" }}
-          {...cardEntrance(1)}
+          {...cardEntrance(3)}
           whileHover={cardHover}
         >
           <h2 className="dash-card-title">
@@ -782,64 +698,148 @@ function Dashboard() {
           )}
         </motion.div>
 
-        <div className="admin-stats-grid">
-          <motion.div
-            className="stat-card stat-card-cyan"
-            style={{ animation: "none" }}
-            {...cardEntrance(2)}
-            whileHover={cardHover}
-          >
-            <p className="dash-label">
-              <BarChart3 size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> TOTAL CONSUMPTION
-            </p>
-            <p className="stat-number-cyan">
-              <CountUpValue value={totalConsumption} suffix=" kWh" />
-            </p>
-          </motion.div>
-          <motion.div
-            className="stat-card stat-card-amber"
-            style={{ animation: "none" }}
-            {...cardEntrance(3)}
-            whileHover={cardHover}
-          >
-            <p className="dash-label">CURRENT BALANCE</p>
-            <p className="stat-number-amber">
-              <CountUpValue value={currentBalance} decimals={2} suffix=" USD" />
-            </p>
-          </motion.div>
-        </div>
-
-        <motion.div
-          id="chart"
+            <motion.section
+          id="account-settings"
           className="dash-card admin-section"
-          style={{ animation: "none" }}
           {...cardEntrance(4)}
           whileHover={cardHover}
         >
           <h2 className="dash-card-title">
-            <BarChart3 size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Consumption Trend
+            <User size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Account Settings
           </h2>
-          {bills.length < 2 ? (
-            <p className="forecast-message">Chart will appear once you have more billing history</p>
-          ) : (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                <XAxis dataKey="date" tick={{ fill: "var(--color-text-muted)", fontSize: 11 }} />
-                <YAxis hide={true} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "var(--color-surface-2)",
-                    border: "1px solid var(--color-border)",
-                    borderRadius: "8px",
-                    color: "var(--color-text)",
-                  }}
-                />
-                <Bar dataKey="consumption_kwh" fill="var(--color-cyan)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+
+          <hr className="dash-divider" />
+          <p className="dash-label">PROFILE</p>
+          {!isEditingProfile && (
+            <>
+              <p className="dash-value-lg">{profileName || "—"}</p>
+              <p className="bill-date">{profileEmail || "—"}</p>
+              <motion.button
+                className="dash-button-outline"
+                onClick={handleStartEditProfile}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <Pencil size={14} /> Edit Profile
+              </motion.button>
+            </>
           )}
-        </motion.div>
+          <AnimatePresence initial={false}>
+            {isEditingProfile && (
+              <motion.div
+                key="edit-profile-form"
+                initial={{ height: 0, opacity: 0, y: -8 }}
+                animate={{ height: "auto", opacity: 1, y: 0 }}
+                exit={{ height: 0, opacity: 0, y: -8 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                style={{ overflow: "hidden" }}
+              >
+                <form onSubmit={handleSaveProfile}>
+                  <input
+                    className="auth-input"
+                    type="text"
+                    placeholder="Name"
+                    value={editProfileName}
+                    onChange={(e) => setEditProfileName(e.target.value)}
+                  />
+                  <input
+                    className="auth-input"
+                    type="email"
+                    placeholder="Email"
+                    value={editProfileEmail}
+                    onChange={(e) => setEditProfileEmail(e.target.value)}
+                  />
+                  <div style={{ display: "flex", gap: "0.75rem" }}>
+                    <motion.button
+                      className="dash-button"
+                      type="submit"
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      disabled={isSavingProfile}
+                      style={{ flex: 1 }}
+                    >
+                      {isSavingProfile ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
+                    </motion.button>
+                    <motion.button
+                      className="dash-button-outline"
+                      type="button"
+                      onClick={handleCancelEditProfile}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      style={{ flex: 1, marginTop: 0 }}
+                    >
+                      Cancel
+                    </motion.button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <hr className="dash-divider" />
+          <p className="dash-label">PASSWORD</p>
+          {!isChangingPassword && (
+            <motion.button
+              className="dash-button-outline"
+              onClick={handleStartChangePassword}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              <Lock size={14} /> Change Password
+            </motion.button>
+          )}
+          <AnimatePresence initial={false}>
+            {isChangingPassword && (
+              <motion.div
+                key="change-password-form"
+                initial={{ height: 0, opacity: 0, y: -8 }}
+                animate={{ height: "auto", opacity: 1, y: 0 }}
+                exit={{ height: 0, opacity: 0, y: -8 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                style={{ overflow: "hidden" }}
+              >
+                <form onSubmit={handleSavePassword}>
+                  <input
+                    className="auth-input"
+                    type="password"
+                    placeholder="Current password"
+                    value={currentPasswordInput}
+                    onChange={(e) => setCurrentPasswordInput(e.target.value)}
+                  />
+                  <input
+                    className="auth-input"
+                    type="password"
+                    placeholder="New password"
+                    value={newPasswordInput}
+                    onChange={(e) => setNewPasswordInput(e.target.value)}
+                  />
+                  <div style={{ display: "flex", gap: "0.75rem" }}>
+                    <motion.button
+                      className="dash-button"
+                      type="submit"
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      disabled={isSavingPassword}
+                      style={{ flex: 1 }}
+                    >
+                      {isSavingPassword ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
+                    </motion.button>
+                    <motion.button
+                      className="dash-button-outline"
+                      type="button"
+                      onClick={handleCancelChangePassword}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      style={{ flex: 1, marginTop: 0 }}
+                    >
+                      Cancel
+                    </motion.button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.section>
 
         <motion.div
           id="forecast"
