@@ -109,6 +109,7 @@ function OwnerDashboard() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [bills, setBills] = useState<Bill[]>([]);
   const [subscriberSearch, setSubscriberSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"active" | "all" | "pending" | "inactive">("active");
   const [submittingReadingId, setSubmittingReadingId] = useState<string | null>(null);
   const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
   const [pendingSubscriptions, setPendingSubscriptions] = useState<Subscriber[]>([]);
@@ -200,9 +201,13 @@ function OwnerDashboard() {
     ampere: subscriber.ampere,
   }));
 
-  const filteredSubscribers = subscribers.filter((subscriber) =>
-    (subscriber.subscriber_name || "").toLowerCase().includes(subscriberSearch.toLowerCase())
-  );
+  const filteredSubscribers = subscribers.filter((subscriber) => {
+    const matchesSearch = (subscriber.subscriber_name || "")
+      .toLowerCase()
+      .includes(subscriberSearch.toLowerCase());
+    const matchesStatus = statusFilter === "all" || subscriber.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="admin-shell">
@@ -292,6 +297,20 @@ function OwnerDashboard() {
               value={subscriberSearch}
               onChange={(e) => setSubscriberSearch(e.target.value)}
             />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
+            <p className="dash-label" style={{ margin: 0 }}>STATUS</p>
+            <select
+              className="owner-select"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as "active" | "all" | "pending" | "inactive")}
+              style={{ flex: "0 1 160px" }}
+            >
+              <option value="active">Active</option>
+              <option value="all">All</option>
+              <option value="pending">Pending</option>
+              <option value="inactive">Inactive</option>
+            </select>
           </div>
           {subscribers.length === 0 ? (
             <p>No subscribers yet</p>

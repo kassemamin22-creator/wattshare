@@ -154,6 +154,7 @@ function AdminDashboard() {
   const [userPendingDelete, setUserPendingDelete] = useState<User | null>(null);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [togglingSubscriptionId, setTogglingSubscriptionId] = useState<string | null>(null);
+  const [subscriptionStatusFilter, setSubscriptionStatusFilter] = useState<"active" | "all" | "pending" | "inactive">("active");
   const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
   const [resetPasswordInput, setResetPasswordInput] = useState("");
   const [isResettingPassword, setIsResettingPassword] = useState(false);
@@ -439,6 +440,10 @@ function AdminDashboard() {
     role: displayRole(role).charAt(0).toUpperCase() + displayRole(role).slice(1),
     count: users.filter((user) => user.role === role).length,
   }));
+
+  const filteredSubscriptions = subscriptions.filter(
+    (subscription) => subscriptionStatusFilter === "all" || subscription.status === subscriptionStatusFilter
+  );
 
   return (
     <div className="admin-shell">
@@ -761,6 +766,22 @@ function AdminDashboard() {
           <h2 className="dash-card-title">
             <Zap size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Subscriptions
           </h2>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
+            <p className="dash-label" style={{ margin: 0 }}>STATUS</p>
+            <select
+              className="owner-select"
+              value={subscriptionStatusFilter}
+              onChange={(e) =>
+                setSubscriptionStatusFilter(e.target.value as "active" | "all" | "pending" | "inactive")
+              }
+              style={{ flex: "0 1 160px" }}
+            >
+              <option value="active">Active</option>
+              <option value="all">All</option>
+              <option value="pending">Pending</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
           {subscriptions.length === 0 ? (
             <p>No data yet</p>
           ) : (
@@ -775,7 +796,7 @@ function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {subscriptions.map((subscription, index) => (
+                  {filteredSubscriptions.map((subscription, index) => (
                     <motion.tr key={subscription.id} {...rowEntrance(index)} whileHover={rowHover}>
                       <td>{subscription.subscriber_name || subscription.subscriber_id}</td>
                       <td>{subscription.ampere}A</td>
