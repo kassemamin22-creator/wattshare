@@ -176,7 +176,7 @@ def create_subscription(subscription: SubscriptionCreate, current_user: dict = D
         "unit_number": subscription.unit_number,
         "payment_method": subscription.payment_method,
         "start_date": start_date,
-        "status": "active",
+        "status": "pending",
     })
 
     return SubscriptionOut(
@@ -191,7 +191,7 @@ def create_subscription(subscription: SubscriptionCreate, current_user: dict = D
         unit_number=subscription.unit_number,
         payment_method=subscription.payment_method,
         start_date=start_date,
-        status="active",
+        status="pending",
     )
 
 @app.get("/subscription/me", response_model=SubscriptionOut)
@@ -602,6 +602,71 @@ def toggle_subscription_status(subscription_id: str, current_user: dict = Depend
         ampere=subscription["ampere"],
         tariff_rate=subscription["tariff_rate"],
         status=new_status,
+        flat_fee=subscription.get("flat_fee", 0.0),
+        address=subscription.get("address", ""),
+        phone=subscription.get("phone", ""),
+        unit_number=subscription.get("unit_number", ""),
+        payment_method=subscription.get("payment_method", "cash"),
+        start_date=subscription.get("start_date", datetime.utcnow()),
+        subscriber_name=subscriber_name,
+    )
+
+@app.get("/owner/subscriptions/pending", response_model=List[SubscriptionOut])
+def read_pending_subscriptions(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "owner":
+        raise HTTPException(status_code=403, detail="Only managers can access this")
+
+    subscriptions = subscriptions_collection.find({"status": "pending"})
+
+    result = []
+    for subscription in subscriptions:
+        subscriber = users_collection.find_one({"_id": ObjectId(subscription["subscriber_id"])})
+        subscriber_name = subscriber["name"] if subscriber else "Unknown Subscriber"
+
+        result.append(
+            SubscriptionOut(
+                id=str(subscription["_id"]),
+                subscriber_id=subscription["subscriber_id"],
+                generator_name=subscription["generator_name"],
+                ampere=subscription["ampere"],
+                tariff_rate=subscription["tariff_rate"],
+                status=subscription["status"],
+                flat_fee=subscription.get("flat_fee", 0.0),
+                address=subscription.get("address", ""),
+                phone=subscription.get("phone", ""),
+                unit_number=subscription.get("unit_number", ""),
+                payment_method=subscription.get("payment_method", "cash"),
+                start_date=subscription.get("start_date", datetime.utcnow()),
+                subscriber_name=subscriber_name,
+            )
+        )
+
+    return result
+
+@app.patch("/owner/subscriptions/{subscription_id}/approve", response_model=SubscriptionOut)
+def approve_subscription(subscription_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "owner":
+        raise HTTPException(status_code=403, detail="Only managers can access this")
+
+    subscription = subscriptions_collection.find_one({"_id": ObjectId(subscription_id)})
+    if not subscription:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+
+    subscriptions_collection.update_one(
+        {"_id": ObjectId(subscription_id)},
+        {"$set": {"status": "active"}},
+    )
+
+    subscriber = users_collection.find_one({"_id": ObjectId(subscription["subscriber_id"])})
+    subscriber_name = subscriber["name"] if subscriber else "Unknown Subscriber"
+
+    return SubscriptionOut(
+        id=str(subscription["_id"]),
+        subscriber_id=subscription["subscriber_id"],
+        generator_name=subscription["generator_name"],
+        ampere=subscription["ampere"],
+        tariff_rate=subscription["tariff_rate"],
+        status="active",
         flat_fee=subscription.get("flat_fee", 0.0),
         address=subscription.get("address", ""),
         phone=subscription.get("phone", ""),
