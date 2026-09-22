@@ -23,6 +23,7 @@ interface Subscription {
   building: string;
   phone: string;
   unit_number: string;
+  pending_ampere_change?: number | null;
 }
 
 interface Bill {
@@ -157,11 +158,11 @@ function Dashboard() {
   const [currentPasswordInput, setCurrentPasswordInput] = useState("");
   const [newPasswordInput, setNewPasswordInput] = useState("");
   const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [requestedAmpere, setRequestedAmpere] = useState("");
+  const [isRequestingAmpereChange, setIsRequestingAmpereChange] = useState(false);
 
-  useEffect(() => {
-    api.get("/me").then((response) => setCurrentUser(response.data));
-
-    api
+  const fetchSubscription = () => {
+    return api
       .get("/subscription/me")
       .then((response) => setSubscription(response.data))
       .catch((err) => {
@@ -169,6 +170,12 @@ function Dashboard() {
           setHasSubscription(false);
         }
       });
+  };
+
+  useEffect(() => {
+    api.get("/me").then((response) => setCurrentUser(response.data));
+
+    fetchSubscription();
 
     api.get("/bills/me").then((response) => setBills(response.data));
 
@@ -246,6 +253,27 @@ function Dashboard() {
       }
     } finally {
       setIsSavingEdit(false);
+    }
+  };
+
+  const handleRequestAmpereChange = async () => {
+    setIsRequestingAmpereChange(true);
+
+    try {
+      await api.post("/subscription/me/request-ampere-change", {
+        ampere: Number(requestedAmpere),
+      });
+      showToast("Ampere change requested", "success");
+      setRequestedAmpere("");
+      fetchSubscription();
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        showToast(err.response.data.detail, "error");
+      } else {
+        showToast("Failed to request ampere change", "error");
+      }
+    } finally {
+      setIsRequestingAmpereChange(false);
     }
   };
 
@@ -475,6 +503,33 @@ function Dashboard() {
                   </span>
                 </div>
               </div>
+              {subscription.pending_ampere_change != null ? (
+                <span className="pill pill-warning">
+                  Ampere change requested: {subscription.pending_ampere_change}A (awaiting manager approval)
+                </span>
+              ) : (
+                <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+                  <input
+                    className="auth-input"
+                    type="number"
+                    placeholder="New ampere value"
+                    value={requestedAmpere}
+                    onChange={(e) => setRequestedAmpere(e.target.value)}
+                    style={{ marginBottom: 0, flex: 1 }}
+                  />
+                  <motion.button
+                    className="dash-button-outline"
+                    type="button"
+                    onClick={handleRequestAmpereChange}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    disabled={isRequestingAmpereChange}
+                    style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
+                  >
+                    {isRequestingAmpereChange ? <Loader2 size={16} className="btn-spinner" /> : "Request Change"}
+                  </motion.button>
+                </div>
+              )}
               <hr className="dash-divider" />
               {!isEditing && (
                 <>
