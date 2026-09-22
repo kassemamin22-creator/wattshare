@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users, BarChart3, AlertCircle, Gauge, LogOut, Receipt, Search, Loader2 } from "lucide-react";
+import { Users, BarChart3, AlertCircle, Gauge, LogOut, Receipt, Search, Loader2, UserCheck } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { isAxiosError } from "axios";
 import api from "../services/api";
@@ -111,11 +111,14 @@ function OwnerDashboard() {
   const [subscriberSearch, setSubscriberSearch] = useState("");
   const [submittingReadingId, setSubmittingReadingId] = useState<string | null>(null);
   const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
+  const [pendingSubscriptions, setPendingSubscriptions] = useState<Subscriber[]>([]);
+  const [approvingId, setApprovingId] = useState<string | null>(null);
 
   useEffect(() => {
     api.get("/subscribers").then((response) => setSubscribers(response.data));
     api.get("/issues").then((response) => setIssues(response.data));
     api.get("/admin/bills").then((response) => setBills(response.data));
+    api.get("/owner/subscriptions/pending").then((response) => setPendingSubscriptions(response.data));
   }, []);
 
   const handleLogout = () => {
@@ -171,6 +174,24 @@ function OwnerDashboard() {
       }
     } finally {
       setSubmittingReadingId(null);
+    }
+  };
+
+  const approveSubscription = async (id: string) => {
+    setApprovingId(id);
+
+    try {
+      await api.patch(`/owner/subscriptions/${id}/approve`);
+      setPendingSubscriptions((prev) => prev.filter((item) => item.id !== id));
+      showToast("Subscription approved", "success");
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        showToast(err.response.data.detail, "error");
+      } else {
+        showToast("Failed to approve subscription", "error");
+      }
+    } finally {
+      setApprovingId(null);
     }
   };
 
@@ -340,9 +361,62 @@ function OwnerDashboard() {
         </motion.section>
 
         <motion.section
-          id="chart"
+          id="pending-approvals"
           className="dash-card admin-section"
           {...cardEntrance(1)}
+          whileHover={cardHover}
+        >
+          <h2 className="dash-card-title">
+            <UserCheck size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Pending Approvals
+          </h2>
+          {pendingSubscriptions.length === 0 ? (
+            <p>No pending requests</p>
+          ) : (
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Subscriber Name</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Ampere</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingSubscriptions.map((item, index) => (
+                    <motion.tr key={item.id} {...rowEntrance(index)} whileHover={rowHover}>
+                      <td>{item.subscriber_name || item.subscriber_id}</td>
+                      <td>{item.phone}</td>
+                      <td>{item.address}</td>
+                      <td>{item.ampere}A</td>
+                      <td>
+                        <motion.button
+                          className="auth-button owner-submit-button"
+                          onClick={() => approveSubscription(item.id)}
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          disabled={approvingId === item.id}
+                        >
+                          {approvingId === item.id ? (
+                            <Loader2 size={14} className="btn-spinner" />
+                          ) : (
+                            "Approve"
+                          )}
+                        </motion.button>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </motion.section>
+
+        <motion.section
+          id="chart"
+          className="dash-card admin-section"
+          {...cardEntrance(2)}
           whileHover={cardHover}
         >
           <h2 className="dash-card-title">
@@ -373,7 +447,7 @@ function OwnerDashboard() {
         <motion.section
           id="issues"
           className="dash-card admin-section"
-          {...cardEntrance(2)}
+          {...cardEntrance(3)}
           whileHover={cardHover}
         >
           <h2 className="dash-card-title">
@@ -428,7 +502,7 @@ function OwnerDashboard() {
         <motion.section
           id="bills"
           className="dash-card admin-section"
-          {...cardEntrance(3)}
+          {...cardEntrance(4)}
           whileHover={cardHover}
         >
           <h2 className="dash-card-title">
