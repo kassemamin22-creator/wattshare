@@ -1,0 +1,92 @@
+import { useState, type FormEvent } from "react";
+import { useOutletContext } from "react-router-dom";
+import { motion } from "framer-motion";
+import { UserPlus, Loader2 } from "lucide-react";
+import { isAxiosError } from "axios";
+import api from "../../services/api";
+import { useToast } from "../../hooks/useToast";
+import type { AdminDashboardContext } from "./AdminDashboardLayout";
+import { cardEntrance, cardHover } from "./shared";
+
+function AddManagerPage() {
+  const showToast = useToast();
+  const { fetchUsers } = useOutletContext<AdminDashboardContext>();
+
+  const [managerName, setManagerName] = useState("");
+  const [managerEmail, setManagerEmail] = useState("");
+  const [managerPassword, setManagerPassword] = useState("");
+  const [isAddingManager, setIsAddingManager] = useState(false);
+
+  const handleAddManager = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsAddingManager(true);
+
+    try {
+      await api.post("/admin/add-manager", {
+        name: managerName,
+        email: managerEmail,
+        password: managerPassword,
+      });
+      showToast("Manager account created successfully", "success");
+      setManagerName("");
+      setManagerEmail("");
+      setManagerPassword("");
+      fetchUsers();
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        showToast(err.response.data.detail, "error");
+      } else {
+        showToast("Failed to create manager account", "error");
+      }
+    } finally {
+      setIsAddingManager(false);
+    }
+  };
+
+  return (
+    <motion.section
+      id="add-manager"
+      className="dash-card admin-section"
+      {...cardEntrance(0)}
+      whileHover={cardHover}
+    >
+      <h2 className="dash-card-title">
+        <UserPlus size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Add Manager
+      </h2>
+      <form onSubmit={handleAddManager} className="admin-manager-form">
+        <input
+          className="auth-input"
+          type="text"
+          placeholder="Name"
+          value={managerName}
+          onChange={(e) => setManagerName(e.target.value)}
+        />
+        <input
+          className="auth-input"
+          type="email"
+          placeholder="Email"
+          value={managerEmail}
+          onChange={(e) => setManagerEmail(e.target.value)}
+        />
+        <input
+          className="auth-input"
+          type="password"
+          placeholder="Password"
+          value={managerPassword}
+          onChange={(e) => setManagerPassword(e.target.value)}
+        />
+        <motion.button
+          className="auth-button"
+          type="submit"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          disabled={isAddingManager}
+        >
+          {isAddingManager ? <Loader2 size={16} className="btn-spinner" /> : "Add Manager"}
+        </motion.button>
+      </form>
+    </motion.section>
+  );
+}
+
+export default AddManagerPage;

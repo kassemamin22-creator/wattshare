@@ -3,7 +3,6 @@ import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Subscribe from './pages/Subscribe'
-import AdminDashboard from './pages/AdminDashboard'
 import DashboardLayout from './pages/dashboard/DashboardLayout'
 import ChartPage from './pages/dashboard/ChartPage'
 import SubscriptionPage from './pages/dashboard/SubscriptionPage'
@@ -19,6 +18,14 @@ import OwnerChartPage from './pages/owner/ChartPage'
 import IssuesPage from './pages/owner/IssuesPage'
 import BillsPage from './pages/owner/BillsPage'
 import AddSubscriberPage from './pages/owner/AddSubscriberPage'
+import AdminDashboardLayout from './pages/admin/AdminDashboardLayout'
+import UsersPage from './pages/admin/UsersPage'
+import SubscriptionsPage from './pages/admin/SubscriptionsPage'
+import AdminBillsPage from './pages/admin/BillsPage'
+import AddManagerPage from './pages/admin/AddManagerPage'
+import AdminAddSubscriberPage from './pages/admin/AddSubscriberPage'
+import PricingPage from './pages/admin/PricingPage'
+import AdminAccountSettingsPage from './pages/admin/AccountSettingsPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import { ToastProvider } from './components/Toast'
 
@@ -74,10 +81,19 @@ function App() {
           path="/admin"
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
-              <AdminDashboard />
+              <AdminDashboardLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Navigate to="users" replace />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="subscriptions" element={<SubscriptionsPage />} />
+          <Route path="bills" element={<AdminBillsPage />} />
+          <Route path="add-manager" element={<AddManagerPage />} />
+          <Route path="add-subscriber" element={<AdminAddSubscriberPage />} />
+          <Route path="pricing" element={<PricingPage />} />
+          <Route path="account-settings" element={<AdminAccountSettingsPage />} />
+        </Route>
       </Routes>
     </ToastProvider>
   )
