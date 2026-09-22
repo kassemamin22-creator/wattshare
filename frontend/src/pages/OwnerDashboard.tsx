@@ -18,6 +18,7 @@ interface Subscriber {
   phone: string;
   unit_number: string;
   subscriber_name?: string;
+  last_reading?: number | null;
 }
 
 interface Issue {
@@ -178,7 +179,13 @@ function OwnerDashboard() {
     }
   };
 
-  const handleSubmitReading = async (subscriberId: string) => {
+  const handleSubmitReading = async (subscriberId: string, lastReading: number | null | undefined) => {
+    const value = readingValues[subscriberId];
+    const lastReadingLabel = lastReading != null ? lastReading : "No previous reading";
+    if (!window.confirm(`Confirm meter reading: ${value}? Last recorded reading was ${lastReadingLabel}.`)) {
+      return;
+    }
+
     setSubmittingReadingId(subscriberId);
 
     try {
@@ -402,6 +409,9 @@ function OwnerDashboard() {
                         </span>
                       </td>
                       <td>
+                        <p className="dash-label" style={{ margin: "0 0 4px" }}>
+                          Last reading: {subscriber.last_reading != null ? subscriber.last_reading : "No previous reading"}
+                        </p>
                         <input
                           className="auth-input owner-reading-input"
                           type="number"
@@ -415,7 +425,7 @@ function OwnerDashboard() {
                       <td>
                         <motion.button
                           className="auth-button owner-submit-button"
-                          onClick={() => handleSubmitReading(subscriber.subscriber_id)}
+                          onClick={() => handleSubmitReading(subscriber.subscriber_id, subscriber.last_reading)}
                           whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
                           disabled={submittingReadingId === subscriber.subscriber_id}
