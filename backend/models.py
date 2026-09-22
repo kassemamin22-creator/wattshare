@@ -29,6 +29,7 @@ class SubscriberCreate(BaseModel):
     email: EmailStr
     password: str
     address: str
+    building: str
     phone: str
     unit_number: str
     ampere: int
@@ -64,6 +65,7 @@ class AdminPasswordReset(BaseModel):
 class SubscriptionCreate(BaseModel):
     ampere: int
     address: str
+    building: str
     phone: str
     unit_number: str
     payment_method: PaymentMethod
@@ -77,6 +79,7 @@ class SubscriptionOut(BaseModel):
     status: str
     flat_fee: float
     address: str
+    building: str
     phone: str
     unit_number: str
     payment_method: PaymentMethod
@@ -86,6 +89,7 @@ class SubscriptionOut(BaseModel):
 
 class SubscriptionUpdate(BaseModel):
     address: str
+    building: str
     phone: str
     unit_number: str
 
