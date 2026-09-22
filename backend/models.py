@@ -82,6 +82,7 @@ class SubscriptionOut(BaseModel):
     payment_method: PaymentMethod
     start_date: datetime
     subscriber_name: Optional[str] = None
+    last_reading: Optional[float] = None
 
 class SubscriptionUpdate(BaseModel):
     address: str

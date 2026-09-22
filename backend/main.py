@@ -261,6 +261,12 @@ def read_subscribers(current_user: dict = Depends(get_current_user)):
         subscriber = users_collection.find_one({"_id": ObjectId(subscription["subscriber_id"])})
         subscriber_name = subscriber["name"] if subscriber else "Unknown Subscriber"
 
+        last_reading = meter_readings_collection.find_one(
+            {"subscriber_id": subscription["subscriber_id"]},
+            sort=[("reading_date", -1)],
+        )
+        last_reading_value = last_reading["reading_value"] if last_reading else None
+
         result.append(
             SubscriptionOut(
                 id=str(subscription["_id"]),
@@ -276,6 +282,7 @@ def read_subscribers(current_user: dict = Depends(get_current_user)):
                 payment_method=subscription.get("payment_method", "cash"),
                 start_date=subscription.get("start_date", datetime.utcnow()),
                 subscriber_name=subscriber_name,
+                last_reading=last_reading_value,
             )
         )
 
