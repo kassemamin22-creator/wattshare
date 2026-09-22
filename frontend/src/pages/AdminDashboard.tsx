@@ -23,6 +23,10 @@ interface Subscription {
   ampere: number;
   tariff_rate: number;
   status: string;
+  address: string;
+  building: string;
+  phone: string;
+  unit_number: string;
   subscriber_name?: string;
 }
 
@@ -183,6 +187,12 @@ function AdminDashboard() {
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [togglingSubscriptionId, setTogglingSubscriptionId] = useState<string | null>(null);
   const [subscriptionStatusFilter, setSubscriptionStatusFilter] = useState<"active" | "all" | "pending" | "inactive">("active");
+  const [editingSubscriptionId, setEditingSubscriptionId] = useState<string | null>(null);
+  const [editSubscriptionAddress, setEditSubscriptionAddress] = useState("");
+  const [editSubscriptionBuilding, setEditSubscriptionBuilding] = useState("");
+  const [editSubscriptionPhone, setEditSubscriptionPhone] = useState("");
+  const [editSubscriptionUnitNumber, setEditSubscriptionUnitNumber] = useState("");
+  const [isSavingSubscription, setIsSavingSubscription] = useState(false);
   const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
   const [resetPasswordInput, setResetPasswordInput] = useState("");
   const [isResettingPassword, setIsResettingPassword] = useState(false);
@@ -435,6 +445,45 @@ function AdminDashboard() {
       // toggle-status failed; leave the subscription status as-is
     } finally {
       setTogglingSubscriptionId(null);
+    }
+  };
+
+  const handleStartEditSubscription = (subscription: Subscription) => {
+    setEditingSubscriptionId(subscription.id);
+    setEditSubscriptionAddress(subscription.address);
+    setEditSubscriptionBuilding(subscription.building);
+    setEditSubscriptionPhone(subscription.phone);
+    setEditSubscriptionUnitNumber(subscription.unit_number);
+  };
+
+  const handleCancelEditSubscription = () => {
+    setEditingSubscriptionId(null);
+  };
+
+  const handleSaveEditSubscription = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingSubscriptionId) return;
+
+    setIsSavingSubscription(true);
+
+    try {
+      await api.patch(`/admin/subscriptions/${editingSubscriptionId}`, {
+        address: editSubscriptionAddress,
+        building: editSubscriptionBuilding,
+        phone: editSubscriptionPhone,
+        unit_number: editSubscriptionUnitNumber,
+      });
+      showToast("Subscription updated successfully", "success");
+      setEditingSubscriptionId(null);
+      fetchSubscriptions();
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        showToast(err.response.data.detail, "error");
+      } else {
+        showToast("Failed to update subscription", "error");
+      }
+    } finally {
+      setIsSavingSubscription(false);
     }
   };
 
@@ -909,6 +958,10 @@ function AdminDashboard() {
                 <thead>
                   <tr>
                     <th>Subscriber</th>
+                    <th>Address</th>
+                    <th>Building</th>
+                    <th>Phone</th>
+                    <th>Unit</th>
                     <th>Ampere</th>
                     <th>Status</th>
                     <th>Action</th>
@@ -916,47 +969,143 @@ function AdminDashboard() {
                 </thead>
                 <tbody>
                   {filteredSubscriptions.map((subscription, index) => (
-                    <motion.tr key={subscription.id} {...rowEntrance(index)} whileHover={rowHover}>
-                      <td>{subscription.subscriber_name || subscription.subscriber_id}</td>
-                      <td>{subscription.ampere}A</td>
-                      <td>
-                        <span className={statusPillClass(subscription.status)}>
-                          <span className="pill-dot"></span>
-                          {subscription.status.toUpperCase()}
-                        </span>
-                      </td>
-                      <td>
-                        {subscription.status === "active" ? (
-                          <motion.button
-                            className="admin-mobile-logout"
-                            onClick={() => handleToggleSubscriptionStatus(subscription.id)}
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
-                            disabled={togglingSubscriptionId === subscription.id}
-                          >
-                            {togglingSubscriptionId === subscription.id ? (
-                              <Loader2 size={14} className="btn-spinner" />
+                    <Fragment key={subscription.id}>
+                      <motion.tr {...rowEntrance(index)} whileHover={rowHover}>
+                        <td>{subscription.subscriber_name || subscription.subscriber_id}</td>
+                        <td>{subscription.address}</td>
+                        <td>{subscription.building}</td>
+                        <td>{subscription.phone}</td>
+                        <td>{subscription.unit_number}</td>
+                        <td>{subscription.ampere}A</td>
+                        <td>
+                          <span className={statusPillClass(subscription.status)}>
+                            <span className="pill-dot"></span>
+                            {subscription.status.toUpperCase()}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ display: "flex", gap: "0.5rem" }}>
+                            <motion.button
+                              className="dash-button-outline"
+                              onClick={() => handleStartEditSubscription(subscription)}
+                              whileHover={{ scale: 1.03 }}
+                              whileTap={{ scale: 0.97 }}
+                              style={{ marginTop: 0, width: "auto", padding: "0.5rem 0.75rem" }}
+                            >
+                              <Pencil size={14} />
+                            </motion.button>
+                            {subscription.status === "active" ? (
+                              <motion.button
+                                className="admin-mobile-logout"
+                                onClick={() => handleToggleSubscriptionStatus(subscription.id)}
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                disabled={togglingSubscriptionId === subscription.id}
+                              >
+                                {togglingSubscriptionId === subscription.id ? (
+                                  <Loader2 size={14} className="btn-spinner" />
+                                ) : (
+                                  "Deactivate"
+                                )}
+                              </motion.button>
                             ) : (
-                              "Deactivate"
+                              <motion.button
+                                className="auth-button owner-submit-button"
+                                onClick={() => handleToggleSubscriptionStatus(subscription.id)}
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                disabled={togglingSubscriptionId === subscription.id}
+                              >
+                                {togglingSubscriptionId === subscription.id ? (
+                                  <Loader2 size={14} className="btn-spinner" />
+                                ) : (
+                                  "Activate"
+                                )}
+                              </motion.button>
                             )}
-                          </motion.button>
-                        ) : (
-                          <motion.button
-                            className="auth-button owner-submit-button"
-                            onClick={() => handleToggleSubscriptionStatus(subscription.id)}
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
-                            disabled={togglingSubscriptionId === subscription.id}
+                          </div>
+                        </td>
+                      </motion.tr>
+                      <AnimatePresence initial={false}>
+                        {editingSubscriptionId === subscription.id && (
+                          <motion.tr
+                            key="edit-row"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
                           >
-                            {togglingSubscriptionId === subscription.id ? (
-                              <Loader2 size={14} className="btn-spinner" />
-                            ) : (
-                              "Activate"
-                            )}
-                          </motion.button>
+                            <td colSpan={8}>
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.25, ease: "easeInOut" }}
+                                style={{ overflow: "hidden" }}
+                              >
+                                <form
+                                  onSubmit={handleSaveEditSubscription}
+                                  style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}
+                                >
+                                  <input
+                                    className="auth-input"
+                                    type="text"
+                                    placeholder="Address"
+                                    value={editSubscriptionAddress}
+                                    onChange={(e) => setEditSubscriptionAddress(e.target.value)}
+                                    style={{ flex: "1 1 160px", marginBottom: 0 }}
+                                  />
+                                  <input
+                                    className="auth-input"
+                                    type="text"
+                                    placeholder="Building name or number"
+                                    value={editSubscriptionBuilding}
+                                    onChange={(e) => setEditSubscriptionBuilding(e.target.value)}
+                                    style={{ flex: "1 1 160px", marginBottom: 0 }}
+                                  />
+                                  <input
+                                    className="auth-input"
+                                    type="tel"
+                                    placeholder="Phone"
+                                    value={editSubscriptionPhone}
+                                    onChange={(e) => setEditSubscriptionPhone(e.target.value)}
+                                    style={{ flex: "1 1 160px", marginBottom: 0 }}
+                                  />
+                                  <input
+                                    className="auth-input"
+                                    type="text"
+                                    placeholder="Apt/Unit number"
+                                    value={editSubscriptionUnitNumber}
+                                    onChange={(e) => setEditSubscriptionUnitNumber(e.target.value)}
+                                    style={{ flex: "1 1 160px", marginBottom: 0 }}
+                                  />
+                                  <motion.button
+                                    className="auth-button owner-submit-button"
+                                    type="submit"
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    disabled={isSavingSubscription}
+                                    style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
+                                  >
+                                    {isSavingSubscription ? <Loader2 size={14} className="btn-spinner" /> : "Save"}
+                                  </motion.button>
+                                  <motion.button
+                                    className="dash-button-outline"
+                                    type="button"
+                                    onClick={handleCancelEditSubscription}
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
+                                  >
+                                    Cancel
+                                  </motion.button>
+                                </form>
+                              </motion.div>
+                            </td>
+                          </motion.tr>
                         )}
-                      </td>
-                    </motion.tr>
+                      </AnimatePresence>
+                    </Fragment>
                   ))}
                 </tbody>
               </table>

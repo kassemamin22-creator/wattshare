@@ -1,7 +1,7 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Users, BarChart3, AlertCircle, Gauge, LogOut, Receipt, Search, Loader2, UserCheck, UserPlus } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Users, BarChart3, AlertCircle, Gauge, LogOut, Receipt, Search, Loader2, UserCheck, UserPlus, Pencil } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { isAxiosError } from "axios";
 import api from "../services/api";
@@ -15,6 +15,7 @@ interface Subscriber {
   tariff_rate: number;
   status: string;
   address: string;
+  building: string;
   phone: string;
   unit_number: string;
   subscriber_name?: string;
@@ -132,6 +133,12 @@ function OwnerDashboard() {
   const [subscriberAmpere, setSubscriberAmpere] = useState("");
   const [subscriberPaymentMethod, setSubscriberPaymentMethod] = useState("cash");
   const [isAddingSubscriber, setIsAddingSubscriber] = useState(false);
+  const [editingSubscriptionId, setEditingSubscriptionId] = useState<string | null>(null);
+  const [editSubscriptionAddress, setEditSubscriptionAddress] = useState("");
+  const [editSubscriptionBuilding, setEditSubscriptionBuilding] = useState("");
+  const [editSubscriptionPhone, setEditSubscriptionPhone] = useState("");
+  const [editSubscriptionUnitNumber, setEditSubscriptionUnitNumber] = useState("");
+  const [isSavingSubscription, setIsSavingSubscription] = useState(false);
 
   const fetchSubscribers = () => {
     api.get("/subscribers").then((response) => setSubscribers(response.data));
@@ -221,6 +228,45 @@ function OwnerDashboard() {
       }
     } finally {
       setApprovingId(null);
+    }
+  };
+
+  const handleStartEditSubscription = (subscriber: Subscriber) => {
+    setEditingSubscriptionId(subscriber.id);
+    setEditSubscriptionAddress(subscriber.address);
+    setEditSubscriptionBuilding(subscriber.building);
+    setEditSubscriptionPhone(subscriber.phone);
+    setEditSubscriptionUnitNumber(subscriber.unit_number);
+  };
+
+  const handleCancelEditSubscription = () => {
+    setEditingSubscriptionId(null);
+  };
+
+  const handleSaveEditSubscription = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingSubscriptionId) return;
+
+    setIsSavingSubscription(true);
+
+    try {
+      await api.patch(`/admin/subscriptions/${editingSubscriptionId}`, {
+        address: editSubscriptionAddress,
+        building: editSubscriptionBuilding,
+        phone: editSubscriptionPhone,
+        unit_number: editSubscriptionUnitNumber,
+      });
+      showToast("Subscriber updated successfully", "success");
+      setEditingSubscriptionId(null);
+      fetchSubscribers();
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        showToast(err.response.data.detail, "error");
+      } else {
+        showToast("Failed to update subscriber", "error");
+      }
+    } finally {
+      setIsSavingSubscription(false);
     }
   };
 
@@ -389,6 +435,7 @@ function OwnerDashboard() {
                   <tr>
                     <th>Subscriber</th>
                     <th>Address</th>
+                    <th>Building</th>
                     <th>Phone</th>
                     <th>Unit</th>
                     <th>Ampere</th>
@@ -399,48 +446,141 @@ function OwnerDashboard() {
                 </thead>
                 <tbody>
                   {filteredSubscribers.map((subscriber, index) => (
-                    <motion.tr key={subscriber.id} {...rowEntrance(index)} whileHover={rowHover}>
-                      <td>{subscriber.subscriber_name || subscriber.subscriber_id}</td>
-                      <td>{subscriber.address}</td>
-                      <td>{subscriber.phone}</td>
-                      <td>{subscriber.unit_number}</td>
-                      <td>{subscriber.ampere}A</td>
-                      <td>
-                        <span className={statusPillClass(subscriber.status)}>
-                          <span className="pill-dot"></span>
-                          {subscriber.status.toUpperCase()}
-                        </span>
-                      </td>
-                      <td>
-                        <p className="dash-label" style={{ margin: "0 0 4px" }}>
-                          Last reading: {subscriber.last_reading != null ? subscriber.last_reading : "No previous reading"}
-                        </p>
-                        <input
-                          className="auth-input owner-reading-input"
-                          type="number"
-                          placeholder="Reading value"
-                          value={readingValues[subscriber.subscriber_id] || ""}
-                          onChange={(e) =>
-                            handleReadingChange(subscriber.subscriber_id, e.target.value)
-                          }
-                        />
-                      </td>
-                      <td>
-                        <motion.button
-                          className="auth-button owner-submit-button"
-                          onClick={() => handleSubmitReading(subscriber.subscriber_id, subscriber.last_reading)}
-                          whileHover={{ scale: 1.03 }}
-                          whileTap={{ scale: 0.97 }}
-                          disabled={submittingReadingId === subscriber.subscriber_id}
-                        >
-                          {submittingReadingId === subscriber.subscriber_id ? (
-                            <Loader2 size={14} className="btn-spinner" />
-                          ) : (
-                            "Submit Reading"
-                          )}
-                        </motion.button>
-                      </td>
-                    </motion.tr>
+                    <Fragment key={subscriber.id}>
+                      <motion.tr {...rowEntrance(index)} whileHover={rowHover}>
+                        <td>{subscriber.subscriber_name || subscriber.subscriber_id}</td>
+                        <td>{subscriber.address}</td>
+                        <td>{subscriber.building}</td>
+                        <td>{subscriber.phone}</td>
+                        <td>{subscriber.unit_number}</td>
+                        <td>{subscriber.ampere}A</td>
+                        <td>
+                          <span className={statusPillClass(subscriber.status)}>
+                            <span className="pill-dot"></span>
+                            {subscriber.status.toUpperCase()}
+                          </span>
+                        </td>
+                        <td>
+                          <p className="dash-label" style={{ margin: "0 0 4px" }}>
+                            Last reading: {subscriber.last_reading != null ? subscriber.last_reading : "No previous reading"}
+                          </p>
+                          <input
+                            className="auth-input owner-reading-input"
+                            type="number"
+                            placeholder="Reading value"
+                            value={readingValues[subscriber.subscriber_id] || ""}
+                            onChange={(e) =>
+                              handleReadingChange(subscriber.subscriber_id, e.target.value)
+                            }
+                          />
+                        </td>
+                        <td>
+                          <div style={{ display: "flex", gap: "0.5rem" }}>
+                            <motion.button
+                              className="dash-button-outline"
+                              onClick={() => handleStartEditSubscription(subscriber)}
+                              whileHover={{ scale: 1.03 }}
+                              whileTap={{ scale: 0.97 }}
+                              style={{ marginTop: 0, width: "auto", padding: "0.5rem 0.75rem" }}
+                            >
+                              <Pencil size={14} />
+                            </motion.button>
+                            <motion.button
+                              className="auth-button owner-submit-button"
+                              onClick={() => handleSubmitReading(subscriber.subscriber_id, subscriber.last_reading)}
+                              whileHover={{ scale: 1.03 }}
+                              whileTap={{ scale: 0.97 }}
+                              disabled={submittingReadingId === subscriber.subscriber_id}
+                            >
+                              {submittingReadingId === subscriber.subscriber_id ? (
+                                <Loader2 size={14} className="btn-spinner" />
+                              ) : (
+                                "Submit Reading"
+                              )}
+                            </motion.button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                      <AnimatePresence initial={false}>
+                        {editingSubscriptionId === subscriber.id && (
+                          <motion.tr
+                            key="edit-row"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <td colSpan={9}>
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.25, ease: "easeInOut" }}
+                                style={{ overflow: "hidden" }}
+                              >
+                                <form
+                                  onSubmit={handleSaveEditSubscription}
+                                  style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}
+                                >
+                                  <input
+                                    className="auth-input"
+                                    type="text"
+                                    placeholder="Address"
+                                    value={editSubscriptionAddress}
+                                    onChange={(e) => setEditSubscriptionAddress(e.target.value)}
+                                    style={{ flex: "1 1 160px", marginBottom: 0 }}
+                                  />
+                                  <input
+                                    className="auth-input"
+                                    type="text"
+                                    placeholder="Building name or number"
+                                    value={editSubscriptionBuilding}
+                                    onChange={(e) => setEditSubscriptionBuilding(e.target.value)}
+                                    style={{ flex: "1 1 160px", marginBottom: 0 }}
+                                  />
+                                  <input
+                                    className="auth-input"
+                                    type="tel"
+                                    placeholder="Phone"
+                                    value={editSubscriptionPhone}
+                                    onChange={(e) => setEditSubscriptionPhone(e.target.value)}
+                                    style={{ flex: "1 1 160px", marginBottom: 0 }}
+                                  />
+                                  <input
+                                    className="auth-input"
+                                    type="text"
+                                    placeholder="Apt/Unit number"
+                                    value={editSubscriptionUnitNumber}
+                                    onChange={(e) => setEditSubscriptionUnitNumber(e.target.value)}
+                                    style={{ flex: "1 1 160px", marginBottom: 0 }}
+                                  />
+                                  <motion.button
+                                    className="auth-button owner-submit-button"
+                                    type="submit"
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    disabled={isSavingSubscription}
+                                    style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
+                                  >
+                                    {isSavingSubscription ? <Loader2 size={14} className="btn-spinner" /> : "Save"}
+                                  </motion.button>
+                                  <motion.button
+                                    className="dash-button-outline"
+                                    type="button"
+                                    onClick={handleCancelEditSubscription}
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
+                                  >
+                                    Cancel
+                                  </motion.button>
+                                </form>
+                              </motion.div>
+                            </td>
+                          </motion.tr>
+                        )}
+                      </AnimatePresence>
+                    </Fragment>
                   ))}
                 </tbody>
               </table>
