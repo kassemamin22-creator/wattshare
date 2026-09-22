@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pymongo import MongoClient, ReturnDocument
+from pymongo.errors import DuplicateKeyError
 from dotenv import load_dotenv
 from typing import List
 import os
@@ -21,6 +22,7 @@ client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
 
 users_collection = db["users"]
+users_collection.create_index("email", unique=True)
 subscriptions_collection = db["subscriptions"]
 meter_readings_collection = db["meter_readings"]
 bills_collection = db["bills"]
@@ -72,14 +74,16 @@ def register(user: UserCreate):
     if user.role != UserRole.subscriber:
         raise HTTPException(status_code=403, detail="Only subscriber accounts can self-register")
 
-    if users_collection.find_one({"email": user.email}):
+    normalized_email = user.email.lower().strip()
+
+    if users_collection.find_one({"email": normalized_email}):
         raise HTTPException(status_code=400, detail="Email already registered")
 
     hashed_password = hash_password(user.password)
 
     result = users_collection.insert_one({
         "name": user.name,
-        "email": user.email,
+        "email": normalized_email,
         "password": hashed_password,
         "role": user.role,
     })
@@ -87,7 +91,7 @@ def register(user: UserCreate):
     return UserOut(
         id=str(result.inserted_id),
         name=user.name,
-        email=user.email,
+        email=normalized_email,
         role=user.role,
     )
 
@@ -480,22 +484,27 @@ def admin_update_user(user_id: str, update: AdminUserUpdate, current_user: dict 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    normalized_email = update.email.lower().strip()
+
     existing = users_collection.find_one({
-        "email": update.email,
+        "email": normalized_email,
         "_id": {"$ne": ObjectId(user_id)},
     })
     if existing:
         raise HTTPException(status_code=400, detail="Email already in use")
 
-    users_collection.update_one(
-        {"_id": ObjectId(user_id)},
-        {"$set": {"name": update.name, "email": update.email, "role": update.role}},
-    )
+    try:
+        users_collection.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {"name": update.name, "email": normalized_email, "role": update.role}},
+        )
+    except DuplicateKeyError:
+        raise HTTPException(status_code=400, detail="Email already registered")
 
     return UserOut(
         id=user_id,
         name=update.name,
-        email=update.email,
+        email=normalized_email,
         role=update.role,
     )
 
@@ -620,14 +629,16 @@ def add_manager(manager: ManagerCreate, current_user: dict = Depends(get_current
     if current_user["role"] != "admin":
         raise HTTPException(status_code=403, detail="Only admin can add managers")
 
-    if users_collection.find_one({"email": manager.email}):
+    normalized_email = manager.email.lower().strip()
+
+    if users_collection.find_one({"email": normalized_email}):
         raise HTTPException(status_code=400, detail="Email already registered")
 
     hashed_password = hash_password(manager.password)
 
     result = users_collection.insert_one({
         "name": manager.name,
-        "email": manager.email,
+        "email": normalized_email,
         "password": hashed_password,
         "role": UserRole.owner,
     })
@@ -635,7 +646,7 @@ def add_manager(manager: ManagerCreate, current_user: dict = Depends(get_current
     return UserOut(
         id=str(result.inserted_id),
         name=manager.name,
-        email=manager.email,
+        email=normalized_email,
         role=UserRole.owner,
     )
 
