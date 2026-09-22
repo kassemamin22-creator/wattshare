@@ -115,6 +115,12 @@ class BillOut(BaseModel):
     due_date: datetime
     subscriber_name: Optional[str] = None
 
+class RevenueOut(BaseModel):
+    total_collected: float
+    total_outstanding: float
+    paid_count: int
+    outstanding_count: int
+
 class IssueCreate(BaseModel):
     description: str
 

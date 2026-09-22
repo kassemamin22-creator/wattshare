@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from typing import List
 import os
 
-from models import UserCreate, UserLogin, UserOut, UserUpdate, PasswordChange, AdminUserUpdate, AdminPasswordReset, UserRole, ManagerCreate, SubscriberCreate, SubscriptionCreate, SubscriptionOut, SubscriptionUpdate, MeterReadingCreate, BillOut, IssueCreate, IssueOut, TariffUpdate, TariffOut
+from models import UserCreate, UserLogin, UserOut, UserUpdate, PasswordChange, AdminUserUpdate, AdminPasswordReset, UserRole, ManagerCreate, SubscriberCreate, SubscriptionCreate, SubscriptionOut, SubscriptionUpdate, MeterReadingCreate, BillOut, RevenueOut, IssueCreate, IssueOut, TariffUpdate, TariffOut
 from auth import hash_password, verify_password, create_access_token, get_current_user
 from bson import ObjectId
 from datetime import datetime, timedelta
@@ -803,6 +803,31 @@ def read_all_bills(current_user: dict = Depends(get_current_user)):
         )
 
     return result
+
+@app.get("/admin/revenue", response_model=RevenueOut)
+def read_revenue(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admin can access this")
+
+    total_collected = 0.0
+    total_outstanding = 0.0
+    paid_count = 0
+    outstanding_count = 0
+
+    for bill in bills_collection.find():
+        if bill["status"] == "paid":
+            total_collected += bill["amount"]
+            paid_count += 1
+        elif bill["status"] in ("pending", "disputed"):
+            total_outstanding += bill["amount"]
+            outstanding_count += 1
+
+    return RevenueOut(
+        total_collected=total_collected,
+        total_outstanding=total_outstanding,
+        paid_count=paid_count,
+        outstanding_count=outstanding_count,
+    )
 
 @app.patch("/bills/{bill_id}/mark-paid", response_model=BillOut)
 def mark_bill_paid(bill_id: str, current_user: dict = Depends(get_current_user)):
