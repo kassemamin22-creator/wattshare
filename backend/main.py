@@ -113,6 +113,19 @@ def login(user: UserLogin):
 def read_current_user(current_user: dict = Depends(get_current_user)):
     return current_user
 
+@app.get("/users/me", response_model=UserOut)
+def read_my_account(current_user: dict = Depends(get_current_user)):
+    user = users_collection.find_one({"_id": ObjectId(current_user["id"])})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return UserOut(
+        id=str(user["_id"]),
+        name=user["name"],
+        email=user["email"],
+        role=user["role"],
+    )
+
 @app.patch("/users/me", response_model=UserOut)
 def update_my_account(update: UserUpdate, current_user: dict = Depends(get_current_user)):
     existing = users_collection.find_one({
