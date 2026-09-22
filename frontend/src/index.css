@@ -1072,20 +1072,19 @@ body {
   align-items: center;
   gap: 0.4rem;
   padding: 0.5rem 0.9rem;
-  background-color: transparent;
-  color: var(--color-danger);
-  border: 1px solid rgba(239, 68, 68, 0.4);
+  background-color: var(--color-danger);
+  color: #ffffff;
+  border: none;
   border-radius: 8px;
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
   box-sizing: border-box;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition: filter 0.2s;
 }
 
 .admin-mobile-logout:hover {
-  background-color: rgba(239, 68, 68, 0.1);
-  border-color: var(--color-danger);
+  filter: brightness(1.1);
 }
 
 .admin-mobile-menu-toggle {
