@@ -13,6 +13,7 @@ interface User {
   name: string;
   email: string;
   role: string;
+  subscription_status?: string | null;
 }
 
 interface Subscription {
@@ -53,6 +54,8 @@ function statusPillClass(status: string): string {
       return "pill pill-warning";
     case "disputed":
       return "pill pill-danger";
+    case "none":
+      return "pill pill-muted";
     default:
       return "pill pill-cyan";
   }
@@ -595,6 +598,7 @@ function AdminDashboard() {
                     <th>Name</th>
                     <th>Email</th>
                     <th>Role</th>
+                    <th>Subscription</th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -609,6 +613,21 @@ function AdminDashboard() {
                             <span className="pill-dot"></span>
                             {displayRole(user.role).toUpperCase()}
                           </span>
+                        </td>
+                        <td>
+                          {user.role !== "subscriber" ? (
+                            "—"
+                          ) : user.subscription_status === "none" ? (
+                            <span className={statusPillClass("none")}>
+                              <span className="pill-dot"></span>
+                              NO SUBSCRIPTION
+                            </span>
+                          ) : (
+                            <span className={statusPillClass(user.subscription_status || "none")}>
+                              <span className="pill-dot"></span>
+                              {(user.subscription_status || "none").toUpperCase()}
+                            </span>
+                          )}
                         </td>
                         <td>
                           <div style={{ display: "flex", gap: "0.5rem" }}>
@@ -648,7 +667,7 @@ function AdminDashboard() {
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.2 }}
                           >
-                            <td colSpan={4}>
+                            <td colSpan={5}>
                               <motion.div
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: "auto", opacity: 1 }}

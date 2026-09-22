@@ -535,6 +535,11 @@ body {
   background-color: rgba(239, 68, 68, 0.15);
 }
 
+.pill-muted {
+  color: var(--color-text-muted);
+  background-color: rgba(139, 149, 168, 0.15);
+}
+
 .pill-dot {
   display: inline-block;
   width: 6px;
