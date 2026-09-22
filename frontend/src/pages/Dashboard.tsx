@@ -20,6 +20,7 @@ interface Subscription {
   tariff_rate: number;
   status: string;
   address: string;
+  building: string;
   phone: string;
   unit_number: string;
 }
@@ -141,6 +142,7 @@ function Dashboard() {
   const [displayedForecast, setDisplayedForecast] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [editAddress, setEditAddress] = useState("");
+  const [editBuilding, setEditBuilding] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editUnitNumber, setEditUnitNumber] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
@@ -212,6 +214,7 @@ function Dashboard() {
   const handleStartEditing = () => {
     if (!subscription) return;
     setEditAddress(subscription.address);
+    setEditBuilding(subscription.building);
     setEditPhone(subscription.phone);
     setEditUnitNumber(subscription.unit_number);
     setIsEditing(true);
@@ -228,6 +231,7 @@ function Dashboard() {
     try {
       const response = await api.patch("/subscription/me", {
         address: editAddress,
+        building: editBuilding,
         phone: editPhone,
         unit_number: editUnitNumber,
       });
@@ -480,6 +484,10 @@ function Dashboard() {
                       <p className="dash-value-lg">{subscription.address}</p>
                     </div>
                     <div className="dash-col">
+                      <p className="dash-label">BUILDING</p>
+                      <p className="dash-value-lg">{subscription.building}</p>
+                    </div>
+                    <div className="dash-col">
                       <p className="dash-label">PHONE</p>
                       <p className="dash-value-lg">{subscription.phone}</p>
                     </div>
@@ -515,6 +523,13 @@ function Dashboard() {
                         placeholder="Address"
                         value={editAddress}
                         onChange={(e) => setEditAddress(e.target.value)}
+                      />
+                      <input
+                        className="auth-input"
+                        type="text"
+                        placeholder="Building name or number"
+                        value={editBuilding}
+                        onChange={(e) => setEditBuilding(e.target.value)}
                       />
                       <input
                         className="auth-input"

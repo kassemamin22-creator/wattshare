@@ -165,6 +165,7 @@ function AdminDashboard() {
   const [subscriberEmail, setSubscriberEmail] = useState("");
   const [subscriberPassword, setSubscriberPassword] = useState("");
   const [subscriberAddress, setSubscriberAddress] = useState("");
+  const [subscriberBuilding, setSubscriberBuilding] = useState("");
   const [subscriberPhone, setSubscriberPhone] = useState("");
   const [subscriberUnitNumber, setSubscriberUnitNumber] = useState("");
   const [subscriberAmpere, setSubscriberAmpere] = useState("");
@@ -261,6 +262,7 @@ function AdminDashboard() {
         email: subscriberEmail,
         password: subscriberPassword,
         address: subscriberAddress,
+        building: subscriberBuilding,
         phone: subscriberPhone,
         unit_number: subscriberUnitNumber,
         ampere: Number(subscriberAmpere),
@@ -271,6 +273,7 @@ function AdminDashboard() {
       setSubscriberEmail("");
       setSubscriberPassword("");
       setSubscriberAddress("");
+      setSubscriberBuilding("");
       setSubscriberPhone("");
       setSubscriberUnitNumber("");
       setSubscriberAmpere("");
@@ -1103,6 +1106,13 @@ function AdminDashboard() {
               placeholder="Address"
               value={subscriberAddress}
               onChange={(e) => setSubscriberAddress(e.target.value)}
+            />
+            <input
+              className="auth-input"
+              type="text"
+              placeholder="Building name or number"
+              value={subscriberBuilding}
+              onChange={(e) => setSubscriberBuilding(e.target.value)}
             />
             <input
               className="auth-input"

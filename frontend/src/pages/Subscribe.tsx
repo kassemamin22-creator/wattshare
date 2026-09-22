@@ -1,7 +1,7 @@
 import { useState, useEffect, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Zap, MapPin, Phone, Home } from "lucide-react";
+import { Zap, MapPin, Phone, Home, Building2 } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "../services/api";
 
@@ -41,6 +41,7 @@ const PARTICLES = [
 function Subscribe() {
   const [ampere, setAmpere] = useState("");
   const [address, setAddress] = useState("");
+  const [building, setBuilding] = useState("");
   const [phone, setPhone] = useState("");
   const [unitNumber, setUnitNumber] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
@@ -58,8 +59,8 @@ function Subscribe() {
     e.preventDefault();
     setError("");
 
-    if (!address.trim() || !phone.trim()) {
-      setError("Address and phone are required");
+    if (!address.trim() || !building.trim() || !phone.trim()) {
+      setError("Address, building, and phone are required");
       return;
     }
 
@@ -67,6 +68,7 @@ function Subscribe() {
       await api.post("/subscription", {
         ampere: Number(ampere),
         address,
+        building,
         phone,
         unit_number: unitNumber,
         payment_method: paymentMethod,
@@ -122,6 +124,17 @@ function Subscribe() {
                   placeholder="Address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="auth-input-wrap">
+                <Building2 size={16} className="auth-input-icon" />
+                <input
+                  className="auth-input"
+                  type="text"
+                  placeholder="Building name or number"
+                  value={building}
+                  onChange={(e) => setBuilding(e.target.value)}
                   required
                 />
               </div>
