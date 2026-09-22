@@ -38,6 +38,13 @@ interface Bill {
   subscriber_name?: string;
 }
 
+interface Revenue {
+  total_collected: number;
+  total_outstanding: number;
+  paid_count: number;
+  outstanding_count: number;
+}
+
 function displayRole(role: string): string {
   return role === "owner" ? "Manager" : role;
 }
@@ -149,6 +156,7 @@ function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [bills, setBills] = useState<Bill[]>([]);
+  const [revenue, setRevenue] = useState<Revenue | null>(null);
   const [managerName, setManagerName] = useState("");
   const [managerEmail, setManagerEmail] = useState("");
   const [managerPassword, setManagerPassword] = useState("");
@@ -196,10 +204,15 @@ function AdminDashboard() {
     api.get("/admin/subscriptions").then((response) => setSubscriptions(response.data));
   };
 
+  const fetchRevenue = () => {
+    api.get("/admin/revenue").then((response) => setRevenue(response.data));
+  };
+
   useEffect(() => {
     api.get("/me").then((response) => setCurrentUserId(response.data.id));
     fetchUsers();
     fetchSubscriptions();
+    fetchRevenue();
     api.get("/admin/bills").then((response) => setBills(response.data));
     api.get("/tariff").then((response) => {
       setTariffPrice(response.data.price_per_ampere);
@@ -303,6 +316,7 @@ function AdminDashboard() {
       setBills((prev) =>
         prev.map((bill) => (bill.id === billId ? { ...bill, status: "paid" } : bill))
       );
+      fetchRevenue();
     } catch {
       // mark-paid failed; leave the bill status as-is
     } finally {
@@ -631,6 +645,34 @@ function AdminDashboard() {
                 </BarChart>
               </ResponsiveContainer>
             )}
+          </motion.div>
+        </div>
+
+        <div className="dash-page-title" style={{ fontSize: "1rem", marginTop: "0.5rem" }}>
+          <DollarSign size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Revenue Overview
+        </div>
+
+        <div className="admin-stats-grid">
+          <motion.div
+            className="stat-card stat-card-amber"
+            {...cardEntrance(11)}
+            whileHover={cardHover}
+          >
+            <p className="dash-label">Total Collected</p>
+            <p className="stat-number-amber">
+              <CountUpValue value={revenue?.total_collected ?? 0} decimals={2} prefix="$" />
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="stat-card stat-card-cyan"
+            {...cardEntrance(12)}
+            whileHover={cardHover}
+          >
+            <p className="dash-label">Outstanding</p>
+            <p className="stat-number-cyan">
+              <CountUpValue value={revenue?.total_outstanding ?? 0} decimals={2} prefix="$" />
+            </p>
           </motion.div>
         </div>
 
