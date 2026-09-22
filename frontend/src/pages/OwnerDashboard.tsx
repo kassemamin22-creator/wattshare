@@ -125,6 +125,8 @@ function OwnerDashboard() {
   const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
   const [pendingSubscriptions, setPendingSubscriptions] = useState<Subscriber[]>([]);
   const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [approvingSubscriptionId, setApprovingSubscriptionId] = useState<string | null>(null);
+  const [selectedApprovalPaymentMethod, setSelectedApprovalPaymentMethod] = useState("cash");
   const [approvingAmpereId, setApprovingAmpereId] = useState<string | null>(null);
   const [subscriberName, setSubscriberName] = useState("");
   const [subscriberEmail, setSubscriberEmail] = useState("");
@@ -217,12 +219,24 @@ function OwnerDashboard() {
     }
   };
 
+  const handleShowApprovalPicker = (id: string) => {
+    setApprovingSubscriptionId(id);
+    setSelectedApprovalPaymentMethod("cash");
+  };
+
+  const handleCancelApproval = () => {
+    setApprovingSubscriptionId(null);
+  };
+
   const approveSubscription = async (id: string) => {
     setApprovingId(id);
 
     try {
-      await api.patch(`/owner/subscriptions/${id}/approve`);
+      await api.patch(`/owner/subscriptions/${id}/approve`, {
+        payment_method: selectedApprovalPaymentMethod,
+      });
       setPendingSubscriptions((prev) => prev.filter((item) => item.id !== id));
+      setApprovingSubscriptionId(null);
       showToast("Subscription approved", "success");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
@@ -677,19 +691,61 @@ function OwnerDashboard() {
                       <td>{item.address}</td>
                       <td>{item.ampere}A</td>
                       <td>
-                        <motion.button
-                          className="auth-button owner-submit-button"
-                          onClick={() => approveSubscription(item.id)}
-                          whileHover={{ scale: 1.03 }}
-                          whileTap={{ scale: 0.97 }}
-                          disabled={approvingId === item.id}
-                        >
-                          {approvingId === item.id ? (
-                            <Loader2 size={14} className="btn-spinner" />
-                          ) : (
-                            "Approve"
-                          )}
-                        </motion.button>
+                        {approvingSubscriptionId === item.id ? (
+                          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", alignItems: "flex-start" }}>
+                            <div className="payment-method-group">
+                              {SUBSCRIBER_PAYMENT_METHODS.map((method) => (
+                                <button
+                                  key={method.value}
+                                  type="button"
+                                  className={
+                                    selectedApprovalPaymentMethod === method.value
+                                      ? "payment-method-pill payment-method-pill-active"
+                                      : "payment-method-pill"
+                                  }
+                                  onClick={() => setSelectedApprovalPaymentMethod(method.value)}
+                                >
+                                  {method.label}
+                                </button>
+                              ))}
+                            </div>
+                            <div style={{ display: "flex", gap: "0.5rem" }}>
+                              <motion.button
+                                className="auth-button owner-submit-button"
+                                onClick={() => approveSubscription(item.id)}
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                disabled={approvingId === item.id}
+                                style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
+                              >
+                                {approvingId === item.id ? (
+                                  <Loader2 size={14} className="btn-spinner" />
+                                ) : (
+                                  "Confirm Approval"
+                                )}
+                              </motion.button>
+                              <motion.button
+                                className="dash-button-outline"
+                                type="button"
+                                onClick={handleCancelApproval}
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
+                              >
+                                Cancel
+                              </motion.button>
+                            </div>
+                          </div>
+                        ) : (
+                          <motion.button
+                            className="auth-button owner-submit-button"
+                            onClick={() => handleShowApprovalPicker(item.id)}
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
+                          >
+                            Approve
+                          </motion.button>
+                        )}
                       </td>
                     </motion.tr>
                   ))}

@@ -11,12 +11,6 @@ const FEATURE_PILLS = [
   { icon: "🛡️", label: "Fair tariff billing" },
 ];
 
-const PAYMENT_METHODS = [
-  { value: "cash", label: "Cash" },
-  { value: "whish", label: "Whish" },
-  { value: "omt", label: "OMT" },
-];
-
 const PARTICLES = [
   { top: "8%", left: "12%", size: 3, color: "var(--color-accent)", duration: 5.4, delay: 0 },
   { top: "15%", left: "82%", size: 2, color: "var(--color-cyan)", duration: 6.2, delay: 0.3 },
@@ -44,7 +38,6 @@ function Subscribe() {
   const [building, setBuilding] = useState("");
   const [phone, setPhone] = useState("");
   const [unitNumber, setUnitNumber] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("cash");
   const [error, setError] = useState("");
   const [pricePerAmpere, setPricePerAmpere] = useState(0);
   const navigate = useNavigate();
@@ -71,7 +64,6 @@ function Subscribe() {
         building,
         phone,
         unit_number: unitNumber,
-        payment_method: paymentMethod,
       });
       navigate("/dashboard");
     } catch (err) {
@@ -158,23 +150,6 @@ function Subscribe() {
                   value={unitNumber}
                   onChange={(e) => setUnitNumber(e.target.value)}
                 />
-              </div>
-              <p className="dash-label">Payment Method</p>
-              <div className="payment-method-group">
-                {PAYMENT_METHODS.map((method) => (
-                  <button
-                    key={method.value}
-                    type="button"
-                    className={
-                      paymentMethod === method.value
-                        ? "payment-method-pill payment-method-pill-active"
-                        : "payment-method-pill"
-                    }
-                    onClick={() => setPaymentMethod(method.value)}
-                  >
-                    {method.label}
-                  </button>
-                ))}
               </div>
               <div className="auth-input-wrap">
                 <Zap size={16} className="auth-input-icon" />
