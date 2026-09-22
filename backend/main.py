@@ -642,6 +642,45 @@ def toggle_subscription_status(subscription_id: str, current_user: dict = Depend
         subscriber_name=subscriber_name,
     )
 
+@app.patch("/admin/subscriptions/{subscription_id}", response_model=SubscriptionOut)
+def update_subscription_by_admin(subscription_id: str, update: SubscriptionUpdate, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ("admin", "owner"):
+        raise HTTPException(status_code=403, detail="Only admin or manager can access this")
+
+    subscription = subscriptions_collection.find_one({"_id": ObjectId(subscription_id)})
+    if not subscription:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+
+    subscriptions_collection.update_one(
+        {"_id": ObjectId(subscription_id)},
+        {"$set": {
+            "address": update.address,
+            "building": update.building,
+            "phone": update.phone,
+            "unit_number": update.unit_number,
+        }},
+    )
+
+    subscriber = users_collection.find_one({"_id": ObjectId(subscription["subscriber_id"])})
+    subscriber_name = subscriber["name"] if subscriber else "Unknown Subscriber"
+
+    return SubscriptionOut(
+        id=str(subscription["_id"]),
+        subscriber_id=subscription["subscriber_id"],
+        generator_name=subscription["generator_name"],
+        ampere=subscription["ampere"],
+        tariff_rate=subscription["tariff_rate"],
+        status=subscription["status"],
+        flat_fee=subscription.get("flat_fee", 0.0),
+        address=update.address,
+        building=update.building,
+        phone=update.phone,
+        unit_number=update.unit_number,
+        payment_method=subscription.get("payment_method", "cash"),
+        start_date=subscription.get("start_date", datetime.utcnow()),
+        subscriber_name=subscriber_name,
+    )
+
 @app.get("/owner/subscriptions/pending", response_model=List[SubscriptionOut])
 def read_pending_subscriptions(current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "owner":
