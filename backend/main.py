@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from typing import List
 import os
 
-from models import UserCreate, UserLogin, UserOut, UserUpdate, PasswordChange, AdminUserUpdate, AdminPasswordReset, UserRole, ManagerCreate, SubscriberCreate, SubscriptionCreate, SubscriptionOut, SubscriptionUpdate, AmpereChangeRequest, MeterReadingCreate, BillOut, RevenueOut, IssueCreate, IssueOut, TariffUpdate, TariffOut
+from models import UserCreate, UserLogin, UserOut, UserUpdate, PasswordChange, AdminUserUpdate, AdminPasswordReset, UserRole, ManagerCreate, SubscriberCreate, SubscriptionCreate, SubscriptionOut, SubscriptionUpdate, SubscriptionApprove, AmpereChangeRequest, MeterReadingCreate, BillOut, RevenueOut, IssueCreate, IssueOut, TariffUpdate, TariffOut
 from auth import hash_password, verify_password, create_access_token, get_current_user
 from bson import ObjectId
 from datetime import datetime, timedelta
@@ -175,7 +175,6 @@ def create_subscription(subscription: SubscriptionCreate, current_user: dict = D
         "building": subscription.building,
         "phone": subscription.phone,
         "unit_number": subscription.unit_number,
-        "payment_method": subscription.payment_method,
         "start_date": start_date,
         "status": "pending",
     })
@@ -191,7 +190,6 @@ def create_subscription(subscription: SubscriptionCreate, current_user: dict = D
         building=subscription.building,
         phone=subscription.phone,
         unit_number=subscription.unit_number,
-        payment_method=subscription.payment_method,
         start_date=start_date,
         status="pending",
     )
@@ -215,7 +213,7 @@ def read_my_subscription(current_user: dict = Depends(get_current_user)):
         building=subscription.get("building", ""),
         phone=subscription.get("phone", ""),
         unit_number=subscription.get("unit_number", ""),
-        payment_method=subscription.get("payment_method", "cash"),
+        payment_method=subscription.get("payment_method"),
         start_date=subscription.get("start_date", datetime.utcnow()),
         pending_ampere_change=subscription.get("pending_ampere_change"),
     )
@@ -267,7 +265,7 @@ def update_my_subscription(update: SubscriptionUpdate, current_user: dict = Depe
         building=update.building,
         phone=update.phone,
         unit_number=update.unit_number,
-        payment_method=subscription.get("payment_method", "cash"),
+        payment_method=subscription.get("payment_method"),
         start_date=subscription.get("start_date", datetime.utcnow()),
     )
 
@@ -302,7 +300,7 @@ def read_subscribers(current_user: dict = Depends(get_current_user)):
                 building=subscription.get("building", ""),
                 phone=subscription.get("phone", ""),
                 unit_number=subscription.get("unit_number", ""),
-                payment_method=subscription.get("payment_method", "cash"),
+                payment_method=subscription.get("payment_method"),
                 start_date=subscription.get("start_date", datetime.utcnow()),
                 subscriber_name=subscriber_name,
                 last_reading=last_reading_value,
@@ -617,7 +615,7 @@ def read_all_subscriptions(current_user: dict = Depends(get_current_user)):
                 building=subscription.get("building", ""),
                 phone=subscription.get("phone", ""),
                 unit_number=subscription.get("unit_number", ""),
-                payment_method=subscription.get("payment_method", "cash"),
+                payment_method=subscription.get("payment_method"),
                 start_date=subscription.get("start_date", datetime.utcnow()),
                 subscriber_name=subscriber_name,
                 pending_ampere_change=subscription.get("pending_ampere_change"),
@@ -656,7 +654,7 @@ def toggle_subscription_status(subscription_id: str, current_user: dict = Depend
         building=subscription.get("building", ""),
         phone=subscription.get("phone", ""),
         unit_number=subscription.get("unit_number", ""),
-        payment_method=subscription.get("payment_method", "cash"),
+        payment_method=subscription.get("payment_method"),
         start_date=subscription.get("start_date", datetime.utcnow()),
         subscriber_name=subscriber_name,
         pending_ampere_change=subscription.get("pending_ampere_change"),
@@ -702,7 +700,7 @@ def update_subscription_by_admin(subscription_id: str, update: SubscriptionUpdat
         building=update.building,
         phone=update.phone,
         unit_number=update.unit_number,
-        payment_method=subscription.get("payment_method", "cash"),
+        payment_method=subscription.get("payment_method"),
         start_date=subscription.get("start_date", datetime.utcnow()),
         subscriber_name=subscriber_name,
         pending_ampere_change=subscription.get("pending_ampere_change"),
@@ -760,7 +758,7 @@ def read_pending_subscriptions(current_user: dict = Depends(get_current_user)):
                 building=subscription.get("building", ""),
                 phone=subscription.get("phone", ""),
                 unit_number=subscription.get("unit_number", ""),
-                payment_method=subscription.get("payment_method", "cash"),
+                payment_method=subscription.get("payment_method"),
                 start_date=subscription.get("start_date", datetime.utcnow()),
                 subscriber_name=subscriber_name,
                 pending_ampere_change=subscription.get("pending_ampere_change"),
@@ -770,7 +768,7 @@ def read_pending_subscriptions(current_user: dict = Depends(get_current_user)):
     return result
 
 @app.patch("/owner/subscriptions/{subscription_id}/approve", response_model=SubscriptionOut)
-def approve_subscription(subscription_id: str, current_user: dict = Depends(get_current_user)):
+def approve_subscription(subscription_id: str, approval: SubscriptionApprove, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "owner":
         raise HTTPException(status_code=403, detail="Only managers can access this")
 
@@ -780,7 +778,7 @@ def approve_subscription(subscription_id: str, current_user: dict = Depends(get_
 
     subscriptions_collection.update_one(
         {"_id": ObjectId(subscription_id)},
-        {"$set": {"status": "active"}},
+        {"$set": {"status": "active", "payment_method": approval.payment_method}},
     )
 
     subscriber = users_collection.find_one({"_id": ObjectId(subscription["subscriber_id"])})
@@ -798,7 +796,7 @@ def approve_subscription(subscription_id: str, current_user: dict = Depends(get_
         building=subscription.get("building", ""),
         phone=subscription.get("phone", ""),
         unit_number=subscription.get("unit_number", ""),
-        payment_method=subscription.get("payment_method", "cash"),
+        payment_method=approval.payment_method,
         start_date=subscription.get("start_date", datetime.utcnow()),
         subscriber_name=subscriber_name,
         pending_ampere_change=subscription.get("pending_ampere_change"),

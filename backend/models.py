@@ -68,7 +68,6 @@ class SubscriptionCreate(BaseModel):
     building: str
     phone: str
     unit_number: str
-    payment_method: PaymentMethod
 
 class SubscriptionOut(BaseModel):
     id: str
@@ -82,7 +81,7 @@ class SubscriptionOut(BaseModel):
     building: str
     phone: str
     unit_number: str
-    payment_method: PaymentMethod
+    payment_method: Optional[PaymentMethod] = None
     start_date: datetime
     subscriber_name: Optional[str] = None
     last_reading: Optional[float] = None
@@ -97,6 +96,9 @@ class SubscriptionUpdate(BaseModel):
 
 class AmpereChangeRequest(BaseModel):
     ampere: int
+
+class SubscriptionApprove(BaseModel):
+    payment_method: PaymentMethod
 
 class TariffUpdate(BaseModel):
     price_per_ampere: float
