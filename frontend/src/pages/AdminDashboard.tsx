@@ -121,7 +121,14 @@ const NAV_ITEMS = [
   { id: "subscriptions", label: "Subscriptions", icon: Zap },
   { id: "bills", label: "Bills", icon: Receipt },
   { id: "add-manager", label: "Add Manager", icon: UserPlus },
+  { id: "add-subscriber", label: "Add Subscriber", icon: UserPlus },
   { id: "pricing", label: "Pricing", icon: DollarSign },
+];
+
+const SUBSCRIBER_PAYMENT_METHODS = [
+  { value: "cash", label: "Cash" },
+  { value: "whish", label: "Whish" },
+  { value: "omt", label: "OMT" },
 ];
 
 const navContainerVariants = {
@@ -146,6 +153,15 @@ function AdminDashboard() {
   const [managerEmail, setManagerEmail] = useState("");
   const [managerPassword, setManagerPassword] = useState("");
   const [isAddingManager, setIsAddingManager] = useState(false);
+  const [subscriberName, setSubscriberName] = useState("");
+  const [subscriberEmail, setSubscriberEmail] = useState("");
+  const [subscriberPassword, setSubscriberPassword] = useState("");
+  const [subscriberAddress, setSubscriberAddress] = useState("");
+  const [subscriberPhone, setSubscriberPhone] = useState("");
+  const [subscriberUnitNumber, setSubscriberUnitNumber] = useState("");
+  const [subscriberAmpere, setSubscriberAmpere] = useState("");
+  const [subscriberPaymentMethod, setSubscriberPaymentMethod] = useState("cash");
+  const [isAddingSubscriber, setIsAddingSubscriber] = useState(false);
   const [tariffPrice, setTariffPrice] = useState<number | null>(null);
   const [tariffInput, setTariffInput] = useState("");
   const [isUpdatingTariff, setIsUpdatingTariff] = useState(false);
@@ -176,12 +192,14 @@ function AdminDashboard() {
     api.get("/admin/users").then((response) => setUsers(response.data));
   };
 
+  const fetchSubscriptions = () => {
+    api.get("/admin/subscriptions").then((response) => setSubscriptions(response.data));
+  };
+
   useEffect(() => {
     api.get("/me").then((response) => setCurrentUserId(response.data.id));
     fetchUsers();
-    api
-      .get("/admin/subscriptions")
-      .then((response) => setSubscriptions(response.data));
+    fetchSubscriptions();
     api.get("/admin/bills").then((response) => setBills(response.data));
     api.get("/tariff").then((response) => {
       setTariffPrice(response.data.price_per_ampere);
@@ -217,6 +235,43 @@ function AdminDashboard() {
       }
     } finally {
       setIsAddingManager(false);
+    }
+  };
+
+  const handleAddSubscriber = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsAddingSubscriber(true);
+
+    try {
+      await api.post("/admin/add-subscriber", {
+        name: subscriberName,
+        email: subscriberEmail,
+        password: subscriberPassword,
+        address: subscriberAddress,
+        phone: subscriberPhone,
+        unit_number: subscriberUnitNumber,
+        ampere: Number(subscriberAmpere),
+        payment_method: subscriberPaymentMethod,
+      });
+      showToast("Subscriber account created successfully", "success");
+      setSubscriberName("");
+      setSubscriberEmail("");
+      setSubscriberPassword("");
+      setSubscriberAddress("");
+      setSubscriberPhone("");
+      setSubscriberUnitNumber("");
+      setSubscriberAmpere("");
+      setSubscriberPaymentMethod("cash");
+      fetchUsers();
+      fetchSubscriptions();
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        showToast(err.response.data.detail, "error");
+      } else {
+        showToast("Failed to create subscriber account", "error");
+      }
+    } finally {
+      setIsAddingSubscriber(false);
     }
   };
 
@@ -965,6 +1020,94 @@ function AdminDashboard() {
               disabled={isAddingManager}
             >
               {isAddingManager ? <Loader2 size={16} className="btn-spinner" /> : "Add Manager"}
+            </motion.button>
+          </form>
+        </motion.section>
+
+        <motion.section
+          id="add-subscriber"
+          className="dash-card admin-section"
+          {...cardEntrance(10)}
+          whileHover={cardHover}
+        >
+          <h2 className="dash-card-title">
+            <UserPlus size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Add Subscriber
+          </h2>
+          <form onSubmit={handleAddSubscriber} className="admin-manager-form">
+            <input
+              className="auth-input"
+              type="text"
+              placeholder="Name"
+              value={subscriberName}
+              onChange={(e) => setSubscriberName(e.target.value)}
+            />
+            <input
+              className="auth-input"
+              type="email"
+              placeholder="Email"
+              value={subscriberEmail}
+              onChange={(e) => setSubscriberEmail(e.target.value)}
+            />
+            <input
+              className="auth-input"
+              type="password"
+              placeholder="Password"
+              value={subscriberPassword}
+              onChange={(e) => setSubscriberPassword(e.target.value)}
+            />
+            <input
+              className="auth-input"
+              type="text"
+              placeholder="Address"
+              value={subscriberAddress}
+              onChange={(e) => setSubscriberAddress(e.target.value)}
+            />
+            <input
+              className="auth-input"
+              type="tel"
+              placeholder="Phone"
+              value={subscriberPhone}
+              onChange={(e) => setSubscriberPhone(e.target.value)}
+            />
+            <input
+              className="auth-input"
+              type="text"
+              placeholder="Apt/Unit number"
+              value={subscriberUnitNumber}
+              onChange={(e) => setSubscriberUnitNumber(e.target.value)}
+            />
+            <input
+              className="auth-input"
+              type="number"
+              placeholder="Ampere"
+              value={subscriberAmpere}
+              onChange={(e) => setSubscriberAmpere(e.target.value)}
+            />
+            <p className="dash-label">Payment Method</p>
+            <div className="payment-method-group">
+              {SUBSCRIBER_PAYMENT_METHODS.map((method) => (
+                <button
+                  key={method.value}
+                  type="button"
+                  className={
+                    subscriberPaymentMethod === method.value
+                      ? "payment-method-pill payment-method-pill-active"
+                      : "payment-method-pill"
+                  }
+                  onClick={() => setSubscriberPaymentMethod(method.value)}
+                >
+                  {method.label}
+                </button>
+              ))}
+            </div>
+            <motion.button
+              className="auth-button"
+              type="submit"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              disabled={isAddingSubscriber}
+            >
+              {isAddingSubscriber ? <Loader2 size={16} className="btn-spinner" /> : "Add Subscriber"}
             </motion.button>
           </form>
         </motion.section>
