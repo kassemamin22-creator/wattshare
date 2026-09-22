@@ -395,6 +395,13 @@ def create_issue(issue: IssueCreate, current_user: dict = Depends(get_current_us
     if current_user["role"] != "subscriber":
         raise HTTPException(status_code=403, detail="Only subscribers can report issues")
 
+    subscription = subscriptions_collection.find_one({"subscriber_id": current_user["id"]})
+    if not subscription:
+        raise HTTPException(status_code=404, detail="Subscriber has no active subscription")
+
+    if subscription["status"] != "active":
+        raise HTTPException(status_code=400, detail="Cannot report issue: subscriber's subscription is inactive")
+
     created_at = datetime.utcnow()
     result = issues_collection.insert_one({
         "subscriber_id": current_user["id"],
@@ -462,15 +469,24 @@ def read_all_users(current_user: dict = Depends(get_current_user)):
 
     users = users_collection.find()
 
-    return [
-        UserOut(
-            id=str(user["_id"]),
-            name=user["name"],
-            email=user["email"],
-            role=user["role"],
+    result = []
+    for user in users:
+        subscription_status = None
+        if user["role"] == "subscriber":
+            subscription = subscriptions_collection.find_one({"subscriber_id": str(user["_id"])})
+            subscription_status = subscription["status"] if subscription else "none"
+
+        result.append(
+            UserOut(
+                id=str(user["_id"]),
+                name=user["name"],
+                email=user["email"],
+                role=user["role"],
+                subscription_status=subscription_status,
+            )
         )
-        for user in users
-    ]
+
+    return result
 
 @app.patch("/admin/users/{user_id}", response_model=UserOut)
 def admin_update_user(user_id: str, update: AdminUserUpdate, current_user: dict = Depends(get_current_user)):

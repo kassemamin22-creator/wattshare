@@ -33,6 +33,7 @@ class UserOut(BaseModel):
     name: str
     email: str
     role: UserRole
+    subscription_status: Optional[str] = None
 
 class UserUpdate(BaseModel):
     name: str
