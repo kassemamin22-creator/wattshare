@@ -990,7 +990,7 @@ function Dashboard() {
                 }}
               >
                 <div style={{ textAlign: "center", borderBottom: "2px solid #111111", paddingBottom: "16px", marginBottom: "16px" }}>
-                  <h1 style={{ margin: 0, fontSize: "24px", color: "#111111" }}>⚡ WattShare</h1>
+                  <h1 style={{ margin: 0, fontSize: "24px", color: "#111111" }}>⚡ AK Power</h1>
                   <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#555555" }}>Electricity Bill Invoice</p>
                 </div>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
