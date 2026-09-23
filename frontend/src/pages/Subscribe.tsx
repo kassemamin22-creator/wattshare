@@ -1,7 +1,7 @@
 import { useState, useEffect, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Zap, MapPin, Phone, Home, Building2 } from "lucide-react";
+import { Zap, MapPin, Phone, Building2 } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "../services/api";
 
@@ -37,7 +37,6 @@ function Subscribe() {
   const [address, setAddress] = useState("");
   const [building, setBuilding] = useState("");
   const [phone, setPhone] = useState("");
-  const [unitNumber, setUnitNumber] = useState("");
   const [error, setError] = useState("");
   const [pricePerAmpere, setPricePerAmpere] = useState(0);
   const navigate = useNavigate();
@@ -63,7 +62,6 @@ function Subscribe() {
         address,
         building,
         phone,
-        unit_number: unitNumber,
       });
       navigate("/dashboard");
     } catch (err) {
@@ -139,16 +137,6 @@ function Subscribe() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
-                />
-              </div>
-              <div className="auth-input-wrap">
-                <Home size={16} className="auth-input-icon" />
-                <input
-                  className="auth-input"
-                  type="text"
-                  placeholder="Additional Details (optional) - Apt, floor, street landmark..."
-                  value={unitNumber}
-                  onChange={(e) => setUnitNumber(e.target.value)}
                 />
               </div>
               <div className="auth-input-wrap">

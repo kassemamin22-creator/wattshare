@@ -17,7 +17,6 @@ function SubscriptionPage() {
   const [editAddress, setEditAddress] = useState("");
   const [editBuilding, setEditBuilding] = useState("");
   const [editPhone, setEditPhone] = useState("");
-  const [editUnitNumber, setEditUnitNumber] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [requestedAmpere, setRequestedAmpere] = useState("");
   const [isRequestingAmpereChange, setIsRequestingAmpereChange] = useState(false);
@@ -27,7 +26,6 @@ function SubscriptionPage() {
     setEditAddress(subscription.address);
     setEditBuilding(subscription.building);
     setEditPhone(subscription.phone);
-    setEditUnitNumber(subscription.unit_number);
     setIsEditing(true);
   };
 
@@ -44,7 +42,6 @@ function SubscriptionPage() {
         address: editAddress,
         building: editBuilding,
         phone: editPhone,
-        unit_number: editUnitNumber,
       });
       setSubscription(response.data);
       setIsEditing(false);
@@ -152,10 +149,6 @@ function SubscriptionPage() {
                   <p className="dash-label">PHONE</p>
                   <p className="dash-value-lg">{subscription.phone}</p>
                 </div>
-                <div className="dash-col">
-                  <p className="dash-label">UNIT</p>
-                  <p className="dash-value-lg">{subscription.unit_number}</p>
-                </div>
               </div>
               <motion.button
                 className="dash-button-outline"
@@ -198,13 +191,6 @@ function SubscriptionPage() {
                     placeholder="Phone"
                     value={editPhone}
                     onChange={(e) => setEditPhone(e.target.value)}
-                  />
-                  <input
-                    className="auth-input"
-                    type="text"
-                    placeholder="Apt/Unit number"
-                    value={editUnitNumber}
-                    onChange={(e) => setEditUnitNumber(e.target.value)}
                   />
                   <div style={{ display: "flex", gap: "0.75rem" }}>
                     <motion.button

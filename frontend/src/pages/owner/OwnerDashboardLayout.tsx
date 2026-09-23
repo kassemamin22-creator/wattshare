@@ -14,7 +14,6 @@ export interface Subscriber {
   address: string;
   building: string;
   phone: string;
-  unit_number: string;
   subscriber_name?: string;
   last_reading?: number | null;
   pending_ampere_change?: number | null;

@@ -20,7 +20,6 @@ export interface Subscription {
   address: string;
   building: string;
   phone: string;
-  unit_number: string;
   pending_ampere_change?: number | null;
 }
 

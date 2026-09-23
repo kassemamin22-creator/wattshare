@@ -19,7 +19,6 @@ function SubscriptionsPage() {
   const [editSubscriptionAddress, setEditSubscriptionAddress] = useState("");
   const [editSubscriptionBuilding, setEditSubscriptionBuilding] = useState("");
   const [editSubscriptionPhone, setEditSubscriptionPhone] = useState("");
-  const [editSubscriptionUnitNumber, setEditSubscriptionUnitNumber] = useState("");
   const [editSubscriptionAmpere, setEditSubscriptionAmpere] = useState("");
   const [isSavingSubscription, setIsSavingSubscription] = useState(false);
 
@@ -50,7 +49,6 @@ function SubscriptionsPage() {
     setEditSubscriptionAddress(subscription.address);
     setEditSubscriptionBuilding(subscription.building);
     setEditSubscriptionPhone(subscription.phone);
-    setEditSubscriptionUnitNumber(subscription.unit_number);
     setEditSubscriptionAmpere(String(subscription.ampere));
   };
 
@@ -69,7 +67,6 @@ function SubscriptionsPage() {
         address: editSubscriptionAddress,
         building: editSubscriptionBuilding,
         phone: editSubscriptionPhone,
-        unit_number: editSubscriptionUnitNumber,
         ampere: Number(editSubscriptionAmpere),
       });
       showToast("Subscription updated successfully", "success");
@@ -213,14 +210,6 @@ function SubscriptionsPage() {
                                   />
                                   <input
                                     className="auth-input"
-                                    type="text"
-                                    placeholder="Apt/Unit number"
-                                    value={editSubscriptionUnitNumber}
-                                    onChange={(e) => setEditSubscriptionUnitNumber(e.target.value)}
-                                    style={{ flex: "1 1 160px", marginBottom: 0 }}
-                                  />
-                                  <input
-                                    className="auth-input"
                                     type="number"
                                     placeholder="Ampere"
                                     value={editSubscriptionAmpere}
@@ -262,10 +251,6 @@ function SubscriptionsPage() {
                                     <div style={{ minWidth: "120px" }}>
                                       <p className="dash-label">PHONE</p>
                                       <p className="dash-value-lg">{subscription.phone || "—"}</p>
-                                    </div>
-                                    <div style={{ minWidth: "120px" }}>
-                                      <p className="dash-label">UNIT</p>
-                                      <p className="dash-value-lg">{subscription.unit_number || "—"}</p>
                                     </div>
                                   </div>
                                   <div style={{ display: "flex", gap: "0.5rem" }}>

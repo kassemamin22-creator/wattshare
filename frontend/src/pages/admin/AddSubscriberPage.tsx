@@ -18,7 +18,6 @@ function AddSubscriberPage() {
   const [subscriberAddress, setSubscriberAddress] = useState("");
   const [subscriberBuilding, setSubscriberBuilding] = useState("");
   const [subscriberPhone, setSubscriberPhone] = useState("");
-  const [subscriberUnitNumber, setSubscriberUnitNumber] = useState("");
   const [subscriberAmpere, setSubscriberAmpere] = useState("");
   const [subscriberPaymentMethod, setSubscriberPaymentMethod] = useState("cash");
   const [isAddingSubscriber, setIsAddingSubscriber] = useState(false);
@@ -35,7 +34,6 @@ function AddSubscriberPage() {
         address: subscriberAddress,
         building: subscriberBuilding,
         phone: subscriberPhone,
-        unit_number: subscriberUnitNumber,
         ampere: Number(subscriberAmpere),
         payment_method: subscriberPaymentMethod,
       });
@@ -46,7 +44,6 @@ function AddSubscriberPage() {
       setSubscriberAddress("");
       setSubscriberBuilding("");
       setSubscriberPhone("");
-      setSubscriberUnitNumber("");
       setSubscriberAmpere("");
       setSubscriberPaymentMethod("cash");
       fetchUsers();
@@ -114,13 +111,6 @@ function AddSubscriberPage() {
           placeholder="Phone"
           value={subscriberPhone}
           onChange={(e) => setSubscriberPhone(e.target.value)}
-        />
-        <input
-          className="auth-input"
-          type="text"
-          placeholder="Apt/Unit number"
-          value={subscriberUnitNumber}
-          onChange={(e) => setSubscriberUnitNumber(e.target.value)}
         />
         <input
           className="auth-input"

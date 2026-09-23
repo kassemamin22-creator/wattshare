@@ -22,7 +22,6 @@ export interface Subscription {
   address: string;
   building: string;
   phone: string;
-  unit_number: string;
   subscriber_name?: string;
 }
 
