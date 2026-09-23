@@ -1,10 +1,14 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pymongo import MongoClient, ReturnDocument
 from pymongo.errors import DuplicateKeyError
 from dotenv import load_dotenv
 from typing import List
 import os
+import io
+import re
+import pytesseract
+from PIL import Image, ImageOps
 
 from models import UserCreate, UserLogin, UserOut, UserUpdate, PasswordChange, AdminUserUpdate, AdminPasswordReset, UserRole, ManagerCreate, SubscriberCreate, SubscriptionCreate, SubscriptionOut, SubscriptionUpdate, SubscriptionApprove, AmpereChangeRequest, MeterReadingCreate, BillOut, RevenueOut, IssueCreate, IssueOut, TariffUpdate, TariffOut
 from auth import hash_password, verify_password, create_access_token, get_current_user
@@ -369,6 +373,29 @@ def create_meter_reading(reading: MeterReadingCreate, current_user: dict = Depen
         created_at=created_at,
         due_date=due_date,
     )
+
+@app.post("/meter-reading/ocr")
+def ocr_meter_reading(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "owner":
+        raise HTTPException(status_code=403, detail="Only managers can access this")
+
+    try:
+        image = Image.open(io.BytesIO(file.file.read()))
+        image = ImageOps.exif_transpose(image).convert("L")
+        raw_text = pytesseract.image_to_string(
+            image,
+            config="--psm 7 -c tessedit_char_whitelist=0123456789.",
+        )
+    except Exception:
+        raise HTTPException(
+            status_code=400,
+            detail="Could not read a number from this image, please enter it manually",
+        )
+
+    cleaned = re.sub(r"\s+", "", raw_text)
+    reading_value = float(cleaned) if re.fullmatch(r"\d+(\.\d+)?", cleaned) else None
+
+    return {"reading_value": reading_value, "raw_text": raw_text}
 
 @app.get("/bills/me", response_model=List[BillOut])
 def read_my_bills(current_user: dict = Depends(get_current_user)):
