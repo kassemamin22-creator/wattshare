@@ -212,38 +212,44 @@ function DashboardLayout() {
         <div className="admin-sidebar-logo">
           <span className="admin-sidebar-logo-bolt">⚡</span> WattShare
         </div>
-        <motion.nav
-          className="admin-nav"
-          variants={navContainerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {renderNavLinks("admin-nav-active-pill")}
-        </motion.nav>
+        {hasSubscription && (
+          <>
+            <motion.nav
+              className="admin-nav"
+              variants={navContainerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              {renderNavLinks("admin-nav-active-pill")}
+            </motion.nav>
 
-        <div>
-          <hr className="dash-divider" />
-          {renderAccountSettingsLink("admin-nav-active-pill")}
-          <motion.button
-            className="dash-button-logout"
-            onClick={handleLogout}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            <LogOut size={18} /> Log Out
-          </motion.button>
-        </div>
+            <div>
+              <hr className="dash-divider" />
+              {renderAccountSettingsLink("admin-nav-active-pill")}
+            </div>
+          </>
+        )}
+        <motion.button
+          className="dash-button-logout"
+          onClick={handleLogout}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+        >
+          <LogOut size={18} /> Log Out
+        </motion.button>
       </aside>
 
       <div className="admin-mobile-bar">
-        <motion.button
-          className="admin-mobile-menu-toggle"
-          onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-          whileTap={{ scale: 0.94 }}
-          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-        >
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </motion.button>
+        {hasSubscription && (
+          <motion.button
+            className="admin-mobile-menu-toggle"
+            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            whileTap={{ scale: 0.94 }}
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </motion.button>
+        )}
         <div className="admin-sidebar-logo admin-mobile-logo">⚡ WattShare</div>
         <motion.button
           className="admin-mobile-logout"
@@ -254,56 +260,58 @@ function DashboardLayout() {
         </motion.button>
       </div>
 
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <>
-            <motion.div
-              className="mobile-nav-backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={closeMobileMenu}
-            />
-            <motion.div
-              className="mobile-nav-drawer"
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-            >
-              <div className="mobile-nav-drawer-header">
-                <div className="admin-sidebar-logo" style={{ margin: 0 }}>
-                  <span className="admin-sidebar-logo-bolt">⚡</span> WattShare
+      {hasSubscription && (
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <>
+              <motion.div
+                className="mobile-nav-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={closeMobileMenu}
+              />
+              <motion.div
+                className="mobile-nav-drawer"
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+              >
+                <div className="mobile-nav-drawer-header">
+                  <div className="admin-sidebar-logo" style={{ margin: 0 }}>
+                    <span className="admin-sidebar-logo-bolt">⚡</span> WattShare
+                  </div>
+                  <motion.button
+                    className="admin-mobile-menu-toggle"
+                    onClick={closeMobileMenu}
+                    whileTap={{ scale: 0.94 }}
+                    aria-label="Close menu"
+                  >
+                    <X size={20} />
+                  </motion.button>
                 </div>
-                <motion.button
-                  className="admin-mobile-menu-toggle"
-                  onClick={closeMobileMenu}
-                  whileTap={{ scale: 0.94 }}
-                  aria-label="Close menu"
-                >
-                  <X size={20} />
-                </motion.button>
-              </div>
-              <nav className="admin-nav">
-                {renderNavLinks("mobile-nav-active-pill", closeMobileMenu)}
-              </nav>
-              <div>
-                <hr className="dash-divider" />
-                {renderAccountSettingsLink("mobile-nav-active-pill", closeMobileMenu)}
-                <motion.button
-                  className="dash-button-logout"
-                  onClick={handleLogout}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                >
-                  <LogOut size={18} /> Log Out
-                </motion.button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+                <nav className="admin-nav">
+                  {renderNavLinks("mobile-nav-active-pill", closeMobileMenu)}
+                </nav>
+                <div>
+                  <hr className="dash-divider" />
+                  {renderAccountSettingsLink("mobile-nav-active-pill", closeMobileMenu)}
+                  <motion.button
+                    className="dash-button-logout"
+                    onClick={handleLogout}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                  >
+                    <LogOut size={18} /> Log Out
+                  </motion.button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      )}
 
       <main className="admin-main">
         {!hasSubscription ? (
