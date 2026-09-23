@@ -111,9 +111,11 @@ function Login() {
           <div className="auth-title">Log In</div>
           <div className="auth-glass-card">
             <form onSubmit={handleSubmit}>
+              <label className="auth-label" htmlFor="login-email">Email</label>
               <div className="auth-input-wrap">
                 <Mail size={16} className="auth-input-icon" />
                 <input
+                  id="login-email"
                   className="auth-input"
                   type="email"
                   placeholder="Email"
@@ -121,9 +123,11 @@ function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
+              <label className="auth-label" htmlFor="login-password">Password</label>
               <div className="auth-input-wrap">
                 <Lock size={16} className="auth-input-icon" />
                 <input
+                  id="login-password"
                   className="auth-input"
                   type="password"
                   placeholder="Password"

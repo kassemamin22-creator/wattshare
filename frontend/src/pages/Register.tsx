@@ -95,9 +95,11 @@ function Register() {
           <div className="auth-title">Create Account</div>
           <div className="auth-glass-card">
             <form onSubmit={handleSubmit}>
+              <label className="auth-label" htmlFor="register-name">Name</label>
               <div className="auth-input-wrap">
                 <User size={16} className="auth-input-icon" />
                 <input
+                  id="register-name"
                   className="auth-input"
                   type="text"
                   placeholder="Name"
@@ -105,9 +107,11 @@ function Register() {
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
+              <label className="auth-label" htmlFor="register-email">Email</label>
               <div className="auth-input-wrap">
                 <Mail size={16} className="auth-input-icon" />
                 <input
+                  id="register-email"
                   className="auth-input"
                   type="email"
                   placeholder="Email"
@@ -115,9 +119,11 @@ function Register() {
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
+              <label className="auth-label" htmlFor="register-password">Password</label>
               <div className="auth-input-wrap">
                 <Lock size={16} className="auth-input-icon" />
                 <input
+                  id="register-password"
                   className="auth-input"
                   type="password"
                   placeholder="Password"

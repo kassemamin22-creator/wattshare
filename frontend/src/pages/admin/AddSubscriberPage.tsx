@@ -70,49 +70,63 @@ function AddSubscriberPage() {
         <UserPlus size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Add Subscriber
       </h2>
       <form onSubmit={handleAddSubscriber} className="admin-manager-form">
+        <label className="auth-label" htmlFor="admin-add-subscriber-name">Name</label>
         <input
+          id="admin-add-subscriber-name"
           className="auth-input"
           type="text"
           placeholder="Name"
           value={subscriberName}
           onChange={(e) => setSubscriberName(e.target.value)}
         />
+        <label className="auth-label" htmlFor="admin-add-subscriber-email">Email</label>
         <input
+          id="admin-add-subscriber-email"
           className="auth-input"
           type="email"
           placeholder="Email"
           value={subscriberEmail}
           onChange={(e) => setSubscriberEmail(e.target.value)}
         />
+        <label className="auth-label" htmlFor="admin-add-subscriber-password">Password</label>
         <input
+          id="admin-add-subscriber-password"
           className="auth-input"
           type="password"
           placeholder="Password"
           value={subscriberPassword}
           onChange={(e) => setSubscriberPassword(e.target.value)}
         />
+        <label className="auth-label" htmlFor="admin-add-subscriber-address">Address</label>
         <input
+          id="admin-add-subscriber-address"
           className="auth-input"
           type="text"
           placeholder="Address"
           value={subscriberAddress}
           onChange={(e) => setSubscriberAddress(e.target.value)}
         />
+        <label className="auth-label" htmlFor="admin-add-subscriber-building">Building name or number</label>
         <input
+          id="admin-add-subscriber-building"
           className="auth-input"
           type="text"
           placeholder="Building name or number"
           value={subscriberBuilding}
           onChange={(e) => setSubscriberBuilding(e.target.value)}
         />
+        <label className="auth-label" htmlFor="admin-add-subscriber-phone">Phone</label>
         <input
+          id="admin-add-subscriber-phone"
           className="auth-input"
           type="tel"
           placeholder="Phone"
           value={subscriberPhone}
           onChange={(e) => setSubscriberPhone(e.target.value)}
         />
+        <label className="auth-label" htmlFor="admin-add-subscriber-ampere">Ampere</label>
         <input
+          id="admin-add-subscriber-ampere"
           className="auth-input"
           type="number"
           placeholder="Ampere"

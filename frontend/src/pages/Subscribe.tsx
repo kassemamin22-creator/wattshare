@@ -106,9 +106,11 @@ function Subscribe() {
           <div className="auth-title">Subscribe to a Generator</div>
           <div className="auth-glass-card">
             <form onSubmit={handleSubmit}>
+              <label className="auth-label" htmlFor="subscribe-address">Address</label>
               <div className="auth-input-wrap">
                 <MapPin size={16} className="auth-input-icon" />
                 <input
+                  id="subscribe-address"
                   className="auth-input"
                   type="text"
                   placeholder="Address"
@@ -117,9 +119,11 @@ function Subscribe() {
                   required
                 />
               </div>
+              <label className="auth-label" htmlFor="subscribe-building">Building name or number</label>
               <div className="auth-input-wrap">
                 <Building2 size={16} className="auth-input-icon" />
                 <input
+                  id="subscribe-building"
                   className="auth-input"
                   type="text"
                   placeholder="Building name or number"
@@ -128,9 +132,11 @@ function Subscribe() {
                   required
                 />
               </div>
+              <label className="auth-label" htmlFor="subscribe-phone">Phone</label>
               <div className="auth-input-wrap">
                 <Phone size={16} className="auth-input-icon" />
                 <input
+                  id="subscribe-phone"
                   className="auth-input"
                   type="tel"
                   placeholder="Phone"
@@ -139,9 +145,11 @@ function Subscribe() {
                   required
                 />
               </div>
+              <label className="auth-label" htmlFor="subscribe-ampere">Ampere</label>
               <div className="auth-input-wrap">
                 <Zap size={16} className="auth-input-icon" />
                 <input
+                  id="subscribe-ampere"
                   className="auth-input"
                   type="number"
                   placeholder="Ampere"

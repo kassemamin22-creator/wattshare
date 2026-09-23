@@ -54,21 +54,27 @@ function AddManagerPage() {
         <UserPlus size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Add Manager
       </h2>
       <form onSubmit={handleAddManager} className="admin-manager-form">
+        <label className="auth-label" htmlFor="admin-add-manager-name">Name</label>
         <input
+          id="admin-add-manager-name"
           className="auth-input"
           type="text"
           placeholder="Name"
           value={managerName}
           onChange={(e) => setManagerName(e.target.value)}
         />
+        <label className="auth-label" htmlFor="admin-add-manager-email">Email</label>
         <input
+          id="admin-add-manager-email"
           className="auth-input"
           type="email"
           placeholder="Email"
           value={managerEmail}
           onChange={(e) => setManagerEmail(e.target.value)}
         />
+        <label className="auth-label" htmlFor="admin-add-manager-password">Password</label>
         <input
+          id="admin-add-manager-password"
           className="auth-input"
           type="password"
           placeholder="Password"
