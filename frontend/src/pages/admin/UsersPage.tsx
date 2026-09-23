@@ -283,34 +283,46 @@ function UsersPage() {
                             >
                               <form
                                 onSubmit={handleSaveEditUser}
-                                style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}
+                                style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "flex-end" }}
                               >
-                                <input
-                                  className="auth-input"
-                                  type="text"
-                                  placeholder="Name"
-                                  value={editUserName}
-                                  onChange={(e) => setEditUserName(e.target.value)}
-                                  style={{ flex: "1 1 160px", marginBottom: 0 }}
-                                />
-                                <input
-                                  className="auth-input"
-                                  type="email"
-                                  placeholder="Email"
-                                  value={editUserEmail}
-                                  onChange={(e) => setEditUserEmail(e.target.value)}
-                                  style={{ flex: "1 1 200px", marginBottom: 0 }}
-                                />
-                                <select
-                                  className="owner-select"
-                                  value={editUserRole}
-                                  onChange={(e) => setEditUserRole(e.target.value)}
-                                  style={{ flex: "1 1 140px" }}
-                                >
-                                  <option value="subscriber">Subscriber</option>
-                                  <option value="owner">Manager</option>
-                                  <option value="admin">Admin</option>
-                                </select>
+                                <div style={{ flex: "1 1 160px" }}>
+                                  <label className="auth-label" htmlFor={`user-edit-name-${user.id}`}>Name</label>
+                                  <input
+                                    id={`user-edit-name-${user.id}`}
+                                    className="auth-input"
+                                    type="text"
+                                    placeholder="Name"
+                                    value={editUserName}
+                                    onChange={(e) => setEditUserName(e.target.value)}
+                                    style={{ marginBottom: 0 }}
+                                  />
+                                </div>
+                                <div style={{ flex: "1 1 200px" }}>
+                                  <label className="auth-label" htmlFor={`user-edit-email-${user.id}`}>Email</label>
+                                  <input
+                                    id={`user-edit-email-${user.id}`}
+                                    className="auth-input"
+                                    type="email"
+                                    placeholder="Email"
+                                    value={editUserEmail}
+                                    onChange={(e) => setEditUserEmail(e.target.value)}
+                                    style={{ marginBottom: 0 }}
+                                  />
+                                </div>
+                                <div style={{ flex: "1 1 140px" }}>
+                                  <label className="auth-label" htmlFor={`user-edit-role-${user.id}`}>Role</label>
+                                  <select
+                                    id={`user-edit-role-${user.id}`}
+                                    className="owner-select"
+                                    value={editUserRole}
+                                    onChange={(e) => setEditUserRole(e.target.value)}
+                                    style={{ width: "100%" }}
+                                  >
+                                    <option value="subscriber">Subscriber</option>
+                                    <option value="owner">Manager</option>
+                                    <option value="admin">Admin</option>
+                                  </select>
+                                </div>
                                 <motion.button
                                   className="auth-button owner-submit-button"
                                   type="submit"
@@ -337,20 +349,24 @@ function UsersPage() {
                                   display: "flex",
                                   gap: "0.75rem",
                                   flexWrap: "wrap",
-                                  alignItems: "center",
+                                  alignItems: "flex-end",
                                   marginTop: "0.75rem",
                                   paddingTop: "0.75rem",
                                   borderTop: "1px solid var(--color-border)",
                                 }}
                               >
-                                <input
-                                  className="auth-input"
-                                  type="password"
-                                  placeholder="New Password"
-                                  value={resetPasswordInput}
-                                  onChange={(e) => setResetPasswordInput(e.target.value)}
-                                  style={{ flex: "1 1 200px", marginBottom: 0 }}
-                                />
+                                <div style={{ flex: "1 1 200px" }}>
+                                  <label className="auth-label" htmlFor={`user-reset-password-${user.id}`}>New Password</label>
+                                  <input
+                                    id={`user-reset-password-${user.id}`}
+                                    className="auth-input"
+                                    type="password"
+                                    placeholder="New Password"
+                                    value={resetPasswordInput}
+                                    onChange={(e) => setResetPasswordInput(e.target.value)}
+                                    style={{ marginBottom: 0 }}
+                                  />
+                                </div>
                                 <motion.button
                                   className="dash-button-outline"
                                   type="button"

@@ -182,40 +182,56 @@ function SubscriptionsPage() {
                               {isEditingThis ? (
                                 <form
                                   onSubmit={handleSaveEditSubscription}
-                                  style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}
+                                  style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "flex-end" }}
                                 >
-                                  <input
-                                    className="auth-input"
-                                    type="text"
-                                    placeholder="Address"
-                                    value={editSubscriptionAddress}
-                                    onChange={(e) => setEditSubscriptionAddress(e.target.value)}
-                                    style={{ flex: "1 1 160px", marginBottom: 0 }}
-                                  />
-                                  <input
-                                    className="auth-input"
-                                    type="text"
-                                    placeholder="Building name or number"
-                                    value={editSubscriptionBuilding}
-                                    onChange={(e) => setEditSubscriptionBuilding(e.target.value)}
-                                    style={{ flex: "1 1 160px", marginBottom: 0 }}
-                                  />
-                                  <input
-                                    className="auth-input"
-                                    type="tel"
-                                    placeholder="Phone"
-                                    value={editSubscriptionPhone}
-                                    onChange={(e) => setEditSubscriptionPhone(e.target.value)}
-                                    style={{ flex: "1 1 160px", marginBottom: 0 }}
-                                  />
-                                  <input
-                                    className="auth-input"
-                                    type="number"
-                                    placeholder="Ampere"
-                                    value={editSubscriptionAmpere}
-                                    onChange={(e) => setEditSubscriptionAmpere(e.target.value)}
-                                    style={{ flex: "1 1 160px", marginBottom: 0 }}
-                                  />
+                                  <div style={{ flex: "1 1 160px" }}>
+                                    <label className="auth-label" htmlFor={`admin-edit-address-${subscription.id}`}>Address</label>
+                                    <input
+                                      id={`admin-edit-address-${subscription.id}`}
+                                      className="auth-input"
+                                      type="text"
+                                      placeholder="Address"
+                                      value={editSubscriptionAddress}
+                                      onChange={(e) => setEditSubscriptionAddress(e.target.value)}
+                                      style={{ marginBottom: 0 }}
+                                    />
+                                  </div>
+                                  <div style={{ flex: "1 1 160px" }}>
+                                    <label className="auth-label" htmlFor={`admin-edit-building-${subscription.id}`}>Building name or number</label>
+                                    <input
+                                      id={`admin-edit-building-${subscription.id}`}
+                                      className="auth-input"
+                                      type="text"
+                                      placeholder="Building name or number"
+                                      value={editSubscriptionBuilding}
+                                      onChange={(e) => setEditSubscriptionBuilding(e.target.value)}
+                                      style={{ marginBottom: 0 }}
+                                    />
+                                  </div>
+                                  <div style={{ flex: "1 1 160px" }}>
+                                    <label className="auth-label" htmlFor={`admin-edit-phone-${subscription.id}`}>Phone</label>
+                                    <input
+                                      id={`admin-edit-phone-${subscription.id}`}
+                                      className="auth-input"
+                                      type="tel"
+                                      placeholder="Phone"
+                                      value={editSubscriptionPhone}
+                                      onChange={(e) => setEditSubscriptionPhone(e.target.value)}
+                                      style={{ marginBottom: 0 }}
+                                    />
+                                  </div>
+                                  <div style={{ flex: "1 1 160px" }}>
+                                    <label className="auth-label" htmlFor={`admin-edit-ampere-${subscription.id}`}>Ampere</label>
+                                    <input
+                                      id={`admin-edit-ampere-${subscription.id}`}
+                                      className="auth-input"
+                                      type="number"
+                                      placeholder="Ampere"
+                                      value={editSubscriptionAmpere}
+                                      onChange={(e) => setEditSubscriptionAmpere(e.target.value)}
+                                      style={{ marginBottom: 0 }}
+                                    />
+                                  </div>
                                   <motion.button
                                     className="auth-button owner-submit-button"
                                     type="submit"

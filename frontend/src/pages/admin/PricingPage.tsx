@@ -61,7 +61,9 @@ function PricingPage() {
         )}
       </p>
       <form onSubmit={handleUpdateTariff} className="admin-manager-form">
+        <label className="auth-label" htmlFor="pricing-price-per-ampere">Price per ampere</label>
         <input
+          id="pricing-price-per-ampere"
           className="auth-input"
           type="number"
           step="0.01"

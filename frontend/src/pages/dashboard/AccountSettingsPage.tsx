@@ -128,14 +128,18 @@ function AccountSettingsPage() {
             style={{ overflow: "hidden" }}
           >
             <form onSubmit={handleSaveProfile}>
+              <label className="auth-label" htmlFor="account-settings-name">Name</label>
               <input
+                id="account-settings-name"
                 className="auth-input"
                 type="text"
                 placeholder="Name"
                 value={editProfileName}
                 onChange={(e) => setEditProfileName(e.target.value)}
               />
+              <label className="auth-label" htmlFor="account-settings-email">Email</label>
               <input
+                id="account-settings-email"
                 className="auth-input"
                 type="email"
                 placeholder="Email"
@@ -192,14 +196,18 @@ function AccountSettingsPage() {
             style={{ overflow: "hidden" }}
           >
             <form onSubmit={handleSavePassword}>
+              <label className="auth-label" htmlFor="account-settings-current-password">Current password</label>
               <input
+                id="account-settings-current-password"
                 className="auth-input"
                 type="password"
                 placeholder="Current password"
                 value={currentPasswordInput}
                 onChange={(e) => setCurrentPasswordInput(e.target.value)}
               />
+              <label className="auth-label" htmlFor="account-settings-new-password">New password</label>
               <input
+                id="account-settings-new-password"
                 className="auth-input"
                 type="password"
                 placeholder="New password"

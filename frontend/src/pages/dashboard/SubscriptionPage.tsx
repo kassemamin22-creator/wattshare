@@ -111,15 +111,19 @@ function SubscriptionPage() {
               Ampere change requested: {subscription.pending_ampere_change}A (awaiting manager approval)
             </span>
           ) : (
-            <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-              <input
-                className="auth-input"
-                type="number"
-                placeholder="New ampere value"
-                value={requestedAmpere}
-                onChange={(e) => setRequestedAmpere(e.target.value)}
-                style={{ marginBottom: 0, flex: 1 }}
-              />
+            <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-end" }}>
+              <div style={{ flex: 1 }}>
+                <label className="auth-label" htmlFor="subscription-requested-ampere">New ampere value</label>
+                <input
+                  id="subscription-requested-ampere"
+                  className="auth-input"
+                  type="number"
+                  placeholder="New ampere value"
+                  value={requestedAmpere}
+                  onChange={(e) => setRequestedAmpere(e.target.value)}
+                  style={{ marginBottom: 0 }}
+                />
+              </div>
               <motion.button
                 className="dash-button-outline"
                 type="button"
@@ -171,21 +175,27 @@ function SubscriptionPage() {
                 style={{ overflow: "hidden" }}
               >
                 <form onSubmit={handleSaveEditing}>
+                  <label className="auth-label" htmlFor="subscription-edit-address">Address</label>
                   <input
+                    id="subscription-edit-address"
                     className="auth-input"
                     type="text"
                     placeholder="Address"
                     value={editAddress}
                     onChange={(e) => setEditAddress(e.target.value)}
                   />
+                  <label className="auth-label" htmlFor="subscription-edit-building">Building name or number</label>
                   <input
+                    id="subscription-edit-building"
                     className="auth-input"
                     type="text"
                     placeholder="Building name or number"
                     value={editBuilding}
                     onChange={(e) => setEditBuilding(e.target.value)}
                   />
+                  <label className="auth-label" htmlFor="subscription-edit-phone">Phone</label>
                   <input
+                    id="subscription-edit-phone"
                     className="auth-input"
                     type="tel"
                     placeholder="Phone"
