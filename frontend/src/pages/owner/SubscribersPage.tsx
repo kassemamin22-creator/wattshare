@@ -1,7 +1,7 @@
-import { useMemo, useState, type FormEvent, Fragment } from "react";
+import { useMemo, useRef, useState, type ChangeEvent, type FormEvent, Fragment } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Search, Loader2, Pencil, ChevronDown } from "lucide-react";
+import { Users, Search, Loader2, Pencil, ChevronDown, Camera } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
@@ -17,6 +17,8 @@ function SubscribersPage() {
   const [statusFilter, setStatusFilter] = useState<"active" | "all" | "pending" | "inactive">("active");
   const [buildingFilter, setBuildingFilter] = useState("");
   const [submittingReadingId, setSubmittingReadingId] = useState<string | null>(null);
+  const [scanningId, setScanningId] = useState<string | null>(null);
+  const scanInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [expandedSubscriberId, setExpandedSubscriberId] = useState<string | null>(null);
   const [editingSubscriptionId, setEditingSubscriptionId] = useState<string | null>(null);
   const [editSubscriptionAddress, setEditSubscriptionAddress] = useState("");
@@ -31,6 +33,37 @@ function SubscribersPage() {
 
   const handleReadingChange = (subscriberId: string, value: string) => {
     setReadingValues((prev) => ({ ...prev, [subscriberId]: value }));
+  };
+
+  const handleScanFile = async (subscriberId: string, e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    setScanningId(subscriberId);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await api.post("/meter-reading/ocr", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const scannedValue = response.data.reading_value;
+      if (scannedValue !== null && scannedValue !== undefined) {
+        handleReadingChange(subscriberId, String(scannedValue));
+        showToast(`Reading scanned: ${scannedValue} — please confirm before submitting.`, "success");
+      } else {
+        showToast("Couldn't read a number from the photo, please enter it manually", "error");
+      }
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
+        showToast(err.response.data.detail, "error");
+      } else {
+        showToast("Failed to scan meter photo", "error");
+      }
+    } finally {
+      setScanningId(null);
+    }
   };
 
   const handleSubmitReading = async (subscriberId: string, lastReading: number | null | undefined) => {
@@ -348,6 +381,32 @@ function SubscribersPage() {
                                       }
                                       style={{ marginBottom: 0 }}
                                     />
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      capture="environment"
+                                      style={{ display: "none" }}
+                                      ref={(el) => {
+                                        scanInputRefs.current[subscriber.subscriber_id] = el;
+                                      }}
+                                      onChange={(e) => handleScanFile(subscriber.subscriber_id, e)}
+                                    />
+                                    <motion.button
+                                      className="dash-button-outline"
+                                      type="button"
+                                      onClick={() => scanInputRefs.current[subscriber.subscriber_id]?.click()}
+                                      whileHover={{ scale: 1.03 }}
+                                      whileTap={{ scale: 0.97 }}
+                                      disabled={scanningId === subscriber.subscriber_id}
+                                      style={{ marginTop: 0, width: "auto", padding: "0.6rem 0.75rem" }}
+                                      aria-label="Scan meter with camera"
+                                    >
+                                      {scanningId === subscriber.subscriber_id ? (
+                                        <Loader2 size={16} className="btn-spinner" />
+                                      ) : (
+                                        <Camera size={16} />
+                                      )}
+                                    </motion.button>
                                     <motion.button
                                       className="auth-button owner-submit-button"
                                       onClick={() => handleSubmitReading(subscriber.subscriber_id, subscriber.last_reading)}
