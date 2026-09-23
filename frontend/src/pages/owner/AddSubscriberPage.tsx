@@ -61,96 +61,112 @@ function AddSubscriberPage() {
   return (
     <motion.section
       id="add-subscriber"
-      className="dash-card admin-section"
+      className="dash-card admin-section admin-form-card"
       {...cardEntrance(0)}
       whileHover={cardHover}
     >
-      <h2 className="dash-card-title">
+      <h2 className="dash-card-title admin-form-title">
         <UserPlus size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Add Subscriber
       </h2>
-      <form onSubmit={handleAddSubscriber} className="admin-manager-form">
-        <label className="auth-label" htmlFor="owner-add-subscriber-name">Name</label>
-        <input
-          id="owner-add-subscriber-name"
-          className="auth-input"
-          type="text"
-          placeholder="Name"
-          value={subscriberName}
-          onChange={(e) => setSubscriberName(e.target.value)}
-        />
-        <label className="auth-label" htmlFor="owner-add-subscriber-email">Email</label>
-        <input
-          id="owner-add-subscriber-email"
-          className="auth-input"
-          type="email"
-          placeholder="Email"
-          value={subscriberEmail}
-          onChange={(e) => setSubscriberEmail(e.target.value)}
-        />
-        <label className="auth-label" htmlFor="owner-add-subscriber-password">Password</label>
-        <input
-          id="owner-add-subscriber-password"
-          className="auth-input"
-          type="password"
-          placeholder="Password"
-          value={subscriberPassword}
-          onChange={(e) => setSubscriberPassword(e.target.value)}
-        />
-        <label className="auth-label" htmlFor="owner-add-subscriber-address">Address</label>
-        <input
-          id="owner-add-subscriber-address"
-          className="auth-input"
-          type="text"
-          placeholder="Address"
-          value={subscriberAddress}
-          onChange={(e) => setSubscriberAddress(e.target.value)}
-        />
-        <label className="auth-label" htmlFor="owner-add-subscriber-building">Building name or number</label>
-        <input
-          id="owner-add-subscriber-building"
-          className="auth-input"
-          type="text"
-          placeholder="Building name or number"
-          value={subscriberBuilding}
-          onChange={(e) => setSubscriberBuilding(e.target.value)}
-        />
-        <label className="auth-label" htmlFor="owner-add-subscriber-phone">Phone</label>
-        <input
-          id="owner-add-subscriber-phone"
-          className="auth-input"
-          type="tel"
-          placeholder="Phone"
-          value={subscriberPhone}
-          onChange={(e) => setSubscriberPhone(e.target.value)}
-        />
-        <label className="auth-label" htmlFor="owner-add-subscriber-ampere">Ampere</label>
-        <input
-          id="owner-add-subscriber-ampere"
-          className="auth-input"
-          type="number"
-          placeholder="Ampere"
-          value={subscriberAmpere}
-          onChange={(e) => setSubscriberAmpere(e.target.value)}
-        />
-        <p className="dash-label">Payment Method</p>
-        <div className="payment-method-group">
-          {SUBSCRIBER_PAYMENT_METHODS.map((method) => (
-            <button
-              key={method.value}
-              type="button"
-              className={
-                subscriberPaymentMethod === method.value
-                  ? "payment-method-pill payment-method-pill-active"
-                  : "payment-method-pill"
-              }
-              onClick={() => setSubscriberPaymentMethod(method.value)}
-            >
-              {method.label}
-            </button>
-          ))}
+      <form onSubmit={handleAddSubscriber} className="admin-form-grid">
+        <div className="admin-form-field">
+          <label className="auth-label" htmlFor="owner-add-subscriber-name">Name</label>
+          <input
+            id="owner-add-subscriber-name"
+            className="auth-input"
+            type="text"
+            placeholder="Name"
+            value={subscriberName}
+            onChange={(e) => setSubscriberName(e.target.value)}
+          />
+        </div>
+        <div className="admin-form-field">
+          <label className="auth-label" htmlFor="owner-add-subscriber-email">Email</label>
+          <input
+            id="owner-add-subscriber-email"
+            className="auth-input"
+            type="email"
+            placeholder="Email"
+            value={subscriberEmail}
+            onChange={(e) => setSubscriberEmail(e.target.value)}
+          />
+        </div>
+        <div className="admin-form-field">
+          <label className="auth-label" htmlFor="owner-add-subscriber-password">Password</label>
+          <input
+            id="owner-add-subscriber-password"
+            className="auth-input"
+            type="password"
+            placeholder="Password"
+            value={subscriberPassword}
+            onChange={(e) => setSubscriberPassword(e.target.value)}
+          />
+        </div>
+        <div className="admin-form-field">
+          <label className="auth-label" htmlFor="owner-add-subscriber-ampere">Ampere</label>
+          <input
+            id="owner-add-subscriber-ampere"
+            className="auth-input"
+            type="number"
+            placeholder="Ampere"
+            value={subscriberAmpere}
+            onChange={(e) => setSubscriberAmpere(e.target.value)}
+          />
+        </div>
+        <div className="admin-form-field">
+          <label className="auth-label" htmlFor="owner-add-subscriber-address">Address</label>
+          <input
+            id="owner-add-subscriber-address"
+            className="auth-input"
+            type="text"
+            placeholder="Address"
+            value={subscriberAddress}
+            onChange={(e) => setSubscriberAddress(e.target.value)}
+          />
+        </div>
+        <div className="admin-form-field">
+          <label className="auth-label" htmlFor="owner-add-subscriber-building">Building name or number</label>
+          <input
+            id="owner-add-subscriber-building"
+            className="auth-input"
+            type="text"
+            placeholder="Building name or number"
+            value={subscriberBuilding}
+            onChange={(e) => setSubscriberBuilding(e.target.value)}
+          />
+        </div>
+        <div className="admin-form-field admin-form-full">
+          <label className="auth-label" htmlFor="owner-add-subscriber-phone">Phone</label>
+          <input
+            id="owner-add-subscriber-phone"
+            className="auth-input"
+            type="tel"
+            placeholder="Phone"
+            value={subscriberPhone}
+            onChange={(e) => setSubscriberPhone(e.target.value)}
+          />
+        </div>
+        <div className="admin-form-full">
+          <p className="dash-label">Payment Method</p>
+          <div className="payment-method-group">
+            {SUBSCRIBER_PAYMENT_METHODS.map((method) => (
+              <button
+                key={method.value}
+                type="button"
+                className={
+                  subscriberPaymentMethod === method.value
+                    ? "payment-method-pill payment-method-pill-active"
+                    : "payment-method-pill"
+                }
+                onClick={() => setSubscriberPaymentMethod(method.value)}
+              >
+                {method.label}
+              </button>
+            ))}
+          </div>
         </div>
         <motion.button
-          className="auth-button"
+          className="auth-button admin-form-full"
           type="submit"
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}

@@ -1257,6 +1257,52 @@ body {
   max-width: 420px;
 }
 
+.admin-form-card {
+  padding: 2rem;
+}
+
+.admin-form-title {
+  margin-bottom: 1.75rem;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem 1.5rem;
+}
+
+.admin-form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-form-field .auth-input {
+  margin-bottom: 0;
+}
+
+.admin-form-full {
+  grid-column: 1 / -1;
+}
+
+.admin-form-grid .payment-method-group {
+  margin: 0.4rem 0 0;
+}
+
+.admin-form-grid .auth-button {
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .admin-form-card {
+    padding: 1.25rem;
+  }
+
+  .admin-form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
 @media (max-width: 1024px) {
   .admin-sidebar {
     display: none;

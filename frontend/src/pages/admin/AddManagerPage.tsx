@@ -46,43 +46,49 @@ function AddManagerPage() {
   return (
     <motion.section
       id="add-manager"
-      className="dash-card admin-section"
+      className="dash-card admin-section admin-form-card"
       {...cardEntrance(0)}
       whileHover={cardHover}
     >
-      <h2 className="dash-card-title">
+      <h2 className="dash-card-title admin-form-title">
         <UserPlus size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Add Manager
       </h2>
-      <form onSubmit={handleAddManager} className="admin-manager-form">
-        <label className="auth-label" htmlFor="admin-add-manager-name">Name</label>
-        <input
-          id="admin-add-manager-name"
-          className="auth-input"
-          type="text"
-          placeholder="Name"
-          value={managerName}
-          onChange={(e) => setManagerName(e.target.value)}
-        />
-        <label className="auth-label" htmlFor="admin-add-manager-email">Email</label>
-        <input
-          id="admin-add-manager-email"
-          className="auth-input"
-          type="email"
-          placeholder="Email"
-          value={managerEmail}
-          onChange={(e) => setManagerEmail(e.target.value)}
-        />
-        <label className="auth-label" htmlFor="admin-add-manager-password">Password</label>
-        <input
-          id="admin-add-manager-password"
-          className="auth-input"
-          type="password"
-          placeholder="Password"
-          value={managerPassword}
-          onChange={(e) => setManagerPassword(e.target.value)}
-        />
+      <form onSubmit={handleAddManager} className="admin-form-grid">
+        <div className="admin-form-field">
+          <label className="auth-label" htmlFor="admin-add-manager-name">Name</label>
+          <input
+            id="admin-add-manager-name"
+            className="auth-input"
+            type="text"
+            placeholder="Name"
+            value={managerName}
+            onChange={(e) => setManagerName(e.target.value)}
+          />
+        </div>
+        <div className="admin-form-field">
+          <label className="auth-label" htmlFor="admin-add-manager-email">Email</label>
+          <input
+            id="admin-add-manager-email"
+            className="auth-input"
+            type="email"
+            placeholder="Email"
+            value={managerEmail}
+            onChange={(e) => setManagerEmail(e.target.value)}
+          />
+        </div>
+        <div className="admin-form-field admin-form-full">
+          <label className="auth-label" htmlFor="admin-add-manager-password">Password</label>
+          <input
+            id="admin-add-manager-password"
+            className="auth-input"
+            type="password"
+            placeholder="Password"
+            value={managerPassword}
+            onChange={(e) => setManagerPassword(e.target.value)}
+          />
+        </div>
         <motion.button
-          className="auth-button"
+          className="auth-button admin-form-full"
           type="submit"
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
