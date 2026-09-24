@@ -1,9 +1,15 @@
-import { useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
+import { useEffect, useRef, useState, type Dispatch, type FormEvent, type ReactNode, type SetStateAction } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, BarChart3, Sparkles, Receipt, MessageCircle, LogOut, Settings, Menu, X } from "lucide-react";
+import { Zap, BarChart3, Sparkles, Receipt, MessageCircle, LogOut, Settings, Menu, X, Send, Loader2 } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "../../services/api";
+import { useToast } from "../../hooks/useToast";
+
+interface ChatMessage {
+  role: "user" | "model";
+  text: string;
+}
 
 export interface CurrentUser {
   id: string;
@@ -80,6 +86,7 @@ const ACCOUNT_SETTINGS_PATH = "/dashboard/account-settings";
 function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const showToast = useToast();
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [hasSubscription, setHasSubscription] = useState(true);
@@ -88,6 +95,41 @@ function DashboardLayout() {
   const [profileName, setProfileName] = useState("");
   const [profileEmail, setProfileEmail] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [currentInput, setCurrentInput] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const chatMessagesRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = chatMessagesRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [messages, isSending, isChatOpen]);
+
+  const handleSendMessage = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const text = currentInput.trim();
+    if (!text || isSending) return;
+
+    const history = messages.map((m) => ({ role: m.role, text: m.text }));
+    setMessages((prev) => [...prev, { role: "user", text }]);
+    setCurrentInput("");
+    setIsSending(true);
+
+    try {
+      const response = await api.post("/chatbot/ask", { message: text, history });
+      setMessages((prev) => [...prev, { role: "model", text: response.data.reply }]);
+    } catch (err) {
+      const detail = isAxiosError(err) ? err.response?.data?.detail : undefined;
+      showToast(typeof detail === "string" ? detail : "Failed to reach the assistant", "error");
+      setMessages((prev) => [
+        ...prev,
+        { role: "model", text: "Sorry, something went wrong. Please try again." },
+      ]);
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   const fetchSubscription = () => {
     return api
@@ -359,6 +401,85 @@ function DashboardLayout() {
           </>
         )}
       </main>
+
+      {hasSubscription && (
+        <>
+          <AnimatePresence>
+            {isChatOpen && (
+              <motion.div
+                className="dash-card chat-panel"
+                initial={{ opacity: 0, y: 16, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 16, scale: 0.97 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              >
+                <div className="chat-panel-header">
+                  <span>WattShare Assistant</span>
+                  <button
+                    type="button"
+                    className="chat-panel-close"
+                    onClick={() => setIsChatOpen(false)}
+                    aria-label="Close chat"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+                <div className="chat-messages" ref={chatMessagesRef}>
+                  {messages.length === 0 && !isSending && (
+                    <p className="chat-empty">Ask me about your subscription or bills.</p>
+                  )}
+                  {messages.map((message, index) => (
+                    <div
+                      key={index}
+                      className={
+                        message.role === "user"
+                          ? "chat-bubble chat-bubble-user"
+                          : "chat-bubble chat-bubble-model"
+                      }
+                    >
+                      {message.text}
+                    </div>
+                  ))}
+                  {isSending && (
+                    <div className="chat-bubble chat-bubble-model">
+                      <Loader2 size={14} className="btn-spinner" /> Typing...
+                    </div>
+                  )}
+                </div>
+                <form className="chat-input-row" onSubmit={handleSendMessage}>
+                  <input
+                    className="auth-input"
+                    type="text"
+                    placeholder="Ask about your bills..."
+                    aria-label="Message"
+                    maxLength={1000}
+                    value={currentInput}
+                    onChange={(e) => setCurrentInput(e.target.value)}
+                  />
+                  <button
+                    type="submit"
+                    className="chat-send"
+                    disabled={isSending || !currentInput.trim()}
+                    aria-label="Send message"
+                  >
+                    <Send size={16} />
+                  </button>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <motion.button
+            type="button"
+            className="chat-fab"
+            onClick={() => setIsChatOpen((prev) => !prev)}
+            whileHover={{ scale: 1.06 }}
+            whileTap={{ scale: 0.94 }}
+            aria-label={isChatOpen ? "Close chat" : "Open chat"}
+          >
+            <MessageCircle size={24} />
+          </motion.button>
+        </>
+      )}
     </div>
   );
 }
