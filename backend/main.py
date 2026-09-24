@@ -392,6 +392,7 @@ def ocr_meter_reading(file: UploadFile = File(...), current_user: dict = Depends
             detail="Could not read a number from this image, please enter it manually",
         )
 
+    print(f"[OCR RAW] {repr(raw_text)}")
     cleaned = re.sub(r"\s+", "", raw_text)
     reading_value = float(cleaned) if re.fullmatch(r"\d+(\.\d+)?", cleaned) else None
 
