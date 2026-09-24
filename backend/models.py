@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import List, Literal, Optional
 from enum import Enum
 from datetime import datetime
 
@@ -101,6 +101,17 @@ class TariffUpdate(BaseModel):
 
 class TariffOut(BaseModel):
     price_per_ampere: float
+
+class ChatMessage(BaseModel):
+    role: Literal["user", "model"]
+    text: str
+
+class ChatRequest(BaseModel):
+    message: str
+    history: List[ChatMessage] = []
+
+class ChatResponse(BaseModel):
+    reply: str
 
 class MeterReadingCreate(BaseModel):
     subscriber_id: str

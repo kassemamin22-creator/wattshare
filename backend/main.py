@@ -9,7 +9,7 @@ import re
 from google import genai
 from google.genai import types
 
-from models import UserCreate, UserLogin, UserOut, UserUpdate, PasswordChange, AdminUserUpdate, AdminPasswordReset, UserRole, ManagerCreate, SubscriberCreate, SubscriptionCreate, SubscriptionOut, SubscriptionUpdate, SubscriptionApprove, AmpereChangeRequest, MeterReadingCreate, BillOut, RevenueOut, IssueCreate, IssueOut, TariffUpdate, TariffOut
+from models import UserCreate, UserLogin, UserOut, UserUpdate, PasswordChange, AdminUserUpdate, AdminPasswordReset, UserRole, ManagerCreate, SubscriberCreate, SubscriptionCreate, SubscriptionOut, SubscriptionUpdate, SubscriptionApprove, AmpereChangeRequest, MeterReadingCreate, ChatRequest, ChatResponse, BillOut, RevenueOut, IssueCreate, IssueOut, TariffUpdate, TariffOut
 from auth import hash_password, verify_password, create_access_token, get_current_user
 from bson import ObjectId
 from datetime import datetime, timedelta
@@ -22,6 +22,9 @@ MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = os.getenv("DB_NAME")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_OCR_MODEL = "gemini-3.5-flash-lite"
+GEMINI_CHAT_MODEL = "gemini-3.5-flash-lite"
+CHATBOT_MAX_HISTORY_TURNS = 20
+CHATBOT_MAX_MESSAGE_LENGTH = 1000
 
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
@@ -404,6 +407,81 @@ def ocr_meter_reading(file: UploadFile = File(...), current_user: dict = Depends
     reading_value = float(raw_text) if re.fullmatch(r"\d+(\.\d+)?", raw_text) else None
 
     return {"reading_value": reading_value, "raw_text": raw_text}
+
+@app.post("/chatbot/ask", response_model=ChatResponse)
+def chatbot_ask(request: ChatRequest, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "subscriber":
+        raise HTTPException(status_code=403, detail="Only subscribers can use the chatbot")
+
+    if len(request.message) > CHATBOT_MAX_MESSAGE_LENGTH:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Message is too long (maximum {CHATBOT_MAX_MESSAGE_LENGTH} characters)",
+        )
+
+    history = request.history[-CHATBOT_MAX_HISTORY_TURNS:]
+    while history and history[0].role == "model":
+        history = history[1:]
+
+    try:
+        user = users_collection.find_one({"_id": ObjectId(current_user["id"])})
+        subscription = subscriptions_collection.find_one({"subscriber_id": current_user["id"]})
+        bills = list(
+            bills_collection.find({"subscriber_id": current_user["id"]}).sort("created_at", -1).limit(12)
+        )
+
+        def fmt_date(value):
+            return value.strftime("%Y-%m-%d") if value else "N/A"
+
+        lines = [f"Subscriber name: {user['name'] if user else 'Unknown'}", ""]
+        if subscription:
+            lines += [
+                "Subscription:",
+                f"- Status: {subscription['status']}",
+                f"- Ampere: {subscription['ampere']}A",
+                f"- Tariff rate: ${subscription['tariff_rate']} per kWh",
+                f"- Flat fee: ${subscription.get('flat_fee', 0.0)}",
+                f"- Start date: {fmt_date(subscription.get('start_date'))}",
+            ]
+        else:
+            lines.append("Subscription: none (the subscriber has no subscription yet)")
+
+        lines += ["", "Recent bills (newest first, up to 12):"]
+        if bills:
+            for bill in bills:
+                lines.append(
+                    f"- Issued {fmt_date(bill.get('created_at'))}, due {fmt_date(bill.get('due_date'))}: "
+                    f"{bill['consumption_kwh']} kWh, ${bill['amount']:.2f}, status: {bill['status']}"
+                )
+        else:
+            lines.append("- No bills yet")
+
+        system_instruction = (
+            "You are a helpful assistant for a subscriber of WattShare, an electricity generator "
+            "subscription platform. Answer the subscriber's questions using ONLY the data provided "
+            "below. Be concise and friendly. If asked about something not in the data, say you don't "
+            "have that information. Do not make up numbers.\n\n"
+            "Each bill amount is consumption_kwh x tariff_rate + flat_fee, using the rates in effect "
+            "when the bill was issued.\n\n"
+            "--- SUBSCRIBER DATA ---\n" + "\n".join(lines)
+        )
+
+        gemini_client = genai.Client(api_key=GEMINI_API_KEY)
+        chat = gemini_client.chats.create(
+            model=GEMINI_CHAT_MODEL,
+            config=types.GenerateContentConfig(system_instruction=system_instruction),
+            history=[
+                types.Content(role=item.role, parts=[types.Part(text=item.text)])
+                for item in history
+            ],
+        )
+        response = chat.send_message(request.message)
+        if not response.text:
+            raise ValueError("Empty response from Gemini")
+    except Exception:
+        raise HTTPException(status_code=400, detail="Sorry, I couldn't process that. Please try again.")
+
+    return ChatResponse(reply=response.text)
 
 @app.get("/bills/me", response_model=List[BillOut])
 def read_my_bills(current_user: dict = Depends(get_current_user)):
