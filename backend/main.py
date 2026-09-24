@@ -5,10 +5,9 @@ from pymongo.errors import DuplicateKeyError
 from dotenv import load_dotenv
 from typing import List
 import os
-import io
 import re
-import pytesseract
-from PIL import Image, ImageOps
+from google import genai
+from google.genai import types
 
 from models import UserCreate, UserLogin, UserOut, UserUpdate, PasswordChange, AdminUserUpdate, AdminPasswordReset, UserRole, ManagerCreate, SubscriberCreate, SubscriptionCreate, SubscriptionOut, SubscriptionUpdate, SubscriptionApprove, AmpereChangeRequest, MeterReadingCreate, BillOut, RevenueOut, IssueCreate, IssueOut, TariffUpdate, TariffOut
 from auth import hash_password, verify_password, create_access_token, get_current_user
@@ -21,6 +20,8 @@ load_dotenv()
 
 MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = os.getenv("DB_NAME")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_OCR_MODEL = "gemini-3.5-flash-lite"
 
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
@@ -380,21 +381,27 @@ def ocr_meter_reading(file: UploadFile = File(...), current_user: dict = Depends
         raise HTTPException(status_code=403, detail="Only managers can access this")
 
     try:
-        image = Image.open(io.BytesIO(file.file.read()))
-        image = ImageOps.exif_transpose(image).convert("L")
-        raw_text = pytesseract.image_to_string(
-            image,
-            config="--psm 7 -c tessedit_char_whitelist=0123456789.",
+        if not file.content_type or not file.content_type.startswith("image/"):
+            raise ValueError("Uploaded file is not an image")
+
+        gemini_client = genai.Client(api_key=GEMINI_API_KEY)
+        response = gemini_client.models.generate_content(
+            model=GEMINI_OCR_MODEL,
+            contents=[
+                types.Part.from_bytes(data=file.file.read(), mime_type=file.content_type),
+                "Read the numeric meter reading shown in this image. "
+                "Respond with ONLY the number (digits and at most one decimal point), nothing else. "
+                "If you cannot clearly identify a number, respond with exactly: NONE",
+            ],
         )
+        raw_text = (response.text or "").strip()
     except Exception:
         raise HTTPException(
             status_code=400,
             detail="Could not read a number from this image, please enter it manually",
         )
 
-    print(f"[OCR RAW] {repr(raw_text)}")
-    cleaned = re.sub(r"\s+", "", raw_text)
-    reading_value = float(cleaned) if re.fullmatch(r"\d+(\.\d+)?", cleaned) else None
+    reading_value = float(raw_text) if re.fullmatch(r"\d+(\.\d+)?", raw_text) else None
 
     return {"reading_value": reading_value, "raw_text": raw_text}
 
