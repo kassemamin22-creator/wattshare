@@ -5,6 +5,7 @@ import { User, Pencil, Lock, Loader2 } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
+import { getApiErrorMessage } from "../../utils/apiError";
 import type { AdminDashboardContext } from "./AdminDashboardLayout";
 import { cardEntrance, cardHover } from "./shared";
 
@@ -16,6 +17,7 @@ function AccountSettingsPage() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editProfileName, setEditProfileName] = useState("");
   const [editProfileEmail, setEditProfileEmail] = useState("");
+  const [editProfilePhone, setEditProfilePhone] = useState("");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [currentPasswordInput, setCurrentPasswordInput] = useState("");
@@ -25,6 +27,7 @@ function AccountSettingsPage() {
   const handleStartEditProfile = () => {
     setEditProfileName(selfUser?.name || "");
     setEditProfileEmail(selfUser?.email || "");
+    setEditProfilePhone(selfUser?.phone || "");
     setIsEditingProfile(true);
   };
 
@@ -34,28 +37,38 @@ function AccountSettingsPage() {
 
   const handleSaveProfile = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    const trimmedEmail = editProfileEmail.trim();
+    const trimmedPhone = editProfilePhone.trim();
+    if (!trimmedEmail && !trimmedPhone) {
+      showToast("Please provide either an email or a phone number", "error");
+      return;
+    }
+
     setIsSavingProfile(true);
 
     try {
       const response = await api.patch("/users/me", {
         name: editProfileName,
-        email: editProfileEmail,
+        email: trimmedEmail || null,
+        phone: trimmedPhone || null,
       });
       setUsers((prev) =>
         prev.map((user) =>
           user.id === currentUserId
-            ? { ...user, name: response.data.name, email: response.data.email }
+            ? {
+                ...user,
+                name: response.data.name,
+                email: response.data.email ?? null,
+                phone: response.data.phone ?? null,
+              }
             : user
         )
       );
       setIsEditingProfile(false);
       showToast("Profile updated successfully", "success");
     } catch (err) {
-      if (isAxiosError(err) && err.response?.data?.detail) {
-        showToast(err.response.data.detail, "error");
-      } else {
-        showToast("Failed to update profile", "error");
-      }
+      showToast(getApiErrorMessage(err, "Failed to update profile"), "error");
     } finally {
       setIsSavingProfile(false);
     }
@@ -112,6 +125,7 @@ function AccountSettingsPage() {
         <>
           <p className="dash-value-lg">{selfUser?.name || "—"}</p>
           <p className="bill-date">{selfUser?.email || "—"}</p>
+          <p className="bill-date">{selfUser?.phone || "—"}</p>
           <motion.button
             className="dash-button-outline"
             onClick={handleStartEditProfile}
@@ -133,19 +147,32 @@ function AccountSettingsPage() {
             style={{ overflow: "hidden" }}
           >
             <form onSubmit={handleSaveProfile}>
+              <label className="auth-label" htmlFor="admin-account-settings-name">Name</label>
               <input
+                id="admin-account-settings-name"
                 className="auth-input"
                 type="text"
                 placeholder="Name"
                 value={editProfileName}
                 onChange={(e) => setEditProfileName(e.target.value)}
               />
+              <label className="auth-label" htmlFor="admin-account-settings-email">Email</label>
               <input
+                id="admin-account-settings-email"
                 className="auth-input"
                 type="email"
                 placeholder="Email"
                 value={editProfileEmail}
                 onChange={(e) => setEditProfileEmail(e.target.value)}
+              />
+              <label className="auth-label" htmlFor="admin-account-settings-phone">Phone Number</label>
+              <input
+                id="admin-account-settings-phone"
+                className="auth-input"
+                type="tel"
+                placeholder="+96170123456"
+                value={editProfilePhone}
+                onChange={(e) => setEditProfilePhone(e.target.value)}
               />
               <div style={{ display: "flex", gap: "0.75rem" }}>
                 <motion.button

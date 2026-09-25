@@ -7,7 +7,8 @@ import api from "../../services/api";
 export interface User {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
+  phone: string | null;
   role: string;
   subscription_status?: string | null;
 }

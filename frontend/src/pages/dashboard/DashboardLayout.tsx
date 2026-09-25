@@ -59,6 +59,8 @@ export interface DashboardContext {
   setProfileName: Dispatch<SetStateAction<string>>;
   profileEmail: string;
   setProfileEmail: Dispatch<SetStateAction<string>>;
+  profilePhone: string;
+  setProfilePhone: Dispatch<SetStateAction<string>>;
 }
 
 const NAV_ITEMS = [
@@ -94,6 +96,7 @@ function DashboardLayout() {
   const [prediction, setPrediction] = useState<Prediction | null>(null);
   const [profileName, setProfileName] = useState("");
   const [profileEmail, setProfileEmail] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -147,7 +150,8 @@ function DashboardLayout() {
 
     api.get("/users/me").then((response) => {
       setProfileName(response.data.name);
-      setProfileEmail(response.data.email);
+      setProfileEmail(response.data.email ?? "");
+      setProfilePhone(response.data.phone ?? "");
     });
 
     fetchSubscription();
@@ -246,6 +250,8 @@ function DashboardLayout() {
     setProfileName,
     profileEmail,
     setProfileEmail,
+    profilePhone,
+    setProfilePhone,
   };
 
   return (

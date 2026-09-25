@@ -7,6 +7,7 @@ import { isAxiosError } from "axios";
 import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
 import ConfirmModal from "../../components/ConfirmModal";
+import { getApiErrorMessage } from "../../utils/apiError";
 import type { AdminDashboardContext, User } from "./AdminDashboardLayout";
 import { statusPillClass, displayRole, cardEntrance, cardHover, rowEntrance, rowHover, CountUpValue } from "./shared";
 
@@ -17,6 +18,7 @@ function UsersPage() {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editUserName, setEditUserName] = useState("");
   const [editUserEmail, setEditUserEmail] = useState("");
+  const [editUserPhone, setEditUserPhone] = useState("");
   const [editUserRole, setEditUserRole] = useState("subscriber");
   const [isSavingUser, setIsSavingUser] = useState(false);
   const [userPendingDelete, setUserPendingDelete] = useState<User | null>(null);
@@ -57,7 +59,8 @@ function UsersPage() {
   const handleStartEditUser = (user: User) => {
     setEditingUserId(user.id);
     setEditUserName(user.name);
-    setEditUserEmail(user.email);
+    setEditUserEmail(user.email ?? "");
+    setEditUserPhone(user.phone ?? "");
     setEditUserRole(user.role);
     setResetPasswordInput("");
   };
@@ -71,12 +74,20 @@ function UsersPage() {
     e.preventDefault();
     if (!editingUserId) return;
 
+    const trimmedEmail = editUserEmail.trim();
+    const trimmedPhone = editUserPhone.trim();
+    if (!trimmedEmail && !trimmedPhone) {
+      showToast("Please provide either an email or a phone number", "error");
+      return;
+    }
+
     setIsSavingUser(true);
 
     try {
       const response = await api.patch(`/admin/users/${editingUserId}`, {
         name: editUserName,
-        email: editUserEmail,
+        email: trimmedEmail || null,
+        phone: trimmedPhone || null,
         role: editUserRole,
       });
       setUsers((prev) =>
@@ -85,11 +96,7 @@ function UsersPage() {
       setEditingUserId(null);
       showToast("User updated successfully", "success");
     } catch (err) {
-      if (isAxiosError(err) && err.response?.data?.detail) {
-        showToast(err.response.data.detail, "error");
-      } else {
-        showToast("Failed to update user", "error");
-      }
+      showToast(getApiErrorMessage(err, "Failed to update user"), "error");
     } finally {
       setIsSavingUser(false);
     }
@@ -203,6 +210,7 @@ function UsersPage() {
                 <tr>
                   <th>Name</th>
                   <th>Email</th>
+                  <th>Phone</th>
                   <th>Role</th>
                   <th>Subscription</th>
                   <th>Action</th>
@@ -213,7 +221,8 @@ function UsersPage() {
                   <Fragment key={user.id}>
                     <motion.tr {...rowEntrance(index)} whileHover={rowHover}>
                       <td>{user.name}</td>
-                      <td>{user.email}</td>
+                      <td>{user.email || "—"}</td>
+                      <td>{user.phone || "—"}</td>
                       <td>
                         <span className={statusPillClass(user.role)}>
                           <span className="pill-dot"></span>
@@ -273,7 +282,7 @@ function UsersPage() {
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.2 }}
                         >
-                          <td colSpan={5}>
+                          <td colSpan={6}>
                             <motion.div
                               initial={{ height: 0, opacity: 0 }}
                               animate={{ height: "auto", opacity: 1 }}
@@ -306,6 +315,18 @@ function UsersPage() {
                                     placeholder="Email"
                                     value={editUserEmail}
                                     onChange={(e) => setEditUserEmail(e.target.value)}
+                                    style={{ marginBottom: 0 }}
+                                  />
+                                </div>
+                                <div style={{ flex: "1 1 180px" }}>
+                                  <label className="auth-label" htmlFor={`user-edit-phone-${user.id}`}>Phone</label>
+                                  <input
+                                    id={`user-edit-phone-${user.id}`}
+                                    className="auth-input"
+                                    type="tel"
+                                    placeholder="+96170123456"
+                                    value={editUserPhone}
+                                    onChange={(e) => setEditUserPhone(e.target.value)}
                                     style={{ marginBottom: 0 }}
                                   />
                                 </div>
