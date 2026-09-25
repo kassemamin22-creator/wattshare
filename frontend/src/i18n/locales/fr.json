@@ -32,5 +32,69 @@
     "phone_already_registered": "Ce numéro de téléphone est déjà enregistré",
     "invalid_credentials": "E-mail ou mot de passe invalide",
     "email_or_phone_already_registered": "Cet e-mail ou ce numéro de téléphone est déjà enregistré"
+  },
+  "landing": {
+    "brand": "⚡ WattShare",
+    "hero": {
+      "headline": "Alimentez votre communauté, intelligemment",
+      "description": "WattShare relie les gestionnaires de générateurs et les abonnés sur une seule plateforme — suivez les relevés de compteur, générez des factures précises et gérez les abonnements sans tableurs.",
+      "getStarted": "Commencer",
+      "login": "Se connecter"
+    },
+    "stats": {
+      "subscribersManaged": "Abonnés gérés",
+      "uptime": "Disponibilité",
+      "liveMonitoring": "Surveillance en direct"
+    },
+    "ticker": {
+      "billing": "⚡ Facturation en temps réel",
+      "predictions": "📊 Prévisions par IA",
+      "security": "🔒 Sécurité de niveau bancaire",
+      "mobile": "📱 Adapté au mobile",
+      "setup": "⚙️ Installation facile"
+    },
+    "features": {
+      "sectionTitle": "Tout ce qu'il faut pour gérer un abonnement de générateur",
+      "sectionSubtitle": "Du relevé des compteurs à la facturation, WattShare s'occupe des détails opérationnels pour que gestionnaires et abonnés n'aient pas à le faire.",
+      "items": [
+        { "id": "billing", "title": "Facturation en temps réel", "description": "Les factures sont calculées automatiquement à partir des relevés de compteur en direct et du tarif de votre générateur — pas de calcul manuel, pas de mauvaise surprise." },
+        { "id": "prediction", "title": "Prévision de facture par IA", "description": "Consultez une prévision de votre prochaine facture avant son arrivée, selon l'évolution de votre consommation récente." },
+        { "id": "tracking", "title": "Suivi des relevés de compteur", "description": "Chaque relevé est enregistré et horodaté, offrant aux abonnés et aux gestionnaires un historique de consommation clair." },
+        { "id": "issues", "title": "Signalement des incidents", "description": "Signalez des pannes ou des problèmes de facturation directement depuis votre tableau de bord et suivez leur état jusqu'à la résolution." },
+        { "id": "dashboards", "title": "Tableaux de bord par rôle", "description": "Abonnés, gestionnaires et administrateurs disposent chacun d'un tableau de bord adapté à ce qu'ils ont à faire." },
+        { "id": "auth", "title": "Authentification sécurisée", "description": "L'authentification basée sur JWT protège chaque compte et chaque abonnement derrière une connexion sécurisée." }
+      ]
+    },
+    "preview": {
+      "sectionTitle": "Découvrez-le en action",
+      "sectionSubtitle": "Un aperçu en direct de ce que voient les gestionnaires et les abonnés dès leur connexion.",
+      "billLabel": "Facture de ce mois",
+      "usageLabel": "Consommation",
+      "statusLabel": "Statut",
+      "statusActive": "Actif"
+    },
+    "trust": {
+      "sectionTitle": "La confiance des quartiers à travers le Liban",
+      "sectionSubtitle": "Immeubles et gestionnaires de générateurs comptent sur WattShare pour une facturation juste et transparente.",
+      "buildingsLabel": "Immeubles intégrés",
+      "billsLabel": "Factures traitées",
+      "quote1": "Les litiges de facturation sont tombés à zéro dès que chaque relevé a été enregistré automatiquement.",
+      "quote1Author": "Gestionnaire d'immeuble, Achrafieh",
+      "quote2": "Les abonnés savent enfin exactement ce qu'ils paient et pourquoi.",
+      "quote2Author": "Propriétaire de générateur, Jounieh"
+    },
+    "steps": {
+      "sectionTitle": "Comment ça marche",
+      "sectionSubtitle": "Trois étapes simples de l'inscription à votre première facture.",
+      "items": [
+        { "id": "subscribe", "title": "S'abonner", "description": "Inscrivez-vous et abonnez-vous au générateur de votre quartier avec votre forfait en ampères et vos coordonnées." },
+        { "id": "metered", "title": "Suivi de la consommation", "description": "Votre consommation est suivie grâce à des relevés de compteur réguliers saisis par votre gestionnaire de générateur." },
+        { "id": "pay", "title": "Payer et suivre", "description": "Recevez des factures exactes à temps, payez par le moyen de votre choix et consultez votre historique à tout moment." }
+      ]
+    },
+    "footer": {
+      "tagline": "Gestion intelligente des abonnements de générateurs pour les quartiers modernes.",
+      "copyright": "© {{year}} WattShare. Tous droits réservés."
+    }
   }
 }

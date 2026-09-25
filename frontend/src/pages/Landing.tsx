@@ -6,6 +6,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   motion,
   useMotionValue,
@@ -24,7 +25,9 @@ import {
   UserPlus,
   Activity,
   CreditCard,
+  type LucideIcon,
 } from "lucide-react";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 const PARALLAX_RANGE = 18;
 
@@ -50,99 +53,54 @@ const PARTICLES = [
 ];
 
 const STATS = [
-  { target: 500, decimals: 0, suffix: "+", label: "Subscribers Managed" },
-  { target: 99.9, decimals: 1, suffix: "%", label: "Uptime" },
-  { target: 24, decimals: 0, suffix: "/7", label: "Live Monitoring" },
+  { target: 500, decimals: 0, suffix: "+", labelKey: "landing.stats.subscribersManaged" },
+  { target: 99.9, decimals: 1, suffix: "%", labelKey: "landing.stats.uptime" },
+  { target: 24, decimals: 0, suffix: "/7", labelKey: "landing.stats.liveMonitoring" },
 ];
 
 const CHART_BARS = [40, 65, 45, 80, 55, 90, 60, 50, 72, 85];
 
-const TICKER_ITEMS = [
-  "⚡ Real-time billing",
-  "📊 AI predictions",
-  "🔒 Bank-level security",
-  "📱 Mobile-friendly",
-  "⚙️ Easy setup",
-];
+const TICKER_KEYS = ["billing", "predictions", "security", "mobile", "setup"];
 
-const FEATURES = [
-  {
-    icon: Zap,
-    title: "Real-time billing",
-    description:
-      "Bills are calculated automatically from live meter readings and your generator's tariff — no manual math, no surprises.",
-  },
-  {
-    icon: TrendingUp,
-    title: "AI bill prediction",
-    description:
-      "See a forecast of your next bill before it arrives, based on your recent usage trends.",
-  },
-  {
-    icon: Gauge,
-    title: "Meter reading tracking",
-    description:
-      "Every reading is logged and timestamped, giving subscribers and managers a clear consumption history.",
-  },
-  {
-    icon: MessageSquare,
-    title: "Issue reporting",
-    description:
-      "Report outages or billing problems directly from your dashboard and track their status to resolution.",
-  },
-  {
-    icon: LayoutDashboard,
-    title: "Role-based dashboards",
-    description:
-      "Subscribers, managers, and admins each get a dashboard tailored to exactly what they need to do.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Secure authentication",
-    description:
-      "JWT-based auth keeps every account and subscription protected behind a proper login.",
-  },
-];
+const FEATURE_ICONS: Record<string, LucideIcon> = {
+  billing: Zap,
+  prediction: TrendingUp,
+  tracking: Gauge,
+  issues: MessageSquare,
+  dashboards: LayoutDashboard,
+  auth: ShieldCheck,
+};
+
+const STEP_ICONS: Record<string, LucideIcon> = {
+  subscribe: UserPlus,
+  metered: Activity,
+  pay: CreditCard,
+};
 
 const TRUST_ITEMS = [
-  { type: "stat" as const, value: "50+", label: "Buildings onboarded" },
+  { type: "stat" as const, value: "50+", labelKey: "landing.trust.buildingsLabel" },
   {
     type: "quote" as const,
-    quote:
-      "Billing disputes dropped to zero once every reading was logged automatically.",
-    name: "Building Manager, Achrafieh",
+    quoteKey: "landing.trust.quote1",
+    authorKey: "landing.trust.quote1Author",
   },
   {
     type: "quote" as const,
-    quote: "Subscribers finally know exactly what they're paying for and why.",
-    name: "Generator Owner, Jounieh",
+    quoteKey: "landing.trust.quote2",
+    authorKey: "landing.trust.quote2Author",
   },
-  { type: "stat" as const, value: "10k+", label: "Bills processed" },
+  { type: "stat" as const, value: "10k+", labelKey: "landing.trust.billsLabel" },
 ];
 
-const STEPS = [
-  {
-    icon: UserPlus,
-    number: "01",
-    title: "Subscribe",
-    description:
-      "Sign up and subscribe to your neighborhood generator with your ampere plan and contact details.",
-  },
-  {
-    icon: Activity,
-    number: "02",
-    title: "Get metered",
-    description:
-      "Your usage is tracked through regular meter readings logged by your generator manager.",
-  },
-  {
-    icon: CreditCard,
-    number: "03",
-    title: "Pay & track",
-    description:
-      "Receive accurate bills on time, pay through your preferred method, and track your history anytime.",
-  },
-];
+interface TranslatedItem {
+  id: string;
+  title: string;
+  description: string;
+}
+
+function toItems(value: unknown): TranslatedItem[] {
+  return Array.isArray(value) ? (value as TranslatedItem[]) : [];
+}
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
@@ -253,6 +211,10 @@ function SectionDivider({
 }
 
 function Landing() {
+  const { t } = useTranslation();
+  const featureItems = toItems(t("landing.features.items", { returnObjects: true }));
+  const stepItems = toItems(t("landing.steps.items", { returnObjects: true }));
+
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const particlesX = useSpring(mouseX, { stiffness: 50, damping: 20 });
@@ -320,6 +282,7 @@ function Landing() {
         onMouseEnter={() => setCursorVisible(true)}
         onMouseLeave={() => setCursorVisible(false)}
       >
+        <LanguageSwitcher className="language-switcher-corner" />
         <div className="auth-mesh" aria-hidden="true">
           <motion.div
             className="auth-mesh-blob auth-mesh-blob-accent"
@@ -371,7 +334,7 @@ function Landing() {
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
             <div className="auth-logo-glow"></div>
-            <div className="auth-logo">⚡ WattShare</div>
+            <div className="auth-logo">{t("landing.brand")}</div>
           </motion.div>
           <motion.h1
             className="landing-headline"
@@ -379,7 +342,7 @@ function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
           >
-            Power Your Community, Intelligently
+            {t("landing.hero.headline")}
           </motion.h1>
           <motion.p
             className="landing-subtitle"
@@ -387,9 +350,7 @@ function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
           >
-            WattShare connects generator managers and subscribers on one platform —
-            track meter readings, generate accurate bills, and manage subscriptions
-            without the spreadsheets.
+            {t("landing.hero.description")}
           </motion.p>
           <motion.div
             className="landing-cta-group"
@@ -400,13 +361,13 @@ function Landing() {
             <MagneticWrap onHoverChange={setCursorHover}>
               <div className="auth-button-ring landing-cta-ring">
                 <Link to="/register" className="auth-button landing-cta-link">
-                  Get Started
+                  {t("landing.hero.getStarted")}
                 </Link>
               </div>
             </MagneticWrap>
             <MagneticWrap onHoverChange={setCursorHover}>
               <Link to="/login" className="landing-btn-secondary">
-                Log In
+                {t("landing.hero.login")}
               </Link>
             </MagneticWrap>
           </motion.div>
@@ -418,11 +379,11 @@ function Landing() {
           >
             {STATS.map((stat, index) => (
               <AnimatedStat
-                key={stat.label}
+                key={stat.labelKey}
                 target={stat.target}
                 decimals={stat.decimals}
                 suffix={stat.suffix}
-                label={stat.label}
+                label={t(stat.labelKey)}
                 delay={0.8 + index * 0.15}
               />
             ))}
@@ -432,9 +393,9 @@ function Landing() {
 
       <section className="landing-section landing-preview-section">
         <div className="landing-container">
-          <h2 className="landing-section-title">See it in action</h2>
+          <h2 className="landing-section-title">{t("landing.preview.sectionTitle")}</h2>
           <p className="landing-section-subtitle">
-            A live look at what managers and subscribers see the moment they log in.
+            {t("landing.preview.sectionSubtitle")}
           </p>
           <div className="landing-preview-wrap" ref={previewRef}>
             <motion.div
@@ -450,17 +411,17 @@ function Landing() {
               <div className="landing-preview-body">
                 <div className="landing-preview-stats">
                   <div className="landing-preview-stat">
-                    <div className="landing-preview-stat-label">This Month's Bill</div>
+                    <div className="landing-preview-stat-label">{t("landing.preview.billLabel")}</div>
                     <div className="landing-preview-stat-value">$42.50</div>
                   </div>
                   <div className="landing-preview-stat">
-                    <div className="landing-preview-stat-label">Usage</div>
+                    <div className="landing-preview-stat-label">{t("landing.preview.usageLabel")}</div>
                     <div className="landing-preview-stat-value">18.2A</div>
                   </div>
                   <div className="landing-preview-stat">
-                    <div className="landing-preview-stat-label">Status</div>
+                    <div className="landing-preview-stat-label">{t("landing.preview.statusLabel")}</div>
                     <div className="landing-preview-stat-value landing-preview-stat-active">
-                      Active
+                      {t("landing.preview.statusActive")}
                     </div>
                   </div>
                 </div>
@@ -495,9 +456,9 @@ function Landing() {
 
       <div className="landing-marquee" aria-hidden="true">
         <div className="landing-marquee-track">
-          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, index) => (
+          {[...TICKER_KEYS, ...TICKER_KEYS].map((key, index) => (
             <span key={index} className="landing-marquee-item">
-              {item}
+              {t(`landing.ticker.${key}`)}
             </span>
           ))}
         </div>
@@ -510,18 +471,17 @@ function Landing() {
       >
         <div className="landing-container">
           <h2 className="landing-section-title">
-            Everything you need to run a generator subscription
+            {t("landing.features.sectionTitle")}
           </h2>
           <p className="landing-section-subtitle">
-            From metering to billing, WattShare handles the operational details so
-            managers and subscribers don't have to.
+            {t("landing.features.sectionSubtitle")}
           </p>
           <div className="landing-features-grid">
-            {FEATURES.map((feature, index) => {
-              const Icon = feature.icon;
+            {featureItems.map((feature, index) => {
+              const Icon = FEATURE_ICONS[feature.id] ?? Zap;
               return (
                 <motion.div
-                  key={feature.title}
+                  key={feature.id}
                   className="landing-feature-card"
                   onMouseMove={handleCardMouseMove}
                   onMouseEnter={() => setCursorHover(true)}
@@ -548,11 +508,10 @@ function Landing() {
       <section className="landing-section landing-section-alt">
         <div className="landing-container">
           <h2 className="landing-section-title">
-            Trusted by neighborhoods across Lebanon
+            {t("landing.trust.sectionTitle")}
           </h2>
           <p className="landing-section-subtitle">
-            Buildings and generator managers rely on WattShare to keep billing fair
-            and transparent.
+            {t("landing.trust.sectionSubtitle")}
           </p>
           <div className="landing-trust-grid">
             {TRUST_ITEMS.map((item, index) => (
@@ -567,12 +526,12 @@ function Landing() {
                 {item.type === "stat" ? (
                   <>
                     <div className="landing-trust-stat-value">{item.value}</div>
-                    <div className="landing-trust-stat-label">{item.label}</div>
+                    <div className="landing-trust-stat-label">{t(item.labelKey)}</div>
                   </>
                 ) : (
                   <>
-                    <p className="landing-trust-quote">{item.quote}</p>
-                    <div className="landing-trust-name">{item.name}</div>
+                    <p className="landing-trust-quote">{t(item.quoteKey)}</p>
+                    <div className="landing-trust-name">{t(item.authorKey)}</div>
                   </>
                 )}
               </motion.div>
@@ -585,9 +544,9 @@ function Landing() {
 
       <section className="landing-section">
         <div className="landing-container">
-          <h2 className="landing-section-title">How it works</h2>
+          <h2 className="landing-section-title">{t("landing.steps.sectionTitle")}</h2>
           <p className="landing-section-subtitle">
-            Three simple steps from sign-up to your first bill.
+            {t("landing.steps.sectionSubtitle")}
           </p>
           <div className="landing-steps-wrap">
             <svg
@@ -613,18 +572,18 @@ function Landing() {
               />
             </svg>
             <div className="landing-steps">
-              {STEPS.map((step, index) => {
-                const Icon = step.icon;
+              {stepItems.map((step, index) => {
+                const Icon = STEP_ICONS[step.id] ?? Zap;
                 return (
                   <motion.div
-                    key={step.title}
+                    key={step.id}
                     className="landing-step"
                     initial={{ opacity: 0, y: 24 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.4 }}
                     transition={{ duration: 0.5, delay: index * 0.15, ease: "easeOut" }}
                   >
-                    <div className="landing-step-number">{step.number}</div>
+                    <div className="landing-step-number">{String(index + 1).padStart(2, "0")}</div>
                     <div className="landing-step-icon">
                       <Icon size={24} />
                     </div>
@@ -639,12 +598,12 @@ function Landing() {
       </section>
 
       <footer className="landing-footer">
-        <div className="landing-footer-logo">⚡ WattShare</div>
+        <div className="landing-footer-logo">{t("landing.brand")}</div>
         <p className="landing-footer-tagline">
-          Smart generator subscription management for modern neighborhoods.
+          {t("landing.footer.tagline")}
         </p>
         <p className="landing-footer-copyright">
-          © {new Date().getFullYear()} WattShare. All rights reserved.
+          {t("landing.footer.copyright", { year: new Date().getFullYear() })}
         </p>
       </footer>
     </div>

@@ -32,5 +32,69 @@
     "phone_already_registered": "Phone number already registered",
     "invalid_credentials": "Invalid email or password",
     "email_or_phone_already_registered": "Email or phone number already registered"
+  },
+  "landing": {
+    "brand": "⚡ WattShare",
+    "hero": {
+      "headline": "Power Your Community, Intelligently",
+      "description": "WattShare connects generator managers and subscribers on one platform — track meter readings, generate accurate bills, and manage subscriptions without the spreadsheets.",
+      "getStarted": "Get Started",
+      "login": "Log In"
+    },
+    "stats": {
+      "subscribersManaged": "Subscribers Managed",
+      "uptime": "Uptime",
+      "liveMonitoring": "Live Monitoring"
+    },
+    "ticker": {
+      "billing": "⚡ Real-time billing",
+      "predictions": "📊 AI predictions",
+      "security": "🔒 Bank-level security",
+      "mobile": "📱 Mobile-friendly",
+      "setup": "⚙️ Easy setup"
+    },
+    "features": {
+      "sectionTitle": "Everything you need to run a generator subscription",
+      "sectionSubtitle": "From metering to billing, WattShare handles the operational details so managers and subscribers don't have to.",
+      "items": [
+        { "id": "billing", "title": "Real-time billing", "description": "Bills are calculated automatically from live meter readings and your generator's tariff — no manual math, no surprises." },
+        { "id": "prediction", "title": "AI bill prediction", "description": "See a forecast of your next bill before it arrives, based on your recent usage trends." },
+        { "id": "tracking", "title": "Meter reading tracking", "description": "Every reading is logged and timestamped, giving subscribers and managers a clear consumption history." },
+        { "id": "issues", "title": "Issue reporting", "description": "Report outages or billing problems directly from your dashboard and track their status to resolution." },
+        { "id": "dashboards", "title": "Role-based dashboards", "description": "Subscribers, managers, and admins each get a dashboard tailored to exactly what they need to do." },
+        { "id": "auth", "title": "Secure authentication", "description": "JWT-based auth keeps every account and subscription protected behind a proper login." }
+      ]
+    },
+    "preview": {
+      "sectionTitle": "See it in action",
+      "sectionSubtitle": "A live look at what managers and subscribers see the moment they log in.",
+      "billLabel": "This Month's Bill",
+      "usageLabel": "Usage",
+      "statusLabel": "Status",
+      "statusActive": "Active"
+    },
+    "trust": {
+      "sectionTitle": "Trusted by neighborhoods across Lebanon",
+      "sectionSubtitle": "Buildings and generator managers rely on WattShare to keep billing fair and transparent.",
+      "buildingsLabel": "Buildings onboarded",
+      "billsLabel": "Bills processed",
+      "quote1": "Billing disputes dropped to zero once every reading was logged automatically.",
+      "quote1Author": "Building Manager, Achrafieh",
+      "quote2": "Subscribers finally know exactly what they're paying for and why.",
+      "quote2Author": "Generator Owner, Jounieh"
+    },
+    "steps": {
+      "sectionTitle": "How it works",
+      "sectionSubtitle": "Three simple steps from sign-up to your first bill.",
+      "items": [
+        { "id": "subscribe", "title": "Subscribe", "description": "Sign up and subscribe to your neighborhood generator with your ampere plan and contact details." },
+        { "id": "metered", "title": "Get metered", "description": "Your usage is tracked through regular meter readings logged by your generator manager." },
+        { "id": "pay", "title": "Pay & track", "description": "Receive accurate bills on time, pay through your preferred method, and track your history anytime." }
+      ]
+    },
+    "footer": {
+      "tagline": "Smart generator subscription management for modern neighborhoods.",
+      "copyright": "© {{year}} WattShare. All rights reserved."
+    }
   }
 }
