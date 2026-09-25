@@ -3,6 +3,8 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, Zap, Receipt, ShieldCheck, UserPlus, DollarSign, LogOut, Settings, Menu, X } from "lucide-react";
 import api from "../../services/api";
+import { useToast } from "../../hooks/useToast";
+import { useTranslation } from "react-i18next";
 
 export interface User {
   id: string;
@@ -62,12 +64,12 @@ export interface AdminDashboardContext {
 }
 
 const NAV_ITEMS = [
-  { path: "users", label: "Users", icon: Users },
-  { path: "subscriptions", label: "Subscriptions", icon: Zap },
-  { path: "bills", label: "Bills", icon: Receipt },
-  { path: "add-manager", label: "Add Manager", icon: UserPlus },
-  { path: "add-subscriber", label: "Add Subscriber", icon: UserPlus },
-  { path: "pricing", label: "Pricing", icon: DollarSign },
+  { path: "users", labelKey: "admin.nav.users", icon: Users },
+  { path: "subscriptions", labelKey: "admin.nav.subscriptions", icon: Zap },
+  { path: "bills", labelKey: "owner.nav.bills", icon: Receipt },
+  { path: "add-manager", labelKey: "admin.addManager.title", icon: UserPlus },
+  { path: "add-subscriber", labelKey: "owner.nav.addSubscriber", icon: UserPlus },
+  { path: "pricing", labelKey: "admin.nav.pricing", icon: DollarSign },
 ];
 
 const navContainerVariants = {
@@ -85,6 +87,8 @@ const MotionLink = motion(Link);
 const ACCOUNT_SETTINGS_PATH = "/admin/account-settings";
 
 function AdminDashboardLayout() {
+  const showToast = useToast();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [currentUserId, setCurrentUserId] = useState("");
@@ -95,26 +99,25 @@ function AdminDashboardLayout() {
   const [tariffPrice, setTariffPrice] = useState<number | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const fetchUsers = () => {
-    api.get("/admin/users").then((response) => setUsers(response.data));
-  };
+  const fetchUsers = () => api.get("/admin/users").then((response) => setUsers(response.data));
 
-  const fetchSubscriptions = () => {
+  const fetchSubscriptions = () =>
     api.get("/admin/subscriptions").then((response) => setSubscriptions(response.data));
-  };
 
-  const fetchRevenue = () => {
-    api.get("/admin/revenue").then((response) => setRevenue(response.data));
-  };
+  const fetchRevenue = () => api.get("/admin/revenue").then((response) => setRevenue(response.data));
 
   useEffect(() => {
-    api.get("/me").then((response) => setCurrentUserId(response.data.id));
-    fetchUsers();
-    fetchSubscriptions();
-    fetchRevenue();
-    api.get("/admin/bills").then((response) => setBills(response.data));
-    api.get("/tariff").then((response) => {
-      setTariffPrice(response.data.price_per_ampere);
+    Promise.all([
+      api.get("/me").then((response) => setCurrentUserId(response.data.id)),
+      fetchUsers(),
+      fetchSubscriptions(),
+      fetchRevenue(),
+      api.get("/admin/bills").then((response) => setBills(response.data)),
+      api.get("/tariff").then((response) => {
+        setTariffPrice(response.data.price_per_ampere);
+      }),
+    ]).catch(() => {
+      showToast(t("common.loadError"), "error");
     });
   }, []);
 
@@ -154,7 +157,7 @@ function AdminDashboardLayout() {
           >
             <Icon size={18} />
           </motion.span>
-          <span className="admin-nav-label">{item.label}</span>
+          <span className="admin-nav-label">{t(item.labelKey)}</span>
         </MotionLink>
       );
     });
@@ -183,7 +186,7 @@ function AdminDashboardLayout() {
         >
           <Settings size={18} />
         </motion.span>
-        <span className="admin-nav-label">Account Settings</span>
+        <span className="admin-nav-label">{t("nav.accountSettings")}</span>
       </MotionLink>
     );
   };
@@ -228,7 +231,7 @@ function AdminDashboardLayout() {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
           >
-            <LogOut size={18} /> Log Out
+            <LogOut size={18} /> {t("common.logout")}
           </motion.button>
         </div>
       </aside>
@@ -238,7 +241,7 @@ function AdminDashboardLayout() {
           className="admin-mobile-menu-toggle"
           onClick={() => setIsMobileMenuOpen((prev) => !prev)}
           whileTap={{ scale: 0.94 }}
-          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+          aria-label={isMobileMenuOpen ? t("dashboard.menuClose") : t("dashboard.menuOpen")}
         >
           {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </motion.button>
@@ -248,7 +251,7 @@ function AdminDashboardLayout() {
           onClick={handleLogout}
           whileTap={{ scale: 0.97 }}
         >
-          <LogOut size={16} /> Log Out
+          <LogOut size={16} /> {t("common.logout")}
         </motion.button>
       </div>
 
@@ -278,7 +281,7 @@ function AdminDashboardLayout() {
                   className="admin-mobile-menu-toggle"
                   onClick={closeMobileMenu}
                   whileTap={{ scale: 0.94 }}
-                  aria-label="Close menu"
+                  aria-label={t("dashboard.menuClose")}
                 >
                   <X size={20} />
                 </motion.button>
@@ -295,7 +298,7 @@ function AdminDashboardLayout() {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                 >
-                  <LogOut size={18} /> Log Out
+                  <LogOut size={18} /> {t("common.logout")}
                 </motion.button>
               </div>
             </motion.div>
@@ -305,7 +308,7 @@ function AdminDashboardLayout() {
 
       <main className="admin-main">
         <div className="dash-page-title">
-          <ShieldCheck size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Admin Dashboard
+          <ShieldCheck size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> {t("admin.dashboardTitle")}
         </div>
 
         <Outlet context={context} />

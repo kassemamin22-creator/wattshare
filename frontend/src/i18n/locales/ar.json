@@ -4,6 +4,7 @@
     "save": "حفظ",
     "cancel": "إلغاء",
     "logout": "تسجيل الخروج",
+    "loadError": "تعذّر تحميل البيانات. يرجى تحديث الصفحة.",
     "status": {
       "active": "نشط",
       "pending": "قيد الانتظار",
@@ -12,7 +13,8 @@
       "disputed": "متنازع عليها",
       "open": "مفتوحة",
       "inProgress": "قيد المعالجة",
-      "resolved": "محلولة"
+      "resolved": "محلولة",
+      "none": "لا يوجد اشتراك"
     },
     "roles": {
       "subscriber": "مشترك",
@@ -316,6 +318,70 @@
       "submit": "إضافة مشترك",
       "toastSuccess": "تم إنشاء حساب المشترك بنجاح",
       "toastFailed": "تعذّر إنشاء حساب المشترك"
+    }
+  },
+  "admin": {
+    "dashboardTitle": "لوحة تحكم المسؤول",
+    "nav": {
+      "users": "المستخدمون",
+      "subscriptions": "الاشتراكات",
+      "pricing": "التسعير"
+    },
+    "users": {
+      "statSubscribers": "المشتركون",
+      "statManagers": "المديرون",
+      "statAdmins": "المسؤولون",
+      "chartTitle": "المستخدمون حسب الدور",
+      "chartEmpty": "سيظهر المخطط عند تسجيل المستخدمين",
+      "title": "المستخدمون",
+      "emptyState": "لا توجد بيانات بعد",
+      "colName": "الاسم",
+      "colEmail": "البريد الإلكتروني",
+      "colPhone": "الهاتف",
+      "colRole": "الدور",
+      "colSubscription": "الاشتراك",
+      "colAction": "الإجراء",
+      "delete": "حذف",
+      "newPassword": "كلمة مرور جديدة",
+      "resetPassword": "إعادة تعيين كلمة المرور",
+      "deleteModalTitle": "حذف المستخدم",
+      "deleteModalMessage": "هل أنت متأكد من حذف {{name}}؟ لا يمكن التراجع عن هذا الإجراء.",
+      "toastDeleteSuccess": "تم حذف {{name}} بنجاح",
+      "toastDeleteFailed": "تعذّر حذف المستخدم",
+      "toastUpdateSuccess": "تم تحديث المستخدم بنجاح",
+      "toastUpdateFailed": "تعذّر تحديث المستخدم",
+      "toastResetSuccess": "تمت إعادة تعيين كلمة المرور بنجاح",
+      "toastResetFailed": "تعذّرت إعادة تعيين كلمة المرور"
+    },
+    "subscriptions": {
+      "title": "الاشتراكات",
+      "edit": "تعديل",
+      "activate": "تفعيل",
+      "deactivate": "إلغاء التفعيل",
+      "toastUpdateSuccess": "تم تحديث الاشتراك بنجاح",
+      "toastUpdateFailed": "تعذّر تحديث الاشتراك",
+      "toastToggleFailed": "تعذّر تحديث حالة الاشتراك"
+    },
+    "bills": {
+      "revenueOverview": "نظرة عامة على الإيرادات",
+      "totalCollected": "إجمالي المحصّل",
+      "outstanding": "المستحق",
+      "title": "الفواتير",
+      "toastMarkPaidFailed": "تعذّر تحديد الفاتورة كمدفوعة"
+    },
+    "addManager": {
+      "title": "إضافة مدير",
+      "submit": "إضافة مدير",
+      "toastSuccess": "تم إنشاء حساب المدير بنجاح",
+      "toastFailed": "تعذّر إنشاء حساب المدير"
+    },
+    "pricing": {
+      "title": "التحكم في التسعير",
+      "currentPriceLabel": "السعر الحالي لكل أمبير",
+      "priceLabel": "السعر لكل أمبير",
+      "updateButton": "تحديث السعر",
+      "toastSuccess": "تم تحديث السعر بنجاح",
+      "toastFailed": "تعذّر تحديث السعر"
     }
   }
 }

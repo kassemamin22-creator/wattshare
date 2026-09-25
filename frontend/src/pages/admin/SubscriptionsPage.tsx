@@ -5,11 +5,14 @@ import { Zap, Pencil, ChevronDown, Loader2 } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
+import { useTranslation } from "react-i18next";
+import { getApiErrorMessage } from "../../utils/apiError";
 import type { AdminDashboardContext, Subscription } from "./AdminDashboardLayout";
-import { statusPillClass, cardEntrance, cardHover, rowEntrance, rowHover } from "./shared";
+import { statusPillClass, translateStatus, cardEntrance, cardHover, rowEntrance, rowHover } from "./shared";
 
 function SubscriptionsPage() {
   const showToast = useToast();
+  const { t } = useTranslation();
   const { subscriptions, setSubscriptions, fetchSubscriptions } = useOutletContext<AdminDashboardContext>();
 
   const [subscriptionStatusFilter, setSubscriptionStatusFilter] = useState<"active" | "all" | "pending" | "inactive">("active");
@@ -37,8 +40,8 @@ function SubscriptionsPage() {
             : subscription
         )
       );
-    } catch {
-      // toggle-status failed; leave the subscription status as-is
+    } catch (err) {
+      showToast(getApiErrorMessage(err, t("admin.subscriptions.toastToggleFailed")), "error");
     } finally {
       setTogglingSubscriptionId(null);
     }
@@ -69,14 +72,14 @@ function SubscriptionsPage() {
         phone: editSubscriptionPhone,
         ampere: Number(editSubscriptionAmpere),
       });
-      showToast("Subscription updated successfully", "success");
+      showToast(t("admin.subscriptions.toastUpdateSuccess"), "success");
       setEditingSubscriptionId(null);
       fetchSubscriptions();
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
         showToast(err.response.data.detail, "error");
       } else {
-        showToast("Failed to update subscription", "error");
+        showToast(t("admin.subscriptions.toastUpdateFailed"), "error");
       }
     } finally {
       setIsSavingSubscription(false);
@@ -95,10 +98,10 @@ function SubscriptionsPage() {
       whileHover={cardHover}
     >
       <h2 className="dash-card-title">
-        <Zap size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Subscriptions
+        <Zap size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> {t("admin.subscriptions.title")}
       </h2>
       <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
-        <p className="dash-label" style={{ margin: 0 }}>STATUS</p>
+        <p className="dash-label" style={{ margin: 0 }}>{t("owner.subscribers.statusFilter")}</p>
         <select
           className="owner-select"
           value={subscriptionStatusFilter}
@@ -107,23 +110,23 @@ function SubscriptionsPage() {
           }
           style={{ flex: "0 1 160px" }}
         >
-          <option value="active">Active</option>
-          <option value="all">All</option>
-          <option value="pending">Pending</option>
-          <option value="inactive">Inactive</option>
+          <option value="active">{t("common.status.active")}</option>
+          <option value="all">{t("owner.subscribers.statusAll")}</option>
+          <option value="pending">{t("common.status.pending")}</option>
+          <option value="inactive">{t("common.status.inactive")}</option>
         </select>
       </div>
       {subscriptions.length === 0 ? (
-        <p>No data yet</p>
+        <p>{t("owner.bills.emptyState")}</p>
       ) : (
         <div className="admin-table-wrap">
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Subscriber</th>
-                <th>Status</th>
-                <th>Ampere</th>
-                <th>Action</th>
+                <th>{t("owner.subscribers.colSubscriber")}</th>
+                <th>{t("owner.subscribers.colStatus")}</th>
+                <th>{t("owner.subscribers.colAmpere")}</th>
+                <th>{t("owner.subscribers.colAction")}</th>
               </tr>
             </thead>
             <tbody>
@@ -139,7 +142,7 @@ function SubscriptionsPage() {
                       <td>
                         <span className={statusPillClass(subscription.status)}>
                           <span className="pill-dot"></span>
-                          {subscription.status.toUpperCase()}
+                          {translateStatus(t, subscription.status)}
                         </span>
                       </td>
                       <td>{subscription.ampere}A</td>
@@ -150,7 +153,7 @@ function SubscriptionsPage() {
                           whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
                           style={{ marginTop: 0, width: "auto", padding: "0.5rem 0.75rem" }}
-                          aria-label={isExpanded ? "Collapse details" : "Expand details"}
+                          aria-label={isExpanded ? t("owner.subscribers.collapseDetails") : t("owner.subscribers.expandDetails")}
                         >
                           <motion.span
                             style={{ display: "inline-flex" }}
@@ -185,48 +188,48 @@ function SubscriptionsPage() {
                                   style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "flex-end" }}
                                 >
                                   <div style={{ flex: "1 1 160px" }}>
-                                    <label className="auth-label" htmlFor={`admin-edit-address-${subscription.id}`}>Address</label>
+                                    <label className="auth-label" htmlFor={`admin-edit-address-${subscription.id}`}>{t("dashboard.subscription.addressLabel")}</label>
                                     <input
                                       id={`admin-edit-address-${subscription.id}`}
                                       className="auth-input"
                                       type="text"
-                                      placeholder="Address"
+                                      placeholder={t("dashboard.subscription.addressLabel")}
                                       value={editSubscriptionAddress}
                                       onChange={(e) => setEditSubscriptionAddress(e.target.value)}
                                       style={{ marginBottom: 0 }}
                                     />
                                   </div>
                                   <div style={{ flex: "1 1 160px" }}>
-                                    <label className="auth-label" htmlFor={`admin-edit-building-${subscription.id}`}>Building name or number</label>
+                                    <label className="auth-label" htmlFor={`admin-edit-building-${subscription.id}`}>{t("dashboard.subscription.buildingLabel")}</label>
                                     <input
                                       id={`admin-edit-building-${subscription.id}`}
                                       className="auth-input"
                                       type="text"
-                                      placeholder="Building name or number"
+                                      placeholder={t("dashboard.subscription.buildingLabel")}
                                       value={editSubscriptionBuilding}
                                       onChange={(e) => setEditSubscriptionBuilding(e.target.value)}
                                       style={{ marginBottom: 0 }}
                                     />
                                   </div>
                                   <div style={{ flex: "1 1 160px" }}>
-                                    <label className="auth-label" htmlFor={`admin-edit-phone-${subscription.id}`}>Phone</label>
+                                    <label className="auth-label" htmlFor={`admin-edit-phone-${subscription.id}`}>{t("dashboard.subscription.phoneLabel")}</label>
                                     <input
                                       id={`admin-edit-phone-${subscription.id}`}
                                       className="auth-input"
                                       type="tel"
-                                      placeholder="Phone"
+                                      placeholder={t("dashboard.subscription.phoneLabel")}
                                       value={editSubscriptionPhone}
                                       onChange={(e) => setEditSubscriptionPhone(e.target.value)}
                                       style={{ marginBottom: 0 }}
                                     />
                                   </div>
                                   <div style={{ flex: "1 1 160px" }}>
-                                    <label className="auth-label" htmlFor={`admin-edit-ampere-${subscription.id}`}>Ampere</label>
+                                    <label className="auth-label" htmlFor={`admin-edit-ampere-${subscription.id}`}>{t("owner.subscribers.colAmpere")}</label>
                                     <input
                                       id={`admin-edit-ampere-${subscription.id}`}
                                       className="auth-input"
                                       type="number"
-                                      placeholder="Ampere"
+                                      placeholder={t("owner.subscribers.colAmpere")}
                                       value={editSubscriptionAmpere}
                                       onChange={(e) => setEditSubscriptionAmpere(e.target.value)}
                                       style={{ marginBottom: 0 }}
@@ -240,7 +243,7 @@ function SubscriptionsPage() {
                                     disabled={isSavingSubscription}
                                     style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
                                   >
-                                    {isSavingSubscription ? <Loader2 size={14} className="btn-spinner" /> : "Save"}
+                                    {isSavingSubscription ? <Loader2 size={14} className="btn-spinner" /> : t("common.save")}
                                   </motion.button>
                                   <motion.button
                                     className="dash-button-outline"
@@ -250,22 +253,22 @@ function SubscriptionsPage() {
                                     whileTap={{ scale: 0.97 }}
                                     style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
                                   >
-                                    Cancel
+                                    {t("common.cancel")}
                                   </motion.button>
                                 </form>
                               ) : (
                                 <>
                                   <div style={{ display: "flex", flexWrap: "wrap", gap: "1.25rem", marginBottom: "1rem" }}>
                                     <div style={{ minWidth: "120px" }}>
-                                      <p className="dash-label">ADDRESS</p>
+                                      <p className="dash-label">{t("dashboard.subscription.address")}</p>
                                       <p className="dash-value-lg">{subscription.address || "—"}</p>
                                     </div>
                                     <div style={{ minWidth: "120px" }}>
-                                      <p className="dash-label">BUILDING</p>
+                                      <p className="dash-label">{t("dashboard.subscription.building")}</p>
                                       <p className="dash-value-lg">{subscription.building || "—"}</p>
                                     </div>
                                     <div style={{ minWidth: "120px" }}>
-                                      <p className="dash-label">PHONE</p>
+                                      <p className="dash-label">{t("dashboard.subscription.phone")}</p>
                                       <p className="dash-value-lg">{subscription.phone || "—"}</p>
                                     </div>
                                   </div>
@@ -277,7 +280,7 @@ function SubscriptionsPage() {
                                       whileTap={{ scale: 0.97 }}
                                       style={{ marginTop: 0, width: "auto", padding: "0.5rem 0.75rem" }}
                                     >
-                                      <Pencil size={14} /> Edit
+                                      <Pencil size={14} /> {t("admin.subscriptions.edit")}
                                     </motion.button>
                                     {subscription.status === "active" ? (
                                       <motion.button
@@ -290,7 +293,7 @@ function SubscriptionsPage() {
                                         {togglingSubscriptionId === subscription.id ? (
                                           <Loader2 size={14} className="btn-spinner" />
                                         ) : (
-                                          "Deactivate"
+                                          t("admin.subscriptions.deactivate")
                                         )}
                                       </motion.button>
                                     ) : (
@@ -304,7 +307,7 @@ function SubscriptionsPage() {
                                         {togglingSubscriptionId === subscription.id ? (
                                           <Loader2 size={14} className="btn-spinner" />
                                         ) : (
-                                          "Activate"
+                                          t("admin.subscriptions.activate")
                                         )}
                                       </motion.button>
                                     )}

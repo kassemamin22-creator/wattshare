@@ -8,11 +8,13 @@ import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
 import ConfirmModal from "../../components/ConfirmModal";
 import { getApiErrorMessage } from "../../utils/apiError";
+import { useTranslation } from "react-i18next";
 import type { AdminDashboardContext, User } from "./AdminDashboardLayout";
-import { statusPillClass, displayRole, cardEntrance, cardHover, rowEntrance, rowHover, CountUpValue } from "./shared";
+import { statusPillClass, translateStatus, displayRole, cardEntrance, cardHover, rowEntrance, rowHover, CountUpValue } from "./shared";
 
 function UsersPage() {
   const showToast = useToast();
+  const { t } = useTranslation();
   const { users, setUsers } = useOutletContext<AdminDashboardContext>();
 
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
@@ -43,12 +45,12 @@ function UsersPage() {
     try {
       await api.delete(`/admin/users/${user.id}`);
       setUsers((prev) => prev.filter((u) => u.id !== user.id));
-      showToast(`${user.name} deleted successfully`, "success");
+      showToast(t("admin.users.toastDeleteSuccess", { name: user.name }), "success");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
         showToast(err.response.data.detail, "error");
       } else {
-        showToast("Failed to delete user", "error");
+        showToast(t("admin.users.toastDeleteFailed"), "error");
       }
     } finally {
       setDeletingUserId(null);
@@ -77,7 +79,7 @@ function UsersPage() {
     const trimmedEmail = editUserEmail.trim();
     const trimmedPhone = editUserPhone.trim();
     if (!trimmedEmail && !trimmedPhone) {
-      showToast("Please provide either an email or a phone number", "error");
+      showToast(t("dashboard.accountSettings.toastEitherRequired"), "error");
       return;
     }
 
@@ -94,9 +96,9 @@ function UsersPage() {
         prev.map((user) => (user.id === editingUserId ? response.data : user))
       );
       setEditingUserId(null);
-      showToast("User updated successfully", "success");
+      showToast(t("admin.users.toastUpdateSuccess"), "success");
     } catch (err) {
-      showToast(getApiErrorMessage(err, "Failed to update user"), "error");
+      showToast(getApiErrorMessage(err, t("admin.users.toastUpdateFailed")), "error");
     } finally {
       setIsSavingUser(false);
     }
@@ -111,13 +113,13 @@ function UsersPage() {
       await api.patch(`/admin/users/${editingUserId}/reset-password`, {
         new_password: resetPasswordInput,
       });
-      showToast("Password reset successfully", "success");
+      showToast(t("admin.users.toastResetSuccess"), "success");
       setResetPasswordInput("");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
         showToast(err.response.data.detail, "error");
       } else {
-        showToast("Failed to reset password", "error");
+        showToast(t("admin.users.toastResetFailed"), "error");
       }
     } finally {
       setIsResettingPassword(false);
@@ -125,7 +127,7 @@ function UsersPage() {
   };
 
   const roleCounts = ["subscriber", "owner", "admin"].map((role) => ({
-    role: displayRole(role).charAt(0).toUpperCase() + displayRole(role).slice(1),
+    role: displayRole(t, role),
     count: users.filter((user) => user.role === role).length,
   }));
 
@@ -137,7 +139,7 @@ function UsersPage() {
           {...cardEntrance(0)}
           whileHover={cardHover}
         >
-          <p className="dash-label">Subscribers</p>
+          <p className="dash-label">{t("admin.users.statSubscribers")}</p>
           <p className="stat-number-amber">
             <CountUpValue value={users.filter((user) => user.role === "subscriber").length} />
           </p>
@@ -148,14 +150,14 @@ function UsersPage() {
           {...cardEntrance(1)}
           whileHover={cardHover}
         >
-          <p className="dash-label">Managers</p>
+          <p className="dash-label">{t("admin.users.statManagers")}</p>
           <p className="stat-number-cyan">
             <CountUpValue value={users.filter((user) => user.role === "owner").length} />
           </p>
         </motion.div>
 
         <motion.div className="stat-card" {...cardEntrance(2)} whileHover={cardHover}>
-          <p className="dash-label">Admins</p>
+          <p className="dash-label">{t("admin.users.statAdmins")}</p>
           <p className="dash-value-lg">
             <CountUpValue value={users.filter((user) => user.role === "admin").length} />
           </p>
@@ -167,10 +169,10 @@ function UsersPage() {
           whileHover={cardHover}
         >
           <h2 className="dash-card-title">
-            <BarChart3 size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Users by Role
+            <BarChart3 size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> {t("admin.users.chartTitle")}
           </h2>
           {users.length === 0 ? (
-            <p className="forecast-message">Chart will appear once users register</p>
+            <p className="forecast-message">{t("admin.users.chartEmpty")}</p>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={roleCounts}>
@@ -199,21 +201,21 @@ function UsersPage() {
         whileHover={cardHover}
       >
         <h2 className="dash-card-title">
-          <Users size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Users
+          <Users size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> {t("admin.users.title")}
         </h2>
         {users.length === 0 ? (
-          <p>No data yet</p>
+          <p>{t("admin.users.emptyState")}</p>
         ) : (
           <div className="admin-table-wrap">
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Role</th>
-                  <th>Subscription</th>
-                  <th>Action</th>
+                  <th>{t("admin.users.colName")}</th>
+                  <th>{t("admin.users.colEmail")}</th>
+                  <th>{t("admin.users.colPhone")}</th>
+                  <th>{t("admin.users.colRole")}</th>
+                  <th>{t("admin.users.colSubscription")}</th>
+                  <th>{t("admin.users.colAction")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -226,7 +228,7 @@ function UsersPage() {
                       <td>
                         <span className={statusPillClass(user.role)}>
                           <span className="pill-dot"></span>
-                          {displayRole(user.role).toUpperCase()}
+                          {displayRole(t, user.role).toUpperCase()}
                         </span>
                       </td>
                       <td>
@@ -235,12 +237,12 @@ function UsersPage() {
                         ) : user.subscription_status === "none" ? (
                           <span className={statusPillClass("none")}>
                             <span className="pill-dot"></span>
-                            NO SUBSCRIPTION
+                            {translateStatus(t, "none")}
                           </span>
                         ) : (
                           <span className={statusPillClass(user.subscription_status || "none")}>
                             <span className="pill-dot"></span>
-                            {(user.subscription_status || "none").toUpperCase()}
+                            {translateStatus(t, user.subscription_status || "none")}
                           </span>
                         )}
                       </td>
@@ -266,7 +268,7 @@ function UsersPage() {
                               <Loader2 size={14} className="btn-spinner" />
                             ) : (
                               <>
-                                <Trash2 size={14} /> Delete
+                                <Trash2 size={14} /> {t("admin.users.delete")}
                               </>
                             )}
                           </motion.button>
@@ -295,31 +297,31 @@ function UsersPage() {
                                 style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "flex-end" }}
                               >
                                 <div style={{ flex: "1 1 160px" }}>
-                                  <label className="auth-label" htmlFor={`user-edit-name-${user.id}`}>Name</label>
+                                  <label className="auth-label" htmlFor={`user-edit-name-${user.id}`}>{t("register.name")}</label>
                                   <input
                                     id={`user-edit-name-${user.id}`}
                                     className="auth-input"
                                     type="text"
-                                    placeholder="Name"
+                                    placeholder={t("register.name")}
                                     value={editUserName}
                                     onChange={(e) => setEditUserName(e.target.value)}
                                     style={{ marginBottom: 0 }}
                                   />
                                 </div>
                                 <div style={{ flex: "1 1 200px" }}>
-                                  <label className="auth-label" htmlFor={`user-edit-email-${user.id}`}>Email</label>
+                                  <label className="auth-label" htmlFor={`user-edit-email-${user.id}`}>{t("register.email")}</label>
                                   <input
                                     id={`user-edit-email-${user.id}`}
                                     className="auth-input"
                                     type="email"
-                                    placeholder="Email"
+                                    placeholder={t("register.email")}
                                     value={editUserEmail}
                                     onChange={(e) => setEditUserEmail(e.target.value)}
                                     style={{ marginBottom: 0 }}
                                   />
                                 </div>
                                 <div style={{ flex: "1 1 180px" }}>
-                                  <label className="auth-label" htmlFor={`user-edit-phone-${user.id}`}>Phone</label>
+                                  <label className="auth-label" htmlFor={`user-edit-phone-${user.id}`}>{t("dashboard.subscription.phoneLabel")}</label>
                                   <input
                                     id={`user-edit-phone-${user.id}`}
                                     className="auth-input"
@@ -331,7 +333,7 @@ function UsersPage() {
                                   />
                                 </div>
                                 <div style={{ flex: "1 1 140px" }}>
-                                  <label className="auth-label" htmlFor={`user-edit-role-${user.id}`}>Role</label>
+                                  <label className="auth-label" htmlFor={`user-edit-role-${user.id}`}>{t("admin.users.colRole")}</label>
                                   <select
                                     id={`user-edit-role-${user.id}`}
                                     className="owner-select"
@@ -339,9 +341,9 @@ function UsersPage() {
                                     onChange={(e) => setEditUserRole(e.target.value)}
                                     style={{ width: "100%" }}
                                   >
-                                    <option value="subscriber">Subscriber</option>
-                                    <option value="owner">Manager</option>
-                                    <option value="admin">Admin</option>
+                                    <option value="subscriber">{t("common.roles.subscriber")}</option>
+                                    <option value="owner">{t("common.roles.owner")}</option>
+                                    <option value="admin">{t("common.roles.admin")}</option>
                                   </select>
                                 </div>
                                 <motion.button
@@ -352,7 +354,7 @@ function UsersPage() {
                                   disabled={isSavingUser}
                                   style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
                                 >
-                                  {isSavingUser ? <Loader2 size={14} className="btn-spinner" /> : "Save"}
+                                  {isSavingUser ? <Loader2 size={14} className="btn-spinner" /> : t("common.save")}
                                 </motion.button>
                                 <motion.button
                                   className="dash-button-outline"
@@ -362,7 +364,7 @@ function UsersPage() {
                                   whileTap={{ scale: 0.97 }}
                                   style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
                                 >
-                                  Cancel
+                                  {t("common.cancel")}
                                 </motion.button>
                               </form>
                               <div
@@ -377,12 +379,12 @@ function UsersPage() {
                                 }}
                               >
                                 <div style={{ flex: "1 1 200px" }}>
-                                  <label className="auth-label" htmlFor={`user-reset-password-${user.id}`}>New Password</label>
+                                  <label className="auth-label" htmlFor={`user-reset-password-${user.id}`}>{t("admin.users.newPassword")}</label>
                                   <input
                                     id={`user-reset-password-${user.id}`}
                                     className="auth-input"
                                     type="password"
-                                    placeholder="New Password"
+                                    placeholder={t("admin.users.newPassword")}
                                     value={resetPasswordInput}
                                     onChange={(e) => setResetPasswordInput(e.target.value)}
                                     style={{ marginBottom: 0 }}
@@ -401,7 +403,7 @@ function UsersPage() {
                                     <Loader2 size={14} className="btn-spinner" />
                                   ) : (
                                     <>
-                                      <Lock size={14} /> Reset Password
+                                      <Lock size={14} /> {t("admin.users.resetPassword")}
                                     </>
                                   )}
                                 </motion.button>
@@ -421,14 +423,14 @@ function UsersPage() {
 
       <ConfirmModal
         open={userPendingDelete !== null}
-        title="Delete user"
+        title={t("admin.users.deleteModalTitle")}
         message={
           userPendingDelete
-            ? `Are you sure you want to delete ${userPendingDelete.name}? This cannot be undone.`
+            ? t("admin.users.deleteModalMessage", { name: userPendingDelete.name })
             : ""
         }
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
+        confirmLabel={t("admin.users.delete")}
+        cancelLabel={t("common.cancel")}
         danger
         onConfirm={handleConfirmDeleteUser}
         onCancel={handleCancelDeleteUser}

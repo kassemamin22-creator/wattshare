@@ -5,11 +5,13 @@ import { UserPlus, Loader2 } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
+import { useTranslation } from "react-i18next";
 import type { AdminDashboardContext } from "./AdminDashboardLayout";
 import { cardEntrance, cardHover, SUBSCRIBER_PAYMENT_METHODS } from "./shared";
 
 function AddSubscriberPage() {
   const showToast = useToast();
+  const { t } = useTranslation();
   const { fetchUsers, fetchSubscriptions } = useOutletContext<AdminDashboardContext>();
 
   const [subscriberName, setSubscriberName] = useState("");
@@ -37,7 +39,7 @@ function AddSubscriberPage() {
         ampere: Number(subscriberAmpere),
         payment_method: subscriberPaymentMethod,
       });
-      showToast("Subscriber account created successfully", "success");
+      showToast(t("owner.addSubscriber.toastSuccess"), "success");
       setSubscriberName("");
       setSubscriberEmail("");
       setSubscriberPassword("");
@@ -52,7 +54,7 @@ function AddSubscriberPage() {
       if (isAxiosError(err) && err.response?.data?.detail) {
         showToast(err.response.data.detail, "error");
       } else {
-        showToast("Failed to create subscriber account", "error");
+        showToast(t("owner.addSubscriber.toastFailed"), "error");
       }
     } finally {
       setIsAddingSubscriber(false);
@@ -67,88 +69,88 @@ function AddSubscriberPage() {
       whileHover={cardHover}
     >
       <h2 className="dash-card-title admin-form-title">
-        <UserPlus size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Add Subscriber
+        <UserPlus size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> {t("owner.addSubscriber.title")}
       </h2>
       <form onSubmit={handleAddSubscriber} className="admin-form-grid">
         <div className="admin-form-field">
-          <label className="auth-label" htmlFor="admin-add-subscriber-name">Name</label>
+          <label className="auth-label" htmlFor="admin-add-subscriber-name">{t("register.name")}</label>
           <input
             id="admin-add-subscriber-name"
             className="auth-input"
             type="text"
-            placeholder="Name"
+            placeholder={t("register.name")}
             value={subscriberName}
             onChange={(e) => setSubscriberName(e.target.value)}
           />
         </div>
         <div className="admin-form-field">
-          <label className="auth-label" htmlFor="admin-add-subscriber-email">Email</label>
+          <label className="auth-label" htmlFor="admin-add-subscriber-email">{t("register.email")}</label>
           <input
             id="admin-add-subscriber-email"
             className="auth-input"
             type="email"
-            placeholder="Email"
+            placeholder={t("register.email")}
             value={subscriberEmail}
             onChange={(e) => setSubscriberEmail(e.target.value)}
           />
         </div>
         <div className="admin-form-field">
-          <label className="auth-label" htmlFor="admin-add-subscriber-password">Password</label>
+          <label className="auth-label" htmlFor="admin-add-subscriber-password">{t("register.password")}</label>
           <input
             id="admin-add-subscriber-password"
             className="auth-input"
             type="password"
-            placeholder="Password"
+            placeholder={t("register.password")}
             value={subscriberPassword}
             onChange={(e) => setSubscriberPassword(e.target.value)}
           />
         </div>
         <div className="admin-form-field">
-          <label className="auth-label" htmlFor="admin-add-subscriber-ampere">Ampere</label>
+          <label className="auth-label" htmlFor="admin-add-subscriber-ampere">{t("owner.subscribers.colAmpere")}</label>
           <input
             id="admin-add-subscriber-ampere"
             className="auth-input"
             type="number"
-            placeholder="Ampere"
+            placeholder={t("owner.subscribers.colAmpere")}
             value={subscriberAmpere}
             onChange={(e) => setSubscriberAmpere(e.target.value)}
           />
         </div>
         <div className="admin-form-field">
-          <label className="auth-label" htmlFor="admin-add-subscriber-address">Address</label>
+          <label className="auth-label" htmlFor="admin-add-subscriber-address">{t("dashboard.subscription.addressLabel")}</label>
           <input
             id="admin-add-subscriber-address"
             className="auth-input"
             type="text"
-            placeholder="Address"
+            placeholder={t("dashboard.subscription.addressLabel")}
             value={subscriberAddress}
             onChange={(e) => setSubscriberAddress(e.target.value)}
           />
         </div>
         <div className="admin-form-field">
-          <label className="auth-label" htmlFor="admin-add-subscriber-building">Building name or number</label>
+          <label className="auth-label" htmlFor="admin-add-subscriber-building">{t("dashboard.subscription.buildingLabel")}</label>
           <input
             id="admin-add-subscriber-building"
             className="auth-input"
             type="text"
-            placeholder="Building name or number"
+            placeholder={t("dashboard.subscription.buildingLabel")}
             value={subscriberBuilding}
             onChange={(e) => setSubscriberBuilding(e.target.value)}
           />
         </div>
         <div className="admin-form-field admin-form-full">
-          <label className="auth-label" htmlFor="admin-add-subscriber-phone">Phone</label>
+          <label className="auth-label" htmlFor="admin-add-subscriber-phone">{t("dashboard.subscription.phoneLabel")}</label>
           <input
             id="admin-add-subscriber-phone"
             className="auth-input"
             type="tel"
-            placeholder="Phone"
+            placeholder={t("dashboard.subscription.phoneLabel")}
             value={subscriberPhone}
             onChange={(e) => setSubscriberPhone(e.target.value)}
           />
         </div>
         <div className="admin-form-full">
-          <p className="dash-label">Payment Method</p>
+          <p className="dash-label">{t("owner.addSubscriber.paymentMethodLabel")}</p>
           <div className="payment-method-group">
             {SUBSCRIBER_PAYMENT_METHODS.map((method) => (
               <button
@@ -161,7 +163,7 @@ function AddSubscriberPage() {
                 }
                 onClick={() => setSubscriberPaymentMethod(method.value)}
               >
-                {method.label}
+                {t(`common.paymentMethod.${method.value}`)}
               </button>
             ))}
           </div>
@@ -173,7 +175,7 @@ function AddSubscriberPage() {
           whileTap={{ scale: 0.97 }}
           disabled={isAddingSubscriber}
         >
-          {isAddingSubscriber ? <Loader2 size={16} className="btn-spinner" /> : "Add Subscriber"}
+          {isAddingSubscriber ? <Loader2 size={16} className="btn-spinner" /> : t("owner.addSubscriber.submit")}
         </motion.button>
       </form>
     </motion.section>

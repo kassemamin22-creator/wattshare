@@ -4,6 +4,7 @@
     "save": "Enregistrer",
     "cancel": "Annuler",
     "logout": "Se déconnecter",
+    "loadError": "Échec du chargement des données. Veuillez actualiser la page.",
     "status": {
       "active": "Actif",
       "pending": "En attente",
@@ -12,7 +13,8 @@
       "disputed": "Contestée",
       "open": "Ouvert",
       "inProgress": "En cours",
-      "resolved": "Résolu"
+      "resolved": "Résolu",
+      "none": "Aucun abonnement"
     },
     "roles": {
       "subscriber": "Abonné",
@@ -316,6 +318,70 @@
       "submit": "Ajouter un abonné",
       "toastSuccess": "Compte abonné créé avec succès",
       "toastFailed": "Échec de la création du compte abonné"
+    }
+  },
+  "admin": {
+    "dashboardTitle": "Tableau de bord administrateur",
+    "nav": {
+      "users": "Utilisateurs",
+      "subscriptions": "Abonnements",
+      "pricing": "Tarification"
+    },
+    "users": {
+      "statSubscribers": "Abonnés",
+      "statManagers": "Gestionnaires",
+      "statAdmins": "Administrateurs",
+      "chartTitle": "Utilisateurs par rôle",
+      "chartEmpty": "Le graphique apparaîtra dès que des utilisateurs se seront inscrits",
+      "title": "Utilisateurs",
+      "emptyState": "Aucune donnée pour le moment",
+      "colName": "Nom",
+      "colEmail": "E-mail",
+      "colPhone": "Téléphone",
+      "colRole": "Rôle",
+      "colSubscription": "Abonnement",
+      "colAction": "Action",
+      "delete": "Supprimer",
+      "newPassword": "Nouveau mot de passe",
+      "resetPassword": "Réinitialiser le mot de passe",
+      "deleteModalTitle": "Supprimer l'utilisateur",
+      "deleteModalMessage": "Voulez-vous vraiment supprimer {{name}} ? Cette action est irréversible.",
+      "toastDeleteSuccess": "{{name}} supprimé avec succès",
+      "toastDeleteFailed": "Échec de la suppression de l'utilisateur",
+      "toastUpdateSuccess": "Utilisateur mis à jour avec succès",
+      "toastUpdateFailed": "Échec de la mise à jour de l'utilisateur",
+      "toastResetSuccess": "Mot de passe réinitialisé avec succès",
+      "toastResetFailed": "Échec de la réinitialisation du mot de passe"
+    },
+    "subscriptions": {
+      "title": "Abonnements",
+      "edit": "Modifier",
+      "activate": "Activer",
+      "deactivate": "Désactiver",
+      "toastUpdateSuccess": "Abonnement mis à jour avec succès",
+      "toastUpdateFailed": "Échec de la mise à jour de l'abonnement",
+      "toastToggleFailed": "Échec de la mise à jour du statut de l'abonnement"
+    },
+    "bills": {
+      "revenueOverview": "Aperçu des revenus",
+      "totalCollected": "Total encaissé",
+      "outstanding": "Impayé",
+      "title": "Factures",
+      "toastMarkPaidFailed": "Échec du marquage de la facture comme payée"
+    },
+    "addManager": {
+      "title": "Ajouter un gestionnaire",
+      "submit": "Ajouter un gestionnaire",
+      "toastSuccess": "Compte gestionnaire créé avec succès",
+      "toastFailed": "Échec de la création du compte gestionnaire"
+    },
+    "pricing": {
+      "title": "Gestion des tarifs",
+      "currentPriceLabel": "PRIX ACTUEL PAR AMPÈRE",
+      "priceLabel": "Prix par ampère",
+      "updateButton": "Mettre à jour le prix",
+      "toastSuccess": "Prix mis à jour avec succès",
+      "toastFailed": "Échec de la mise à jour du prix"
     }
   }
 }

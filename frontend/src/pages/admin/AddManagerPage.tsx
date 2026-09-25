@@ -5,11 +5,13 @@ import { UserPlus, Loader2 } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
+import { useTranslation } from "react-i18next";
 import type { AdminDashboardContext } from "./AdminDashboardLayout";
 import { cardEntrance, cardHover } from "./shared";
 
 function AddManagerPage() {
   const showToast = useToast();
+  const { t } = useTranslation();
   const { fetchUsers } = useOutletContext<AdminDashboardContext>();
 
   const [managerName, setManagerName] = useState("");
@@ -27,7 +29,7 @@ function AddManagerPage() {
         email: managerEmail,
         password: managerPassword,
       });
-      showToast("Manager account created successfully", "success");
+      showToast(t("admin.addManager.toastSuccess"), "success");
       setManagerName("");
       setManagerEmail("");
       setManagerPassword("");
@@ -36,7 +38,7 @@ function AddManagerPage() {
       if (isAxiosError(err) && err.response?.data?.detail) {
         showToast(err.response.data.detail, "error");
       } else {
-        showToast("Failed to create manager account", "error");
+        showToast(t("admin.addManager.toastFailed"), "error");
       }
     } finally {
       setIsAddingManager(false);
@@ -51,38 +53,38 @@ function AddManagerPage() {
       whileHover={cardHover}
     >
       <h2 className="dash-card-title admin-form-title">
-        <UserPlus size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Add Manager
+        <UserPlus size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> {t("admin.addManager.title")}
       </h2>
       <form onSubmit={handleAddManager} className="admin-form-grid">
         <div className="admin-form-field">
-          <label className="auth-label" htmlFor="admin-add-manager-name">Name</label>
+          <label className="auth-label" htmlFor="admin-add-manager-name">{t("register.name")}</label>
           <input
             id="admin-add-manager-name"
             className="auth-input"
             type="text"
-            placeholder="Name"
+            placeholder={t("register.name")}
             value={managerName}
             onChange={(e) => setManagerName(e.target.value)}
           />
         </div>
         <div className="admin-form-field">
-          <label className="auth-label" htmlFor="admin-add-manager-email">Email</label>
+          <label className="auth-label" htmlFor="admin-add-manager-email">{t("register.email")}</label>
           <input
             id="admin-add-manager-email"
             className="auth-input"
             type="email"
-            placeholder="Email"
+            placeholder={t("register.email")}
             value={managerEmail}
             onChange={(e) => setManagerEmail(e.target.value)}
           />
         </div>
         <div className="admin-form-field admin-form-full">
-          <label className="auth-label" htmlFor="admin-add-manager-password">Password</label>
+          <label className="auth-label" htmlFor="admin-add-manager-password">{t("register.password")}</label>
           <input
             id="admin-add-manager-password"
             className="auth-input"
             type="password"
-            placeholder="Password"
+            placeholder={t("register.password")}
             value={managerPassword}
             onChange={(e) => setManagerPassword(e.target.value)}
           />
@@ -94,7 +96,7 @@ function AddManagerPage() {
           whileTap={{ scale: 0.97 }}
           disabled={isAddingManager}
         >
-          {isAddingManager ? <Loader2 size={16} className="btn-spinner" /> : "Add Manager"}
+          {isAddingManager ? <Loader2 size={16} className="btn-spinner" /> : t("admin.addManager.submit")}
         </motion.button>
       </form>
     </motion.section>

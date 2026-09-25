@@ -6,11 +6,13 @@ import { isAxiosError } from "axios";
 import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
 import { getApiErrorMessage } from "../../utils/apiError";
+import { useTranslation } from "react-i18next";
 import type { AdminDashboardContext } from "./AdminDashboardLayout";
 import { cardEntrance, cardHover } from "./shared";
 
 function AccountSettingsPage() {
   const showToast = useToast();
+  const { t } = useTranslation();
   const { users, setUsers, currentUserId } = useOutletContext<AdminDashboardContext>();
   const selfUser = users.find((user) => user.id === currentUserId);
 
@@ -41,7 +43,7 @@ function AccountSettingsPage() {
     const trimmedEmail = editProfileEmail.trim();
     const trimmedPhone = editProfilePhone.trim();
     if (!trimmedEmail && !trimmedPhone) {
-      showToast("Please provide either an email or a phone number", "error");
+      showToast(t("dashboard.accountSettings.toastEitherRequired"), "error");
       return;
     }
 
@@ -66,9 +68,9 @@ function AccountSettingsPage() {
         )
       );
       setIsEditingProfile(false);
-      showToast("Profile updated successfully", "success");
+      showToast(t("dashboard.accountSettings.toastProfileSuccess"), "success");
     } catch (err) {
-      showToast(getApiErrorMessage(err, "Failed to update profile"), "error");
+      showToast(getApiErrorMessage(err, t("dashboard.accountSettings.toastProfileFailed")), "error");
     } finally {
       setIsSavingProfile(false);
     }
@@ -96,12 +98,12 @@ function AccountSettingsPage() {
       setCurrentPasswordInput("");
       setNewPasswordInput("");
       setIsChangingPassword(false);
-      showToast(response.data.message || "Password updated successfully", "success");
+      showToast(response.data.message || t("dashboard.accountSettings.toastPasswordSuccess"), "success");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
         showToast(err.response.data.detail, "error");
       } else {
-        showToast("Failed to update password", "error");
+        showToast(t("dashboard.accountSettings.toastPasswordFailed"), "error");
       }
     } finally {
       setIsSavingPassword(false);
@@ -116,11 +118,11 @@ function AccountSettingsPage() {
       whileHover={cardHover}
     >
       <h2 className="dash-card-title">
-        <User size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Account Settings
+        <User size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> {t("dashboard.accountSettings.title")}
       </h2>
 
       <hr className="dash-divider" />
-      <p className="dash-label">PROFILE</p>
+      <p className="dash-label">{t("dashboard.accountSettings.profile")}</p>
       {!isEditingProfile && (
         <>
           <p className="dash-value-lg">{selfUser?.name || "—"}</p>
@@ -132,7 +134,7 @@ function AccountSettingsPage() {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
           >
-            <Pencil size={14} /> Edit Profile
+            <Pencil size={14} /> {t("dashboard.accountSettings.editProfile")}
           </motion.button>
         </>
       )}
@@ -147,25 +149,25 @@ function AccountSettingsPage() {
             style={{ overflow: "hidden" }}
           >
             <form onSubmit={handleSaveProfile}>
-              <label className="auth-label" htmlFor="admin-account-settings-name">Name</label>
+              <label className="auth-label" htmlFor="admin-account-settings-name">{t("register.name")}</label>
               <input
                 id="admin-account-settings-name"
                 className="auth-input"
                 type="text"
-                placeholder="Name"
+                placeholder={t("register.name")}
                 value={editProfileName}
                 onChange={(e) => setEditProfileName(e.target.value)}
               />
-              <label className="auth-label" htmlFor="admin-account-settings-email">Email</label>
+              <label className="auth-label" htmlFor="admin-account-settings-email">{t("register.email")}</label>
               <input
                 id="admin-account-settings-email"
                 className="auth-input"
                 type="email"
-                placeholder="Email"
+                placeholder={t("register.email")}
                 value={editProfileEmail}
                 onChange={(e) => setEditProfileEmail(e.target.value)}
               />
-              <label className="auth-label" htmlFor="admin-account-settings-phone">Phone Number</label>
+              <label className="auth-label" htmlFor="admin-account-settings-phone">{t("register.phone")}</label>
               <input
                 id="admin-account-settings-phone"
                 className="auth-input"
@@ -183,7 +185,7 @@ function AccountSettingsPage() {
                   disabled={isSavingProfile}
                   style={{ flex: 1 }}
                 >
-                  {isSavingProfile ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
+                  {isSavingProfile ? <Loader2 size={16} className="btn-spinner" /> : t("common.save")}
                 </motion.button>
                 <motion.button
                   className="dash-button-outline"
@@ -193,7 +195,7 @@ function AccountSettingsPage() {
                   whileTap={{ scale: 0.97 }}
                   style={{ flex: 1, marginTop: 0 }}
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </motion.button>
               </div>
             </form>
@@ -202,7 +204,7 @@ function AccountSettingsPage() {
       </AnimatePresence>
 
       <hr className="dash-divider" />
-      <p className="dash-label">PASSWORD</p>
+      <p className="dash-label">{t("dashboard.accountSettings.password")}</p>
       {!isChangingPassword && (
         <motion.button
           className="dash-button-outline"
@@ -210,7 +212,7 @@ function AccountSettingsPage() {
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
         >
-          <Lock size={14} /> Change Password
+          <Lock size={14} /> {t("dashboard.accountSettings.changePassword")}
         </motion.button>
       )}
       <AnimatePresence initial={false}>
@@ -224,17 +226,21 @@ function AccountSettingsPage() {
             style={{ overflow: "hidden" }}
           >
             <form onSubmit={handleSavePassword}>
+              <label className="auth-label" htmlFor="admin-account-settings-current-password">{t("dashboard.accountSettings.currentPassword")}</label>
               <input
+                id="admin-account-settings-current-password"
                 className="auth-input"
                 type="password"
-                placeholder="Current password"
+                placeholder={t("dashboard.accountSettings.currentPassword")}
                 value={currentPasswordInput}
                 onChange={(e) => setCurrentPasswordInput(e.target.value)}
               />
+              <label className="auth-label" htmlFor="admin-account-settings-new-password">{t("dashboard.accountSettings.newPassword")}</label>
               <input
+                id="admin-account-settings-new-password"
                 className="auth-input"
                 type="password"
-                placeholder="New password"
+                placeholder={t("dashboard.accountSettings.newPassword")}
                 value={newPasswordInput}
                 onChange={(e) => setNewPasswordInput(e.target.value)}
               />
@@ -247,7 +253,7 @@ function AccountSettingsPage() {
                   disabled={isSavingPassword}
                   style={{ flex: 1 }}
                 >
-                  {isSavingPassword ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
+                  {isSavingPassword ? <Loader2 size={16} className="btn-spinner" /> : t("common.save")}
                 </motion.button>
                 <motion.button
                   className="dash-button-outline"
@@ -257,7 +263,7 @@ function AccountSettingsPage() {
                   whileTap={{ scale: 0.97 }}
                   style={{ flex: 1, marginTop: 0 }}
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </motion.button>
               </div>
             </form>

@@ -5,11 +5,13 @@ import { DollarSign, Loader2 } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
+import { useTranslation } from "react-i18next";
 import type { AdminDashboardContext } from "./AdminDashboardLayout";
 import { cardEntrance, cardHover, CountUpValue } from "./shared";
 
 function PricingPage() {
   const showToast = useToast();
+  const { t } = useTranslation();
   const { tariffPrice, setTariffPrice } = useOutletContext<AdminDashboardContext>();
 
   const [tariffInput, setTariffInput] = useState("");
@@ -30,12 +32,12 @@ function PricingPage() {
         price_per_ampere: Number(tariffInput),
       });
       setTariffPrice(response.data.price_per_ampere);
-      showToast("Price updated successfully", "success");
+      showToast(t("admin.pricing.toastSuccess"), "success");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
         showToast(err.response.data.detail, "error");
       } else {
-        showToast("Failed to update price", "error");
+        showToast(t("admin.pricing.toastFailed"), "error");
       }
     } finally {
       setIsUpdatingTariff(false);
@@ -50,24 +52,24 @@ function PricingPage() {
       whileHover={cardHover}
     >
       <h2 className="dash-card-title">
-        <DollarSign size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Pricing Control
+        <DollarSign size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> {t("admin.pricing.title")}
       </h2>
-      <p className="dash-label">CURRENT PRICE PER AMPERE</p>
+      <p className="dash-label">{t("admin.pricing.currentPriceLabel")}</p>
       <p className="dash-value-lg">
         {tariffPrice !== null ? (
           <CountUpValue value={tariffPrice} decimals={2} prefix="$" />
         ) : (
-          "Loading..."
+          t("common.loading")
         )}
       </p>
       <form onSubmit={handleUpdateTariff} className="admin-manager-form">
-        <label className="auth-label" htmlFor="pricing-price-per-ampere">Price per ampere</label>
+        <label className="auth-label" htmlFor="pricing-price-per-ampere">{t("admin.pricing.priceLabel")}</label>
         <input
           id="pricing-price-per-ampere"
           className="auth-input"
           type="number"
           step="0.01"
-          placeholder="Price per ampere"
+          placeholder={t("admin.pricing.priceLabel")}
           value={tariffInput}
           onChange={(e) => setTariffInput(e.target.value)}
         />
@@ -78,7 +80,7 @@ function PricingPage() {
           whileTap={{ scale: 0.97 }}
           disabled={isUpdatingTariff}
         >
-          {isUpdatingTariff ? <Loader2 size={16} className="btn-spinner" /> : "Update Price"}
+          {isUpdatingTariff ? <Loader2 size={16} className="btn-spinner" /> : t("admin.pricing.updateButton")}
         </motion.button>
       </form>
     </motion.section>

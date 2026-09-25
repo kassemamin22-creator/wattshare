@@ -4,6 +4,7 @@
     "save": "Save",
     "cancel": "Cancel",
     "logout": "Log Out",
+    "loadError": "Failed to load data. Please refresh the page.",
     "status": {
       "active": "Active",
       "pending": "Pending",
@@ -12,7 +13,8 @@
       "disputed": "Disputed",
       "open": "Open",
       "inProgress": "In Progress",
-      "resolved": "Resolved"
+      "resolved": "Resolved",
+      "none": "No Subscription"
     },
     "roles": {
       "subscriber": "Subscriber",
@@ -316,6 +318,70 @@
       "submit": "Add Subscriber",
       "toastSuccess": "Subscriber account created successfully",
       "toastFailed": "Failed to create subscriber account"
+    }
+  },
+  "admin": {
+    "dashboardTitle": "Admin Dashboard",
+    "nav": {
+      "users": "Users",
+      "subscriptions": "Subscriptions",
+      "pricing": "Pricing"
+    },
+    "users": {
+      "statSubscribers": "Subscribers",
+      "statManagers": "Managers",
+      "statAdmins": "Admins",
+      "chartTitle": "Users by Role",
+      "chartEmpty": "Chart will appear once users register",
+      "title": "Users",
+      "emptyState": "No data yet",
+      "colName": "Name",
+      "colEmail": "Email",
+      "colPhone": "Phone",
+      "colRole": "Role",
+      "colSubscription": "Subscription",
+      "colAction": "Action",
+      "delete": "Delete",
+      "newPassword": "New Password",
+      "resetPassword": "Reset Password",
+      "deleteModalTitle": "Delete user",
+      "deleteModalMessage": "Are you sure you want to delete {{name}}? This cannot be undone.",
+      "toastDeleteSuccess": "{{name}} deleted successfully",
+      "toastDeleteFailed": "Failed to delete user",
+      "toastUpdateSuccess": "User updated successfully",
+      "toastUpdateFailed": "Failed to update user",
+      "toastResetSuccess": "Password reset successfully",
+      "toastResetFailed": "Failed to reset password"
+    },
+    "subscriptions": {
+      "title": "Subscriptions",
+      "edit": "Edit",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "toastUpdateSuccess": "Subscription updated successfully",
+      "toastUpdateFailed": "Failed to update subscription",
+      "toastToggleFailed": "Failed to update subscription status"
+    },
+    "bills": {
+      "revenueOverview": "Revenue Overview",
+      "totalCollected": "Total Collected",
+      "outstanding": "Outstanding",
+      "title": "Bills",
+      "toastMarkPaidFailed": "Failed to mark bill as paid"
+    },
+    "addManager": {
+      "title": "Add Manager",
+      "submit": "Add Manager",
+      "toastSuccess": "Manager account created successfully",
+      "toastFailed": "Failed to create manager account"
+    },
+    "pricing": {
+      "title": "Pricing Control",
+      "currentPriceLabel": "CURRENT PRICE PER AMPERE",
+      "priceLabel": "Price per ampere",
+      "updateButton": "Update Price",
+      "toastSuccess": "Price updated successfully",
+      "toastFailed": "Failed to update price"
     }
   }
 }

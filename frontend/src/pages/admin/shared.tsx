@@ -1,7 +1,9 @@
-export { cardEntrance, cardHover, CARD_STAGGER, rowEntrance, rowHover, CountUpValue, SUBSCRIBER_PAYMENT_METHODS } from "../owner/shared";
+import type { TFunction } from "i18next";
 
-export function displayRole(role: string): string {
-  return role === "owner" ? "Manager" : role;
+export { cardEntrance, cardHover, CARD_STAGGER, rowEntrance, rowHover, CountUpValue, SUBSCRIBER_PAYMENT_METHODS, translateStatus } from "../owner/shared";
+
+export function displayRole(t: TFunction, role: string): string {
+  return String(t(`common.roles.${role}`, { defaultValue: role }));
 }
 
 // Admin's status set differs from both the subscriber dashboard's and the manager's
