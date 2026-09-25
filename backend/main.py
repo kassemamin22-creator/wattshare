@@ -90,10 +90,16 @@ def register(user: UserCreate):
     normalized_phone = user.phone.strip() if user.phone else None
 
     if normalized_email and users_collection.find_one({"email": normalized_email}):
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(
+            status_code=400,
+            detail={"code": "email_already_registered", "message": "Email already registered"},
+        )
 
     if normalized_phone and users_collection.find_one({"phone": normalized_phone}):
-        raise HTTPException(status_code=400, detail="Phone number already registered")
+        raise HTTPException(
+            status_code=400,
+            detail={"code": "phone_already_registered", "message": "Phone number already registered"},
+        )
 
     hashed_password = hash_password(user.password)
 
@@ -119,7 +125,10 @@ def login(user: UserLogin):
     db_user = users_collection.find_one({"$or": [{"email": identifier}, {"phone": identifier}]})
 
     if not db_user or not verify_password(user.password, db_user["password"]):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+        raise HTTPException(
+            status_code=401,
+            detail={"code": "invalid_credentials", "message": "Invalid email or password"},
+        )
 
     access_token = create_access_token({
         "id": str(db_user["_id"]),
@@ -155,13 +164,19 @@ def update_my_account(update: UserUpdate, current_user: dict = Depends(get_curre
         "email": normalized_email,
         "_id": {"$ne": ObjectId(current_user["id"])},
     }):
-        raise HTTPException(status_code=400, detail="Email already in use")
+        raise HTTPException(
+            status_code=400,
+            detail={"code": "email_already_registered", "message": "Email already in use"},
+        )
 
     if normalized_phone and users_collection.find_one({
         "phone": normalized_phone,
         "_id": {"$ne": ObjectId(current_user["id"])},
     }):
-        raise HTTPException(status_code=400, detail="Phone number already in use")
+        raise HTTPException(
+            status_code=400,
+            detail={"code": "phone_already_registered", "message": "Phone number already in use"},
+        )
 
     try:
         users_collection.update_one(
@@ -169,7 +184,13 @@ def update_my_account(update: UserUpdate, current_user: dict = Depends(get_curre
             {"$set": {"name": update.name, "email": normalized_email, "phone": normalized_phone}},
         )
     except DuplicateKeyError:
-        raise HTTPException(status_code=400, detail="Email or phone number already registered")
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": "email_or_phone_already_registered",
+                "message": "Email or phone number already registered",
+            },
+        )
 
     user = users_collection.find_one({"_id": ObjectId(current_user["id"])})
 
@@ -681,13 +702,19 @@ def admin_update_user(user_id: str, update: AdminUserUpdate, current_user: dict 
         "email": normalized_email,
         "_id": {"$ne": ObjectId(user_id)},
     }):
-        raise HTTPException(status_code=400, detail="Email already in use")
+        raise HTTPException(
+            status_code=400,
+            detail={"code": "email_already_registered", "message": "Email already in use"},
+        )
 
     if normalized_phone and users_collection.find_one({
         "phone": normalized_phone,
         "_id": {"$ne": ObjectId(user_id)},
     }):
-        raise HTTPException(status_code=400, detail="Phone number already in use")
+        raise HTTPException(
+            status_code=400,
+            detail={"code": "phone_already_registered", "message": "Phone number already in use"},
+        )
 
     try:
         users_collection.update_one(
@@ -700,7 +727,13 @@ def admin_update_user(user_id: str, update: AdminUserUpdate, current_user: dict 
             }},
         )
     except DuplicateKeyError:
-        raise HTTPException(status_code=400, detail="Email or phone number already registered")
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": "email_or_phone_already_registered",
+                "message": "Email or phone number already registered",
+            },
+        )
 
     return UserOut(
         id=user_id,
