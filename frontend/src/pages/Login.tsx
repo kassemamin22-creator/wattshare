@@ -40,7 +40,7 @@ interface DecodedToken {
 }
 
 function Login() {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -50,7 +50,7 @@ function Login() {
     setError("");
 
     try {
-      const response = await api.post("/login", { email, password });
+      const response = await api.post("/login", { identifier, password });
       const token = response.data.access_token;
       localStorage.setItem("token", token);
 
@@ -111,16 +111,16 @@ function Login() {
           <div className="auth-title">Log In</div>
           <div className="auth-glass-card">
             <form onSubmit={handleSubmit}>
-              <label className="auth-label" htmlFor="login-email">Email</label>
+              <label className="auth-label" htmlFor="login-identifier">Email or Phone Number</label>
               <div className="auth-input-wrap">
                 <Mail size={16} className="auth-input-icon" />
                 <input
-                  id="login-email"
+                  id="login-identifier"
                   className="auth-input"
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="text"
+                  placeholder="Email or Phone Number"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                 />
               </div>
               <label className="auth-label" htmlFor="login-password">Password</label>

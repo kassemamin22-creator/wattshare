@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { User, Mail, Lock } from "lucide-react";
+import { User, Mail, Lock, Phone } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "../services/api";
 
@@ -35,6 +35,7 @@ const PARTICLES = [
 function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -43,8 +44,21 @@ function Register() {
     e.preventDefault();
     setError("");
 
+    const trimmedEmail = email.trim();
+    const trimmedPhone = phone.trim();
+    if (!trimmedEmail && !trimmedPhone) {
+      setError("Please provide either an email or a phone number");
+      return;
+    }
+
     try {
-      await api.post("/register", { name, email, password, role: "subscriber" });
+      await api.post("/register", {
+        name,
+        email: trimmedEmail || null,
+        phone: trimmedPhone || null,
+        password,
+        role: "subscriber",
+      });
       navigate("/login");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
@@ -107,7 +121,7 @@ function Register() {
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
-              <label className="auth-label" htmlFor="register-email">Email</label>
+              <label className="auth-label" htmlFor="register-email">Email (optional if phone is provided)</label>
               <div className="auth-input-wrap">
                 <Mail size={16} className="auth-input-icon" />
                 <input
@@ -117,6 +131,18 @@ function Register() {
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <label className="auth-label" htmlFor="register-phone">Phone Number (optional if email is provided)</label>
+              <div className="auth-input-wrap">
+                <Phone size={16} className="auth-input-icon" />
+                <input
+                  id="register-phone"
+                  className="auth-input"
+                  type="tel"
+                  placeholder="Phone Number"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                 />
               </div>
               <label className="auth-label" htmlFor="register-password">Password</label>
