@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, field_validator, model_validator
 from typing import List, Literal, Optional
 from enum import Enum
 from datetime import datetime
+import re
 
 class UserRole(str, Enum):
     subscriber = "subscriber"
@@ -26,6 +27,18 @@ class UserCreate(BaseModel):
         if isinstance(value, str) and not value.strip():
             return None
         return value
+
+    @field_validator("phone")
+    @classmethod
+    def validate_lebanese_phone(cls, value):
+        if value is None:
+            return value
+        stripped = value.strip()
+        if not re.fullmatch(r"\+961[0-9]{8}", stripped):
+            raise ValueError(
+                "Phone number must be in the format +961XXXXXXXX (Lebanese number, 8 digits after +961)"
+            )
+        return stripped
 
     @model_validator(mode="after")
     def require_email_or_phone(self):
