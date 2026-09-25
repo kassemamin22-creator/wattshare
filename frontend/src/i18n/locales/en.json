@@ -9,12 +9,20 @@
       "pending": "Pending",
       "inactive": "Inactive",
       "paid": "Paid",
-      "disputed": "Disputed"
+      "disputed": "Disputed",
+      "open": "Open",
+      "inProgress": "In Progress",
+      "resolved": "Resolved"
     },
     "roles": {
       "subscriber": "Subscriber",
       "owner": "Manager",
       "admin": "Admin"
+    },
+    "paymentMethod": {
+      "cash": "Cash",
+      "whish": "Whish",
+      "omt": "OMT"
     }
   },
   "login": {
@@ -210,6 +218,104 @@
       "toastProfileFailed": "Failed to update profile",
       "toastPasswordSuccess": "Password updated successfully",
       "toastPasswordFailed": "Failed to update password"
+    }
+  },
+  "owner": {
+    "dashboardTitle": "Manager Dashboard",
+    "nav": {
+      "subscribers": "Subscribers",
+      "pendingApprovals": "Pending Approvals",
+      "pendingAmpereChanges": "Pending Ampere Changes",
+      "issues": "Reported Issues",
+      "bills": "Bills",
+      "addSubscriber": "Add Subscriber"
+    },
+    "subscribers": {
+      "title": "Subscribers",
+      "searchPlaceholder": "Search by name...",
+      "statusFilter": "STATUS",
+      "buildingFilter": "BUILDING",
+      "statusAll": "All",
+      "buildingAll": "All Buildings",
+      "emptyNoData": "No subscribers yet",
+      "emptyNoMatch": "No subscribers match your search",
+      "colSubscriber": "Subscriber",
+      "colStatus": "Status",
+      "colAmpere": "Ampere",
+      "colAction": "Action",
+      "expandDetails": "Expand details",
+      "collapseDetails": "Collapse details",
+      "lastReading": "LAST READING",
+      "noPreviousReading": "No previous reading",
+      "readingPlaceholder": "Reading value",
+      "submitReading": "Submit Reading",
+      "scanMeter": "Scan meter with camera",
+      "confirmReadingDialog": "Confirm meter reading: {{value}}? Last recorded reading was {{lastReading}}.",
+      "toastScanned": "Reading scanned: {{value}} — please confirm before submitting.",
+      "toastScanNoNumber": "Couldn't read a number from the photo, please enter it manually",
+      "toastScanFailed": "Failed to scan meter photo",
+      "toastReadingSuccess": "Reading submitted, bill generated",
+      "toastReadingFailed": "Failed to submit reading",
+      "toastUpdateSuccess": "Subscriber updated successfully",
+      "toastUpdateFailed": "Failed to update subscriber"
+    },
+    "pendingApprovals": {
+      "title": "Pending Approvals",
+      "emptyState": "No pending requests",
+      "colName": "Subscriber Name",
+      "colPhone": "Phone",
+      "colAddress": "Address",
+      "colAmpere": "Ampere",
+      "colAction": "Action",
+      "approve": "Approve",
+      "confirmApproval": "Confirm Approval",
+      "toastSuccess": "Subscription approved",
+      "toastFailed": "Failed to approve subscription"
+    },
+    "pendingAmpere": {
+      "title": "Pending Ampere Changes",
+      "emptyState": "No pending ampere change requests",
+      "colName": "Subscriber Name",
+      "colCurrent": "Current Ampere",
+      "colRequested": "Requested Ampere",
+      "colAction": "Action",
+      "approve": "Approve",
+      "toastSuccess": "Ampere change approved",
+      "toastFailed": "Failed to approve ampere change"
+    },
+    "chart": {
+      "title": "Subscriber Ampere Overview",
+      "emptyState": "Chart will appear once you have subscribers"
+    },
+    "issues": {
+      "title": "Reported Issues",
+      "emptyState": "No issues reported yet",
+      "colSubscriber": "Subscriber",
+      "colDescription": "Description",
+      "colReported": "Reported",
+      "colStatus": "Status",
+      "colUpdate": "Update",
+      "unknownSubscriber": "Unknown",
+      "toastUpdateFailed": "Failed to update issue status"
+    },
+    "bills": {
+      "title": "Bills",
+      "emptyState": "No data yet",
+      "colSubscriber": "Subscriber",
+      "colConsumption": "Consumption",
+      "colDueDate": "Due Date",
+      "colAmount": "Amount",
+      "colStatus": "Status",
+      "colAction": "Action",
+      "markPaid": "Mark Paid",
+      "toastMarkPaidFailed": "Failed to mark bill as paid"
+    },
+    "addSubscriber": {
+      "title": "Add Subscriber",
+      "paymentMethodLabel": "Payment Method",
+      "submit": "Add Subscriber",
+      "toastSuccess": "Subscriber account created successfully",
+      "toastFailed": "Failed to create subscriber account"
     }
   }
 }

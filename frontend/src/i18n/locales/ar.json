@@ -9,12 +9,20 @@
       "pending": "قيد الانتظار",
       "inactive": "غير نشط",
       "paid": "مدفوعة",
-      "disputed": "متنازع عليها"
+      "disputed": "متنازع عليها",
+      "open": "مفتوحة",
+      "inProgress": "قيد المعالجة",
+      "resolved": "محلولة"
     },
     "roles": {
       "subscriber": "مشترك",
       "owner": "مدير",
       "admin": "مسؤول"
+    },
+    "paymentMethod": {
+      "cash": "نقدًا",
+      "whish": "Whish",
+      "omt": "OMT"
     }
   },
   "login": {
@@ -210,6 +218,104 @@
       "toastProfileFailed": "تعذّر تحديث الملف الشخصي",
       "toastPasswordSuccess": "تم تحديث كلمة المرور بنجاح",
       "toastPasswordFailed": "تعذّر تحديث كلمة المرور"
+    }
+  },
+  "owner": {
+    "dashboardTitle": "لوحة تحكم المدير",
+    "nav": {
+      "subscribers": "المشتركون",
+      "pendingApprovals": "الموافقات المعلّقة",
+      "pendingAmpereChanges": "تغييرات الأمبير المعلّقة",
+      "issues": "المشكلات المبلّغ عنها",
+      "bills": "الفواتير",
+      "addSubscriber": "إضافة مشترك"
+    },
+    "subscribers": {
+      "title": "المشتركون",
+      "searchPlaceholder": "ابحث بالاسم...",
+      "statusFilter": "الحالة",
+      "buildingFilter": "المبنى",
+      "statusAll": "الكل",
+      "buildingAll": "كل المباني",
+      "emptyNoData": "لا يوجد مشتركون بعد",
+      "emptyNoMatch": "لا يوجد مشتركون يطابقون بحثك",
+      "colSubscriber": "المشترك",
+      "colStatus": "الحالة",
+      "colAmpere": "الأمبير",
+      "colAction": "الإجراء",
+      "expandDetails": "عرض التفاصيل",
+      "collapseDetails": "إخفاء التفاصيل",
+      "lastReading": "آخر قراءة",
+      "noPreviousReading": "لا توجد قراءة سابقة",
+      "readingPlaceholder": "قيمة القراءة",
+      "submitReading": "إرسال القراءة",
+      "scanMeter": "مسح العداد بالكاميرا",
+      "confirmReadingDialog": "تأكيد قراءة العداد: {{value}}؟ آخر قراءة مسجّلة كانت {{lastReading}}.",
+      "toastScanned": "تم مسح القراءة: {{value}} — يرجى التأكيد قبل الإرسال.",
+      "toastScanNoNumber": "تعذّرت قراءة رقم من الصورة، يرجى إدخاله يدويًا",
+      "toastScanFailed": "تعذّر مسح صورة العداد",
+      "toastReadingSuccess": "تم إرسال القراءة وإصدار الفاتورة",
+      "toastReadingFailed": "تعذّر إرسال القراءة",
+      "toastUpdateSuccess": "تم تحديث المشترك بنجاح",
+      "toastUpdateFailed": "تعذّر تحديث المشترك"
+    },
+    "pendingApprovals": {
+      "title": "الموافقات المعلّقة",
+      "emptyState": "لا توجد طلبات معلّقة",
+      "colName": "اسم المشترك",
+      "colPhone": "الهاتف",
+      "colAddress": "العنوان",
+      "colAmpere": "الأمبير",
+      "colAction": "الإجراء",
+      "approve": "موافقة",
+      "confirmApproval": "تأكيد الموافقة",
+      "toastSuccess": "تمت الموافقة على الاشتراك",
+      "toastFailed": "تعذّرت الموافقة على الاشتراك"
+    },
+    "pendingAmpere": {
+      "title": "تغييرات الأمبير المعلّقة",
+      "emptyState": "لا توجد طلبات تغيير أمبير معلّقة",
+      "colName": "اسم المشترك",
+      "colCurrent": "الأمبير الحالي",
+      "colRequested": "الأمبير المطلوب",
+      "colAction": "الإجراء",
+      "approve": "موافقة",
+      "toastSuccess": "تمت الموافقة على تغيير الأمبير",
+      "toastFailed": "تعذّرت الموافقة على تغيير الأمبير"
+    },
+    "chart": {
+      "title": "نظرة عامة على أمبير المشتركين",
+      "emptyState": "سيظهر المخطط عندما يكون لديك مشتركون"
+    },
+    "issues": {
+      "title": "المشكلات المبلّغ عنها",
+      "emptyState": "لم يتم الإبلاغ عن أي مشكلات بعد",
+      "colSubscriber": "المشترك",
+      "colDescription": "الوصف",
+      "colReported": "تاريخ الإبلاغ",
+      "colStatus": "الحالة",
+      "colUpdate": "تحديث",
+      "unknownSubscriber": "غير معروف",
+      "toastUpdateFailed": "تعذّر تحديث حالة المشكلة"
+    },
+    "bills": {
+      "title": "الفواتير",
+      "emptyState": "لا توجد بيانات بعد",
+      "colSubscriber": "المشترك",
+      "colConsumption": "الاستهلاك",
+      "colDueDate": "تاريخ الاستحقاق",
+      "colAmount": "المبلغ",
+      "colStatus": "الحالة",
+      "colAction": "الإجراء",
+      "markPaid": "تحديد كمدفوعة",
+      "toastMarkPaidFailed": "تعذّر تحديد الفاتورة كمدفوعة"
+    },
+    "addSubscriber": {
+      "title": "إضافة مشترك",
+      "paymentMethodLabel": "طريقة الدفع",
+      "submit": "إضافة مشترك",
+      "toastSuccess": "تم إنشاء حساب المشترك بنجاح",
+      "toastFailed": "تعذّر إنشاء حساب المشترك"
     }
   }
 }

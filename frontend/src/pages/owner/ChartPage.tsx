@@ -2,11 +2,13 @@ import { useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";
 import { BarChart3 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
+import { useTranslation } from "react-i18next";
 import type { OwnerDashboardContext } from "./OwnerDashboardLayout";
 import { cardEntrance, cardHover } from "./shared";
 
 function ChartPage() {
   const { subscribers } = useOutletContext<OwnerDashboardContext>();
+  const { t } = useTranslation();
 
   const chartData = subscribers.map((subscriber, index) => ({
     label: `Sub ${index + 1}`,
@@ -21,10 +23,10 @@ function ChartPage() {
       whileHover={cardHover}
     >
       <h2 className="dash-card-title">
-        <BarChart3 size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Subscriber Consumption Overview
+        <BarChart3 size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> {t("owner.chart.title")}
       </h2>
       {subscribers.length === 0 ? (
-        <p className="forecast-message">Chart will appear once you have subscribers</p>
+        <p className="forecast-message">{t("owner.chart.emptyState")}</p>
       ) : (
         <ResponsiveContainer width="100%" height={280}>
           <BarChart data={chartData}>

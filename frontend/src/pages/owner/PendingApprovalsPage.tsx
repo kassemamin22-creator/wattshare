@@ -5,11 +5,13 @@ import { UserCheck, Loader2 } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
+import { useTranslation } from "react-i18next";
 import type { OwnerDashboardContext } from "./OwnerDashboardLayout";
 import { cardEntrance, cardHover, rowEntrance, rowHover, SUBSCRIBER_PAYMENT_METHODS } from "./shared";
 
 function PendingApprovalsPage() {
   const showToast = useToast();
+  const { t } = useTranslation();
   const { pendingSubscriptions, setPendingSubscriptions } = useOutletContext<OwnerDashboardContext>();
 
   const [approvingId, setApprovingId] = useState<string | null>(null);
@@ -34,12 +36,12 @@ function PendingApprovalsPage() {
       });
       setPendingSubscriptions((prev) => prev.filter((item) => item.id !== id));
       setApprovingSubscriptionId(null);
-      showToast("Subscription approved", "success");
+      showToast(t("owner.pendingApprovals.toastSuccess"), "success");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
         showToast(err.response.data.detail, "error");
       } else {
-        showToast("Failed to approve subscription", "error");
+        showToast(t("owner.pendingApprovals.toastFailed"), "error");
       }
     } finally {
       setApprovingId(null);
@@ -54,20 +56,20 @@ function PendingApprovalsPage() {
       whileHover={cardHover}
     >
       <h2 className="dash-card-title">
-        <UserCheck size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Pending Approvals
+        <UserCheck size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> {t("owner.pendingApprovals.title")}
       </h2>
       {pendingSubscriptions.length === 0 ? (
-        <p>No pending requests</p>
+        <p>{t("owner.pendingApprovals.emptyState")}</p>
       ) : (
         <div className="admin-table-wrap">
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Subscriber Name</th>
-                <th>Phone</th>
-                <th>Address</th>
-                <th>Ampere</th>
-                <th>Action</th>
+                <th>{t("owner.pendingApprovals.colName")}</th>
+                <th>{t("owner.pendingApprovals.colPhone")}</th>
+                <th>{t("owner.pendingApprovals.colAddress")}</th>
+                <th>{t("owner.pendingApprovals.colAmpere")}</th>
+                <th>{t("owner.pendingApprovals.colAction")}</th>
               </tr>
             </thead>
             <tbody>
@@ -92,7 +94,7 @@ function PendingApprovalsPage() {
                               }
                               onClick={() => setSelectedApprovalPaymentMethod(method.value)}
                             >
-                              {method.label}
+                              {t(`common.paymentMethod.${method.value}`)}
                             </button>
                           ))}
                         </div>
@@ -108,7 +110,7 @@ function PendingApprovalsPage() {
                             {approvingId === item.id ? (
                               <Loader2 size={14} className="btn-spinner" />
                             ) : (
-                              "Confirm Approval"
+                              t("owner.pendingApprovals.confirmApproval")
                             )}
                           </motion.button>
                           <motion.button
@@ -119,7 +121,7 @@ function PendingApprovalsPage() {
                             whileTap={{ scale: 0.97 }}
                             style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
                           >
-                            Cancel
+                            {t("common.cancel")}
                           </motion.button>
                         </div>
                       </div>
@@ -130,7 +132,7 @@ function PendingApprovalsPage() {
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.97 }}
                       >
-                        Approve
+                        {t("owner.pendingApprovals.approve")}
                       </motion.button>
                     )}
                   </td>

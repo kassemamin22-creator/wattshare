@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, UserCheck, Zap, BarChart3, AlertCircle, Receipt, UserPlus, LogOut, Gauge, Menu, X } from "lucide-react";
 import api from "../../services/api";
+import { useTranslation } from "react-i18next";
 
 export interface Subscriber {
   id: string;
@@ -52,13 +53,13 @@ export interface OwnerDashboardContext {
 }
 
 const NAV_ITEMS = [
-  { path: "subscribers", label: "Subscribers", icon: Users },
-  { path: "pending-approvals", label: "Pending Approvals", icon: UserCheck },
-  { path: "pending-ampere-changes", label: "Pending Ampere Changes", icon: Zap },
-  { path: "chart", label: "Consumption Chart", icon: BarChart3 },
-  { path: "issues", label: "Reported Issues", icon: AlertCircle },
-  { path: "bills", label: "Bills", icon: Receipt },
-  { path: "add-subscriber", label: "Add Subscriber", icon: UserPlus },
+  { path: "subscribers", labelKey: "owner.nav.subscribers", icon: Users },
+  { path: "pending-approvals", labelKey: "owner.nav.pendingApprovals", icon: UserCheck },
+  { path: "pending-ampere-changes", labelKey: "owner.nav.pendingAmpereChanges", icon: Zap },
+  { path: "chart", labelKey: "nav.chart", icon: BarChart3 },
+  { path: "issues", labelKey: "owner.nav.issues", icon: AlertCircle },
+  { path: "bills", labelKey: "owner.nav.bills", icon: Receipt },
+  { path: "add-subscriber", labelKey: "owner.nav.addSubscriber", icon: UserPlus },
 ];
 
 const navContainerVariants = {
@@ -74,6 +75,7 @@ const navItemVariants = {
 const MotionLink = motion(Link);
 
 function OwnerDashboardLayout() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
@@ -129,7 +131,7 @@ function OwnerDashboardLayout() {
           >
             <Icon size={18} />
           </motion.span>
-          <span className="admin-nav-label">{item.label}</span>
+          <span className="admin-nav-label">{t(item.labelKey)}</span>
         </MotionLink>
       );
     });
@@ -165,7 +167,7 @@ function OwnerDashboardLayout() {
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
         >
-          <LogOut size={18} /> Log Out
+          <LogOut size={18} /> {t("common.logout")}
         </motion.button>
       </aside>
 
@@ -174,7 +176,7 @@ function OwnerDashboardLayout() {
           className="admin-mobile-menu-toggle"
           onClick={() => setIsMobileMenuOpen((prev) => !prev)}
           whileTap={{ scale: 0.94 }}
-          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+          aria-label={isMobileMenuOpen ? t("dashboard.menuClose") : t("dashboard.menuOpen")}
         >
           {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </motion.button>
@@ -184,7 +186,7 @@ function OwnerDashboardLayout() {
           onClick={handleLogout}
           whileTap={{ scale: 0.97 }}
         >
-          <LogOut size={16} /> Log Out
+          <LogOut size={16} /> {t("common.logout")}
         </motion.button>
       </div>
 
@@ -214,7 +216,7 @@ function OwnerDashboardLayout() {
                   className="admin-mobile-menu-toggle"
                   onClick={closeMobileMenu}
                   whileTap={{ scale: 0.94 }}
-                  aria-label="Close menu"
+                  aria-label={t("dashboard.menuClose")}
                 >
                   <X size={20} />
                 </motion.button>
@@ -228,7 +230,7 @@ function OwnerDashboardLayout() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
-                <LogOut size={18} /> Log Out
+                <LogOut size={18} /> {t("common.logout")}
               </motion.button>
             </motion.div>
           </>
@@ -237,7 +239,7 @@ function OwnerDashboardLayout() {
 
       <main className="admin-main">
         <div className="dash-page-title">
-          <Gauge size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Manager Dashboard
+          <Gauge size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> {t("owner.dashboardTitle")}
         </div>
 
         <Outlet context={context} />

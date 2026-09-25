@@ -5,11 +5,13 @@ import { UserCheck, Loader2 } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
+import { useTranslation } from "react-i18next";
 import type { OwnerDashboardContext } from "./OwnerDashboardLayout";
 import { cardEntrance, cardHover, rowEntrance, rowHover } from "./shared";
 
 function PendingAmpereChangesPage() {
   const showToast = useToast();
+  const { t } = useTranslation();
   const { subscribers, fetchSubscribers } = useOutletContext<OwnerDashboardContext>();
 
   const [approvingAmpereId, setApprovingAmpereId] = useState<string | null>(null);
@@ -19,13 +21,13 @@ function PendingAmpereChangesPage() {
 
     try {
       await api.patch(`/admin/subscriptions/${subscriptionId}/approve-ampere-change`);
-      showToast("Ampere change approved", "success");
+      showToast(t("owner.pendingAmpere.toastSuccess"), "success");
       fetchSubscribers();
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
         showToast(err.response.data.detail, "error");
       } else {
-        showToast("Failed to approve ampere change", "error");
+        showToast(t("owner.pendingAmpere.toastFailed"), "error");
       }
     } finally {
       setApprovingAmpereId(null);
@@ -44,19 +46,19 @@ function PendingAmpereChangesPage() {
       whileHover={cardHover}
     >
       <h2 className="dash-card-title">
-        <UserCheck size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> Pending Ampere Changes
+        <UserCheck size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> {t("owner.pendingAmpere.title")}
       </h2>
       {ampereChangeRequests.length === 0 ? (
-        <p>No pending ampere change requests</p>
+        <p>{t("owner.pendingAmpere.emptyState")}</p>
       ) : (
         <div className="admin-table-wrap">
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Subscriber Name</th>
-                <th>Current Ampere</th>
-                <th>Requested Ampere</th>
-                <th>Action</th>
+                <th>{t("owner.pendingAmpere.colName")}</th>
+                <th>{t("owner.pendingAmpere.colCurrent")}</th>
+                <th>{t("owner.pendingAmpere.colRequested")}</th>
+                <th>{t("owner.pendingAmpere.colAction")}</th>
               </tr>
             </thead>
             <tbody>
@@ -76,7 +78,7 @@ function PendingAmpereChangesPage() {
                       {approvingAmpereId === item.id ? (
                         <Loader2 size={14} className="btn-spinner" />
                       ) : (
-                        "Approve"
+                        t("owner.pendingAmpere.approve")
                       )}
                     </motion.button>
                   </td>

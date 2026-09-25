@@ -5,11 +5,13 @@ import { Users, Search, Loader2, Pencil, ChevronDown, Camera } from "lucide-reac
 import { isAxiosError } from "axios";
 import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
+import { useTranslation } from "react-i18next";
 import type { OwnerDashboardContext, Subscriber } from "./OwnerDashboardLayout";
-import { statusPillClass, cardEntrance, cardHover, rowEntrance, rowHover } from "./shared";
+import { statusPillClass, translateStatus, cardEntrance, cardHover, rowEntrance, rowHover } from "./shared";
 
 function SubscribersPage() {
   const showToast = useToast();
+  const { t } = useTranslation();
   const { subscribers, fetchSubscribers } = useOutletContext<OwnerDashboardContext>();
 
   const [readingValues, setReadingValues] = useState<Record<string, string>>({});
@@ -51,15 +53,15 @@ function SubscribersPage() {
       const scannedValue = response.data.reading_value;
       if (scannedValue !== null && scannedValue !== undefined) {
         handleReadingChange(subscriberId, String(scannedValue));
-        showToast(`Reading scanned: ${scannedValue} — please confirm before submitting.`, "success");
+        showToast(t("owner.subscribers.toastScanned", { value: scannedValue }), "success");
       } else {
-        showToast("Couldn't read a number from the photo, please enter it manually", "error");
+        showToast(t("owner.subscribers.toastScanNoNumber"), "error");
       }
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
         showToast(err.response.data.detail, "error");
       } else {
-        showToast("Failed to scan meter photo", "error");
+        showToast(t("owner.subscribers.toastScanFailed"), "error");
       }
     } finally {
       setScanningId(null);
@@ -68,8 +70,8 @@ function SubscribersPage() {
 
   const handleSubmitReading = async (subscriberId: string, lastReading: number | null | undefined) => {
     const value = readingValues[subscriberId];
-    const lastReadingLabel = lastReading != null ? lastReading : "No previous reading";
-    if (!window.confirm(`Confirm meter reading: ${value}? Last recorded reading was ${lastReadingLabel}.`)) {
+    const lastReadingLabel = lastReading != null ? lastReading : t("owner.subscribers.noPreviousReading");
+    if (!window.confirm(t("owner.subscribers.confirmReadingDialog", { value, lastReading: lastReadingLabel }))) {
       return;
     }
 
@@ -80,12 +82,12 @@ function SubscribersPage() {
         subscriber_id: subscriberId,
         reading_value: Number(readingValues[subscriberId]),
       });
-      showToast("Reading submitted, bill generated", "success");
+      showToast(t("owner.subscribers.toastReadingSuccess"), "success");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
         showToast(err.response!.data.detail, "error");
       } else {
-        showToast("Failed to submit reading", "error");
+        showToast(t("owner.subscribers.toastReadingFailed"), "error");
       }
     } finally {
       setSubmittingReadingId(null);
@@ -117,14 +119,14 @@ function SubscribersPage() {
         phone: editSubscriptionPhone,
         ampere: Number(editSubscriptionAmpere),
       });
-      showToast("Subscriber updated successfully", "success");
+      showToast(t("owner.subscribers.toastUpdateSuccess"), "success");
       setEditingSubscriptionId(null);
       fetchSubscribers();
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
         showToast(err.response.data.detail, "error");
       } else {
-        showToast("Failed to update subscriber", "error");
+        showToast(t("owner.subscribers.toastUpdateFailed"), "error");
       }
     } finally {
       setIsSavingSubscription(false);
@@ -155,39 +157,39 @@ function SubscribersPage() {
       whileHover={cardHover}
     >
       <h2 className="dash-card-title">
-        <Users size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Subscribers
+        <Users size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> {t("owner.subscribers.title")}
       </h2>
       <div className="auth-input-wrap">
         <Search size={16} className="auth-input-icon" />
         <input
           className="auth-input"
           type="text"
-          placeholder="Search by name..."
+          placeholder={t("owner.subscribers.searchPlaceholder")}
           value={subscriberSearch}
           onChange={(e) => setSubscriberSearch(e.target.value)}
         />
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
-        <p className="dash-label" style={{ margin: 0 }}>STATUS</p>
+        <p className="dash-label" style={{ margin: 0 }}>{t("owner.subscribers.statusFilter")}</p>
         <select
           className="owner-select"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as "active" | "all" | "pending" | "inactive")}
           style={{ flex: "0 1 160px" }}
         >
-          <option value="active">Active</option>
-          <option value="all">All</option>
-          <option value="pending">Pending</option>
-          <option value="inactive">Inactive</option>
+          <option value="active">{t("common.status.active")}</option>
+          <option value="all">{t("owner.subscribers.statusAll")}</option>
+          <option value="pending">{t("common.status.pending")}</option>
+          <option value="inactive">{t("common.status.inactive")}</option>
         </select>
-        <p className="dash-label" style={{ margin: 0 }}>BUILDING</p>
+        <p className="dash-label" style={{ margin: 0 }}>{t("owner.subscribers.buildingFilter")}</p>
         <select
           className="owner-select"
           value={buildingFilter}
           onChange={(e) => setBuildingFilter(e.target.value)}
           style={{ flex: "0 1 160px" }}
         >
-          <option value="">All Buildings</option>
+          <option value="">{t("owner.subscribers.buildingAll")}</option>
           {uniqueBuildings.map((building) => (
             <option key={building} value={building}>
               {building}
@@ -196,18 +198,18 @@ function SubscribersPage() {
         </select>
       </div>
       {subscribers.length === 0 ? (
-        <p>No subscribers yet</p>
+        <p>{t("owner.subscribers.emptyNoData")}</p>
       ) : filteredSubscribers.length === 0 ? (
-        <p>No subscribers match your search</p>
+        <p>{t("owner.subscribers.emptyNoMatch")}</p>
       ) : (
         <div className="admin-table-wrap">
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Subscriber</th>
-                <th>Status</th>
-                <th>Ampere</th>
-                <th>Action</th>
+                <th>{t("owner.subscribers.colSubscriber")}</th>
+                <th>{t("owner.subscribers.colStatus")}</th>
+                <th>{t("owner.subscribers.colAmpere")}</th>
+                <th>{t("owner.subscribers.colAction")}</th>
               </tr>
             </thead>
             <tbody>
@@ -223,7 +225,7 @@ function SubscribersPage() {
                       <td>
                         <span className={statusPillClass(subscriber.status)}>
                           <span className="pill-dot"></span>
-                          {subscriber.status.toUpperCase()}
+                          {translateStatus(t, subscriber.status)}
                         </span>
                       </td>
                       <td>{subscriber.ampere}A</td>
@@ -244,7 +246,7 @@ function SubscribersPage() {
                             whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.97 }}
                             style={{ marginTop: 0, width: "auto", padding: "0.5rem 0.75rem" }}
-                            aria-label={isExpanded ? "Collapse details" : "Expand details"}
+                            aria-label={isExpanded ? t("owner.subscribers.collapseDetails") : t("owner.subscribers.expandDetails")}
                           >
                             <motion.span
                               style={{ display: "inline-flex" }}
@@ -280,48 +282,48 @@ function SubscribersPage() {
                                   style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "flex-end" }}
                                 >
                                   <div style={{ flex: "1 1 160px" }}>
-                                    <label className="auth-label" htmlFor={`owner-edit-address-${subscriber.id}`}>Address</label>
+                                    <label className="auth-label" htmlFor={`owner-edit-address-${subscriber.id}`}>{t("dashboard.subscription.addressLabel")}</label>
                                     <input
                                       id={`owner-edit-address-${subscriber.id}`}
                                       className="auth-input"
                                       type="text"
-                                      placeholder="Address"
+                                      placeholder={t("dashboard.subscription.addressLabel")}
                                       value={editSubscriptionAddress}
                                       onChange={(e) => setEditSubscriptionAddress(e.target.value)}
                                       style={{ marginBottom: 0 }}
                                     />
                                   </div>
                                   <div style={{ flex: "1 1 160px" }}>
-                                    <label className="auth-label" htmlFor={`owner-edit-building-${subscriber.id}`}>Building name or number</label>
+                                    <label className="auth-label" htmlFor={`owner-edit-building-${subscriber.id}`}>{t("dashboard.subscription.buildingLabel")}</label>
                                     <input
                                       id={`owner-edit-building-${subscriber.id}`}
                                       className="auth-input"
                                       type="text"
-                                      placeholder="Building name or number"
+                                      placeholder={t("dashboard.subscription.buildingLabel")}
                                       value={editSubscriptionBuilding}
                                       onChange={(e) => setEditSubscriptionBuilding(e.target.value)}
                                       style={{ marginBottom: 0 }}
                                     />
                                   </div>
                                   <div style={{ flex: "1 1 160px" }}>
-                                    <label className="auth-label" htmlFor={`owner-edit-phone-${subscriber.id}`}>Phone</label>
+                                    <label className="auth-label" htmlFor={`owner-edit-phone-${subscriber.id}`}>{t("dashboard.subscription.phoneLabel")}</label>
                                     <input
                                       id={`owner-edit-phone-${subscriber.id}`}
                                       className="auth-input"
                                       type="tel"
-                                      placeholder="Phone"
+                                      placeholder={t("dashboard.subscription.phoneLabel")}
                                       value={editSubscriptionPhone}
                                       onChange={(e) => setEditSubscriptionPhone(e.target.value)}
                                       style={{ marginBottom: 0 }}
                                     />
                                   </div>
                                   <div style={{ flex: "1 1 160px" }}>
-                                    <label className="auth-label" htmlFor={`owner-edit-ampere-${subscriber.id}`}>Ampere</label>
+                                    <label className="auth-label" htmlFor={`owner-edit-ampere-${subscriber.id}`}>{t("owner.subscribers.colAmpere")}</label>
                                     <input
                                       id={`owner-edit-ampere-${subscriber.id}`}
                                       className="auth-input"
                                       type="number"
-                                      placeholder="Ampere"
+                                      placeholder={t("owner.subscribers.colAmpere")}
                                       value={editSubscriptionAmpere}
                                       onChange={(e) => setEditSubscriptionAmpere(e.target.value)}
                                       style={{ marginBottom: 0 }}
@@ -335,7 +337,7 @@ function SubscribersPage() {
                                     disabled={isSavingSubscription}
                                     style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
                                   >
-                                    {isSavingSubscription ? <Loader2 size={14} className="btn-spinner" /> : "Save"}
+                                    {isSavingSubscription ? <Loader2 size={14} className="btn-spinner" /> : t("common.save")}
                                   </motion.button>
                                   <motion.button
                                     className="dash-button-outline"
@@ -345,28 +347,28 @@ function SubscribersPage() {
                                     whileTap={{ scale: 0.97 }}
                                     style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
                                   >
-                                    Cancel
+                                    {t("common.cancel")}
                                   </motion.button>
                                 </form>
                               ) : (
                                 <>
                                   <div style={{ display: "flex", flexWrap: "wrap", gap: "1.25rem", marginBottom: "1rem" }}>
                                     <div style={{ minWidth: "120px" }}>
-                                      <p className="dash-label">ADDRESS</p>
+                                      <p className="dash-label">{t("dashboard.subscription.address")}</p>
                                       <p className="dash-value-lg">{subscriber.address || "—"}</p>
                                     </div>
                                     <div style={{ minWidth: "120px" }}>
-                                      <p className="dash-label">BUILDING</p>
+                                      <p className="dash-label">{t("dashboard.subscription.building")}</p>
                                       <p className="dash-value-lg">{subscriber.building || "—"}</p>
                                     </div>
                                     <div style={{ minWidth: "120px" }}>
-                                      <p className="dash-label">PHONE</p>
+                                      <p className="dash-label">{t("dashboard.subscription.phone")}</p>
                                       <p className="dash-value-lg">{subscriber.phone || "—"}</p>
                                     </div>
                                     <div style={{ minWidth: "120px" }}>
-                                      <p className="dash-label">LAST READING</p>
+                                      <p className="dash-label">{t("owner.subscribers.lastReading")}</p>
                                       <p className="dash-value-lg">
-                                        {subscriber.last_reading != null ? subscriber.last_reading : "No previous reading"}
+                                        {subscriber.last_reading != null ? subscriber.last_reading : t("owner.subscribers.noPreviousReading")}
                                       </p>
                                     </div>
                                   </div>
@@ -374,7 +376,7 @@ function SubscribersPage() {
                                     <input
                                       className="auth-input owner-reading-input"
                                       type="number"
-                                      placeholder="Reading value"
+                                      placeholder={t("owner.subscribers.readingPlaceholder")}
                                       value={readingValues[subscriber.subscriber_id] || ""}
                                       onChange={(e) =>
                                         handleReadingChange(subscriber.subscriber_id, e.target.value)
@@ -399,7 +401,7 @@ function SubscribersPage() {
                                       whileTap={{ scale: 0.97 }}
                                       disabled={scanningId === subscriber.subscriber_id}
                                       style={{ marginTop: 0, width: "auto", padding: "0.6rem 0.75rem" }}
-                                      aria-label="Scan meter with camera"
+                                      aria-label={t("owner.subscribers.scanMeter")}
                                     >
                                       {scanningId === subscriber.subscriber_id ? (
                                         <Loader2 size={16} className="btn-spinner" />
@@ -418,7 +420,7 @@ function SubscribersPage() {
                                       {submittingReadingId === subscriber.subscriber_id ? (
                                         <Loader2 size={14} className="btn-spinner" />
                                       ) : (
-                                        "Submit Reading"
+                                        t("owner.subscribers.submitReading")
                                       )}
                                     </motion.button>
                                   </div>

@@ -3,7 +3,8 @@ import { animate } from "framer-motion";
 import type { TFunction } from "i18next";
 
 export function translateStatus(t: TFunction, status: string): string {
-  return String(t(`common.status.${status.toLowerCase()}`, { defaultValue: status })).toUpperCase();
+  const key = status.toLowerCase().replace(/\s+(.)/g, (_, char: string) => char.toUpperCase());
+  return String(t(`common.status.${key}`, { defaultValue: status })).toUpperCase();
 }
 
 export function statusPillClass(status: string): string {

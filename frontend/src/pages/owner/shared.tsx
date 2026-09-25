@@ -1,4 +1,4 @@
-export { cardEntrance, cardHover, CARD_STAGGER, rowEntrance, rowHover, CountUpValue } from "../dashboard/shared";
+export { cardEntrance, cardHover, CARD_STAGGER, rowEntrance, rowHover, CountUpValue, translateStatus } from "../dashboard/shared";
 
 // Owner's status set differs from the subscriber dashboard's (needs "open" for issues,
 // doesn't treat "paid" as success) so it is kept separate rather than reused as-is.

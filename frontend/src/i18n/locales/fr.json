@@ -9,12 +9,20 @@
       "pending": "En attente",
       "inactive": "Inactif",
       "paid": "Payée",
-      "disputed": "Contestée"
+      "disputed": "Contestée",
+      "open": "Ouvert",
+      "inProgress": "En cours",
+      "resolved": "Résolu"
     },
     "roles": {
       "subscriber": "Abonné",
       "owner": "Gestionnaire",
       "admin": "Administrateur"
+    },
+    "paymentMethod": {
+      "cash": "Espèces",
+      "whish": "Whish",
+      "omt": "OMT"
     }
   },
   "login": {
@@ -210,6 +218,104 @@
       "toastProfileFailed": "Échec de la mise à jour du profil",
       "toastPasswordSuccess": "Mot de passe mis à jour avec succès",
       "toastPasswordFailed": "Échec de la mise à jour du mot de passe"
+    }
+  },
+  "owner": {
+    "dashboardTitle": "Tableau de bord du gestionnaire",
+    "nav": {
+      "subscribers": "Abonnés",
+      "pendingApprovals": "Approbations en attente",
+      "pendingAmpereChanges": "Changements d'ampérage en attente",
+      "issues": "Problèmes signalés",
+      "bills": "Factures",
+      "addSubscriber": "Ajouter un abonné"
+    },
+    "subscribers": {
+      "title": "Abonnés",
+      "searchPlaceholder": "Rechercher par nom...",
+      "statusFilter": "STATUT",
+      "buildingFilter": "IMMEUBLE",
+      "statusAll": "Tous",
+      "buildingAll": "Tous les immeubles",
+      "emptyNoData": "Aucun abonné pour le moment",
+      "emptyNoMatch": "Aucun abonné ne correspond à votre recherche",
+      "colSubscriber": "Abonné",
+      "colStatus": "Statut",
+      "colAmpere": "Ampérage",
+      "colAction": "Action",
+      "expandDetails": "Afficher les détails",
+      "collapseDetails": "Masquer les détails",
+      "lastReading": "DERNIER RELEVÉ",
+      "noPreviousReading": "Aucun relevé précédent",
+      "readingPlaceholder": "Valeur du relevé",
+      "submitReading": "Envoyer le relevé",
+      "scanMeter": "Scanner le compteur avec la caméra",
+      "confirmReadingDialog": "Confirmer le relevé du compteur : {{value}} ? Le dernier relevé enregistré était {{lastReading}}.",
+      "toastScanned": "Relevé scanné : {{value}} — veuillez confirmer avant d'envoyer.",
+      "toastScanNoNumber": "Impossible de lire un nombre sur la photo, veuillez le saisir manuellement",
+      "toastScanFailed": "Échec de l'analyse de la photo du compteur",
+      "toastReadingSuccess": "Relevé envoyé, facture générée",
+      "toastReadingFailed": "Échec de l'envoi du relevé",
+      "toastUpdateSuccess": "Abonné mis à jour avec succès",
+      "toastUpdateFailed": "Échec de la mise à jour de l'abonné"
+    },
+    "pendingApprovals": {
+      "title": "Approbations en attente",
+      "emptyState": "Aucune demande en attente",
+      "colName": "Nom de l'abonné",
+      "colPhone": "Téléphone",
+      "colAddress": "Adresse",
+      "colAmpere": "Ampérage",
+      "colAction": "Action",
+      "approve": "Approuver",
+      "confirmApproval": "Confirmer l'approbation",
+      "toastSuccess": "Abonnement approuvé",
+      "toastFailed": "Échec de l'approbation de l'abonnement"
+    },
+    "pendingAmpere": {
+      "title": "Changements d'ampérage en attente",
+      "emptyState": "Aucune demande de changement d'ampérage en attente",
+      "colName": "Nom de l'abonné",
+      "colCurrent": "Ampérage actuel",
+      "colRequested": "Ampérage demandé",
+      "colAction": "Action",
+      "approve": "Approuver",
+      "toastSuccess": "Changement d'ampérage approuvé",
+      "toastFailed": "Échec de l'approbation du changement d'ampérage"
+    },
+    "chart": {
+      "title": "Aperçu de l'ampérage des abonnés",
+      "emptyState": "Le graphique apparaîtra dès que vous aurez des abonnés"
+    },
+    "issues": {
+      "title": "Problèmes signalés",
+      "emptyState": "Aucun problème signalé pour le moment",
+      "colSubscriber": "Abonné",
+      "colDescription": "Description",
+      "colReported": "Signalé le",
+      "colStatus": "Statut",
+      "colUpdate": "Mise à jour",
+      "unknownSubscriber": "Inconnu",
+      "toastUpdateFailed": "Échec de la mise à jour du statut du problème"
+    },
+    "bills": {
+      "title": "Factures",
+      "emptyState": "Aucune donnée pour le moment",
+      "colSubscriber": "Abonné",
+      "colConsumption": "Consommation",
+      "colDueDate": "Date d'échéance",
+      "colAmount": "Montant",
+      "colStatus": "Statut",
+      "colAction": "Action",
+      "markPaid": "Marquer comme payée",
+      "toastMarkPaidFailed": "Échec du marquage de la facture comme payée"
+    },
+    "addSubscriber": {
+      "title": "Ajouter un abonné",
+      "paymentMethodLabel": "Mode de paiement",
+      "submit": "Ajouter un abonné",
+      "toastSuccess": "Compte abonné créé avec succès",
+      "toastFailed": "Échec de la création du compte abonné"
     }
   }
 }
