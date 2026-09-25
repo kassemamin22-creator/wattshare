@@ -30,7 +30,11 @@ client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
 
 users_collection = db["users"]
-users_collection.create_index("email", unique=True)
+existing_user_indexes = users_collection.index_information()
+if "email_1" in existing_user_indexes and "partialFilterExpression" not in existing_user_indexes["email_1"]:
+    users_collection.drop_index("email_1")
+users_collection.create_index("email", unique=True, partialFilterExpression={"email": {"$type": "string"}})
+users_collection.create_index("phone", unique=True, partialFilterExpression={"phone": {"$type": "string"}})
 subscriptions_collection = db["subscriptions"]
 meter_readings_collection = db["meter_readings"]
 bills_collection = db["bills"]
@@ -82,16 +86,21 @@ def register(user: UserCreate):
     if user.role != UserRole.subscriber:
         raise HTTPException(status_code=403, detail="Only subscriber accounts can self-register")
 
-    normalized_email = user.email.lower().strip()
+    normalized_email = user.email.lower().strip() if user.email else None
+    normalized_phone = user.phone.strip() if user.phone else None
 
-    if users_collection.find_one({"email": normalized_email}):
+    if normalized_email and users_collection.find_one({"email": normalized_email}):
         raise HTTPException(status_code=400, detail="Email already registered")
+
+    if normalized_phone and users_collection.find_one({"phone": normalized_phone}):
+        raise HTTPException(status_code=400, detail="Phone number already registered")
 
     hashed_password = hash_password(user.password)
 
     result = users_collection.insert_one({
         "name": user.name,
         "email": normalized_email,
+        "phone": normalized_phone,
         "password": hashed_password,
         "role": user.role,
     })
@@ -100,12 +109,14 @@ def register(user: UserCreate):
         id=str(result.inserted_id),
         name=user.name,
         email=normalized_email,
+        phone=normalized_phone,
         role=user.role,
     )
 
 @app.post("/login")
 def login(user: UserLogin):
-    db_user = users_collection.find_one({"email": user.email})
+    identifier = user.identifier.lower().strip()
+    db_user = users_collection.find_one({"$or": [{"email": identifier}, {"phone": identifier}]})
 
     if not db_user or not verify_password(user.password, db_user["password"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")

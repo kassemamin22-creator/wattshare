@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator, model_validator
 from typing import List, Literal, Optional
 from enum import Enum
 from datetime import datetime
@@ -15,9 +15,23 @@ class PaymentMethod(str, Enum):
 
 class UserCreate(BaseModel):
     name: str
-    email: EmailStr
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
     password: str
     role: UserRole
+
+    @field_validator("email", "phone", mode="before")
+    @classmethod
+    def blank_to_none(cls, value):
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
+
+    @model_validator(mode="after")
+    def require_email_or_phone(self):
+        if not self.email and not self.phone:
+            raise ValueError("Either email or phone is required")
+        return self
 
 class ManagerCreate(BaseModel):
     name: str
@@ -35,13 +49,14 @@ class SubscriberCreate(BaseModel):
     payment_method: PaymentMethod
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    identifier: str
     password: str
 
 class UserOut(BaseModel):
     id: str
     name: str
-    email: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
     role: UserRole
     subscription_status: Optional[str] = None
 
