@@ -2,7 +2,20 @@
   "common": {
     "loading": "Loading...",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "logout": "Log Out",
+    "status": {
+      "active": "Active",
+      "pending": "Pending",
+      "inactive": "Inactive",
+      "paid": "Paid",
+      "disputed": "Disputed"
+    },
+    "roles": {
+      "subscriber": "Subscriber",
+      "owner": "Manager",
+      "admin": "Admin"
+    }
   },
   "login": {
     "title": "Welcome Back",
@@ -95,6 +108,108 @@
     "footer": {
       "tagline": "Smart generator subscription management for modern neighborhoods.",
       "copyright": "© {{year}} WattShare. All rights reserved."
+    }
+  },
+  "nav": {
+    "chart": "Consumption Chart",
+    "subscription": "Subscription",
+    "forecast": "AI Forecast",
+    "billing": "Billing History",
+    "reportIssue": "Report Issue",
+    "accountSettings": "Account Settings"
+  },
+  "dashboard": {
+    "greeting": "Hello, {{name}}",
+    "activeStatus": "{{ampere}}A ACTIVE",
+    "menuOpen": "Open menu",
+    "menuClose": "Close menu",
+    "noSubscription": {
+      "title": "You don't have an active subscription yet",
+      "subtitle": "Subscribe to a generator to start tracking your usage and bills.",
+      "subscribeNow": "Subscribe Now"
+    },
+    "chatbot": {
+      "title": "WattShare Assistant",
+      "emptyState": "Ask me about your subscription or bills.",
+      "typing": "Typing...",
+      "placeholder": "Ask about your bills...",
+      "closeChat": "Close chat",
+      "openChat": "Open chat",
+      "sendMessage": "Send message",
+      "failedToReach": "Failed to reach the assistant",
+      "errorBubble": "Sorry, something went wrong. Please try again."
+    },
+    "chart": {
+      "totalConsumption": "TOTAL CONSUMPTION",
+      "currentBalance": "CURRENT BALANCE",
+      "consumptionTrend": "Consumption Trend",
+      "emptyState": "Chart will appear once you have more billing history"
+    },
+    "subscription": {
+      "title": "My Subscription",
+      "assignedGenerator": "ASSIGNED GENERATOR",
+      "tier": "TIER",
+      "status": "STATUS",
+      "amperes": "{{value}} Amperes",
+      "ampereChangeRequested": "Ampere change requested: {{value}}A (awaiting manager approval)",
+      "newAmpereValue": "New ampere value",
+      "requestChange": "Request Change",
+      "address": "ADDRESS",
+      "building": "BUILDING",
+      "phone": "PHONE",
+      "editDetails": "Edit Details",
+      "addressLabel": "Address",
+      "buildingLabel": "Building name or number",
+      "phoneLabel": "Phone",
+      "noSubscriptionYet": "No subscription yet",
+      "toastUpdateSuccess": "Subscription details updated successfully",
+      "toastUpdateFailed": "Failed to update subscription details",
+      "toastAmpereRequested": "Ampere change requested",
+      "toastAmpereFailed": "Failed to request ampere change"
+    },
+    "forecast": {
+      "label": "AI FORECAST",
+      "hint": "This is an estimate of your next bill, based on your past electricity usage."
+    },
+    "billing": {
+      "title": "Billing History",
+      "noBillsYet": "No bills yet",
+      "kwh": "kWh",
+      "date": "Date",
+      "dueDate": "Due Date",
+      "amount": "Amount",
+      "invoice": "Invoice",
+      "download": "Download",
+      "toastInvoiceFailed": "Failed to generate invoice",
+      "invoiceHeader": "Electricity Bill Invoice",
+      "invoiceSubscriber": "Subscriber",
+      "invoiceBillDate": "Bill Date",
+      "invoiceDueDate": "Due Date",
+      "invoiceConsumption": "Consumption",
+      "invoiceStatus": "Status",
+      "invoiceTotal": "Total Amount",
+      "invoiceFooter": "This is a system-generated invoice from WattShare. For questions, contact your account manager."
+    },
+    "reportIssue": {
+      "title": "Report an Issue",
+      "placeholder": "Describe the issue...",
+      "submit": "Submit Report",
+      "toastSuccess": "Issue reported successfully",
+      "toastFailed": "Failed to report issue"
+    },
+    "accountSettings": {
+      "title": "Account Settings",
+      "profile": "PROFILE",
+      "password": "PASSWORD",
+      "editProfile": "Edit Profile",
+      "changePassword": "Change Password",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "toastEitherRequired": "Please provide either an email or a phone number",
+      "toastProfileSuccess": "Profile updated successfully",
+      "toastProfileFailed": "Failed to update profile",
+      "toastPasswordSuccess": "Password updated successfully",
+      "toastPasswordFailed": "Failed to update password"
     }
   }
 }

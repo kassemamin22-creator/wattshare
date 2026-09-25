@@ -4,10 +4,12 @@ import { MessageCircle, Loader2 } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
+import { useTranslation } from "react-i18next";
 import { cardEntrance, cardHover } from "./shared";
 
 function ReportIssuePage() {
   const showToast = useToast();
+  const { t } = useTranslation();
   const [issueDescription, setIssueDescription] = useState("");
   const [isSubmittingIssue, setIsSubmittingIssue] = useState(false);
 
@@ -17,13 +19,13 @@ function ReportIssuePage() {
 
     try {
       await api.post("/issues", { description: issueDescription });
-      showToast("Issue reported successfully", "success");
+      showToast(t("dashboard.reportIssue.toastSuccess"), "success");
       setIssueDescription("");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
         showToast(err.response.data.detail, "error");
       } else {
-        showToast("Failed to report issue", "error");
+        showToast(t("dashboard.reportIssue.toastFailed"), "error");
       }
     } finally {
       setIsSubmittingIssue(false);
@@ -39,12 +41,12 @@ function ReportIssuePage() {
       whileHover={cardHover}
     >
       <h2 className="dash-card-title">
-        <MessageCircle size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Report an Issue
+        <MessageCircle size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> {t("dashboard.reportIssue.title")}
       </h2>
       <form onSubmit={handleReportIssue}>
         <textarea
           className="dash-textarea"
-          placeholder="Describe the issue..."
+          placeholder={t("dashboard.reportIssue.placeholder")}
           value={issueDescription}
           onChange={(e) => setIssueDescription(e.target.value)}
           rows={3}
@@ -56,7 +58,7 @@ function ReportIssuePage() {
           whileTap={{ scale: 0.97 }}
           disabled={isSubmittingIssue}
         >
-          {isSubmittingIssue ? <Loader2 size={16} className="btn-spinner" /> : "Submit Report"}
+          {isSubmittingIssue ? <Loader2 size={16} className="btn-spinner" /> : t("dashboard.reportIssue.submit")}
         </motion.button>
       </form>
     </motion.div>

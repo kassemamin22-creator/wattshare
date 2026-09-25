@@ -2,7 +2,20 @@
   "common": {
     "loading": "Chargement...",
     "save": "Enregistrer",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "logout": "Se déconnecter",
+    "status": {
+      "active": "Actif",
+      "pending": "En attente",
+      "inactive": "Inactif",
+      "paid": "Payée",
+      "disputed": "Contestée"
+    },
+    "roles": {
+      "subscriber": "Abonné",
+      "owner": "Gestionnaire",
+      "admin": "Administrateur"
+    }
   },
   "login": {
     "title": "Bon retour",
@@ -95,6 +108,108 @@
     "footer": {
       "tagline": "Gestion intelligente des abonnements de générateurs pour les quartiers modernes.",
       "copyright": "© {{year}} WattShare. Tous droits réservés."
+    }
+  },
+  "nav": {
+    "chart": "Graphique de consommation",
+    "subscription": "Abonnement",
+    "forecast": "Prévisions IA",
+    "billing": "Historique de facturation",
+    "reportIssue": "Signaler un problème",
+    "accountSettings": "Paramètres du compte"
+  },
+  "dashboard": {
+    "greeting": "Bonjour, {{name}}",
+    "activeStatus": "{{ampere}}A ACTIF",
+    "menuOpen": "Ouvrir le menu",
+    "menuClose": "Fermer le menu",
+    "noSubscription": {
+      "title": "Vous n'avez pas encore d'abonnement actif",
+      "subtitle": "Abonnez-vous à un générateur pour commencer à suivre votre consommation et vos factures.",
+      "subscribeNow": "S'abonner maintenant"
+    },
+    "chatbot": {
+      "title": "Assistant WattShare",
+      "emptyState": "Posez-moi vos questions sur votre abonnement ou vos factures.",
+      "typing": "En train d'écrire...",
+      "placeholder": "Posez une question sur vos factures...",
+      "closeChat": "Fermer le chat",
+      "openChat": "Ouvrir le chat",
+      "sendMessage": "Envoyer le message",
+      "failedToReach": "Impossible de joindre l'assistant",
+      "errorBubble": "Désolé, une erreur s'est produite. Veuillez réessayer."
+    },
+    "chart": {
+      "totalConsumption": "CONSOMMATION TOTALE",
+      "currentBalance": "SOLDE ACTUEL",
+      "consumptionTrend": "Évolution de la consommation",
+      "emptyState": "Le graphique apparaîtra dès que vous aurez plus d'historique de facturation"
+    },
+    "subscription": {
+      "title": "Mon abonnement",
+      "assignedGenerator": "GÉNÉRATEUR ATTRIBUÉ",
+      "tier": "FORFAIT",
+      "status": "STATUT",
+      "amperes": "{{value}} ampères",
+      "ampereChangeRequested": "Changement d'ampérage demandé : {{value}}A (en attente d'approbation du gestionnaire)",
+      "newAmpereValue": "Nouvelle valeur en ampères",
+      "requestChange": "Demander le changement",
+      "address": "ADRESSE",
+      "building": "IMMEUBLE",
+      "phone": "TÉLÉPHONE",
+      "editDetails": "Modifier les détails",
+      "addressLabel": "Adresse",
+      "buildingLabel": "Nom ou numéro de l'immeuble",
+      "phoneLabel": "Téléphone",
+      "noSubscriptionYet": "Aucun abonnement pour le moment",
+      "toastUpdateSuccess": "Détails de l'abonnement mis à jour avec succès",
+      "toastUpdateFailed": "Échec de la mise à jour des détails de l'abonnement",
+      "toastAmpereRequested": "Changement d'ampérage demandé",
+      "toastAmpereFailed": "Échec de la demande de changement d'ampérage"
+    },
+    "forecast": {
+      "label": "PRÉVISIONS IA",
+      "hint": "Il s'agit d'une estimation de votre prochaine facture, basée sur votre consommation d'électricité passée."
+    },
+    "billing": {
+      "title": "Historique de facturation",
+      "noBillsYet": "Aucune facture pour le moment",
+      "kwh": "kWh",
+      "date": "Date",
+      "dueDate": "Date d'échéance",
+      "amount": "Montant",
+      "invoice": "Facture",
+      "download": "Télécharger",
+      "toastInvoiceFailed": "Échec de la génération de la facture",
+      "invoiceHeader": "Facture d'électricité",
+      "invoiceSubscriber": "Abonné",
+      "invoiceBillDate": "Date de la facture",
+      "invoiceDueDate": "Date d'échéance",
+      "invoiceConsumption": "Consommation",
+      "invoiceStatus": "Statut",
+      "invoiceTotal": "Montant total",
+      "invoiceFooter": "Ceci est une facture générée automatiquement par WattShare. Pour toute question, contactez votre gestionnaire de compte."
+    },
+    "reportIssue": {
+      "title": "Signaler un problème",
+      "placeholder": "Décrivez le problème...",
+      "submit": "Envoyer le signalement",
+      "toastSuccess": "Problème signalé avec succès",
+      "toastFailed": "Échec du signalement du problème"
+    },
+    "accountSettings": {
+      "title": "Paramètres du compte",
+      "profile": "PROFIL",
+      "password": "MOT DE PASSE",
+      "editProfile": "Modifier le profil",
+      "changePassword": "Changer le mot de passe",
+      "currentPassword": "Mot de passe actuel",
+      "newPassword": "Nouveau mot de passe",
+      "toastEitherRequired": "Veuillez fournir une adresse e-mail ou un numéro de téléphone",
+      "toastProfileSuccess": "Profil mis à jour avec succès",
+      "toastProfileFailed": "Échec de la mise à jour du profil",
+      "toastPasswordSuccess": "Mot de passe mis à jour avec succès",
+      "toastPasswordFailed": "Échec de la mise à jour du mot de passe"
     }
   }
 }

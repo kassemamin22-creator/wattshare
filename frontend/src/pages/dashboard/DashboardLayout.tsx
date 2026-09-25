@@ -5,6 +5,7 @@ import { Zap, BarChart3, Sparkles, Receipt, MessageCircle, LogOut, Settings, Men
 import { isAxiosError } from "axios";
 import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
+import { useTranslation } from "react-i18next";
 
 interface ChatMessage {
   role: "user" | "model";
@@ -64,11 +65,11 @@ export interface DashboardContext {
 }
 
 const NAV_ITEMS = [
-  { path: "chart", label: "Consumption Chart", icon: BarChart3 },
-  { path: "subscription", label: "Subscription", icon: Zap },
-  { path: "forecast", label: "AI Forecast", icon: Sparkles },
-  { path: "billing", label: "Billing History", icon: Receipt },
-  { path: "report-issue", label: "Report Issue", icon: MessageCircle },
+  { path: "chart", labelKey: "chart", icon: BarChart3 },
+  { path: "subscription", labelKey: "subscription", icon: Zap },
+  { path: "forecast", labelKey: "forecast", icon: Sparkles },
+  { path: "billing", labelKey: "billing", icon: Receipt },
+  { path: "report-issue", labelKey: "reportIssue", icon: MessageCircle },
 ];
 
 const navContainerVariants = {
@@ -89,6 +90,7 @@ function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const showToast = useToast();
+  const { t } = useTranslation();
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [hasSubscription, setHasSubscription] = useState(true);
@@ -124,10 +126,10 @@ function DashboardLayout() {
       setMessages((prev) => [...prev, { role: "model", text: response.data.reply }]);
     } catch (err) {
       const detail = isAxiosError(err) ? err.response?.data?.detail : undefined;
-      showToast(typeof detail === "string" ? detail : "Failed to reach the assistant", "error");
+      showToast(typeof detail === "string" ? detail : t("dashboard.chatbot.failedToReach"), "error");
       setMessages((prev) => [
         ...prev,
-        { role: "model", text: "Sorry, something went wrong. Please try again." },
+        { role: "model", text: t("dashboard.chatbot.errorBubble") },
       ]);
     } finally {
       setIsSending(false);
@@ -197,7 +199,7 @@ function DashboardLayout() {
           >
             <Icon size={18} />
           </motion.span>
-          <span className="admin-nav-label">{item.label}</span>
+          <span className="admin-nav-label">{t(`nav.${item.labelKey}`)}</span>
         </MotionLink>
       );
     });
@@ -226,15 +228,17 @@ function DashboardLayout() {
         >
           <Settings size={18} />
         </motion.span>
-        <span className="admin-nav-label">Account Settings</span>
+        <span className="admin-nav-label">{t("nav.accountSettings")}</span>
       </MotionLink>
     );
   };
 
   const displayName = currentUser
-    ? currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1)
+    ? t(`common.roles.${currentUser.role}`, {
+        defaultValue: currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1),
+      })
     : "";
-  const avatarInitial = currentUser ? currentUser.role.charAt(0).toUpperCase() : "";
+  const avatarInitial = displayName.charAt(0).toUpperCase();
 
   const context: DashboardContext = {
     currentUser,
@@ -283,7 +287,7 @@ function DashboardLayout() {
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
         >
-          <LogOut size={18} /> Log Out
+          <LogOut size={18} /> {t("common.logout")}
         </motion.button>
       </aside>
 
@@ -293,7 +297,7 @@ function DashboardLayout() {
             className="admin-mobile-menu-toggle"
             onClick={() => setIsMobileMenuOpen((prev) => !prev)}
             whileTap={{ scale: 0.94 }}
-            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-label={isMobileMenuOpen ? t("dashboard.menuClose") : t("dashboard.menuOpen")}
           >
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </motion.button>
@@ -304,7 +308,7 @@ function DashboardLayout() {
           onClick={handleLogout}
           whileTap={{ scale: 0.97 }}
         >
-          <LogOut size={16} /> Log Out
+          <LogOut size={16} /> {t("common.logout")}
         </motion.button>
       </div>
 
@@ -335,7 +339,7 @@ function DashboardLayout() {
                     className="admin-mobile-menu-toggle"
                     onClick={closeMobileMenu}
                     whileTap={{ scale: 0.94 }}
-                    aria-label="Close menu"
+                    aria-label={t("dashboard.menuClose")}
                   >
                     <X size={20} />
                   </motion.button>
@@ -352,7 +356,7 @@ function DashboardLayout() {
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                   >
-                    <LogOut size={18} /> Log Out
+                    <LogOut size={18} /> {t("common.logout")}
                   </motion.button>
                 </div>
               </motion.div>
@@ -376,27 +380,27 @@ function DashboardLayout() {
           >
             <Zap size={40} className="dash-icon" style={{ color: "var(--color-accent)" }} />
             <p className="dash-card-title" style={{ margin: 0 }}>
-              You don't have an active subscription yet
+              {t("dashboard.noSubscription.title")}
             </p>
             <p className="forecast-message" style={{ margin: 0 }}>
-              Subscribe to a generator to start tracking your usage and bills.
+              {t("dashboard.noSubscription.subtitle")}
             </p>
             <Link
               className="dash-button"
               to="/subscribe"
               style={{ textDecoration: "none", boxSizing: "border-box", marginTop: "0.5rem" }}
             >
-              Subscribe Now
+              {t("dashboard.noSubscription.subscribeNow")}
             </Link>
           </div>
         ) : (
           <>
             <div className="dash-header">
               <div className="dash-greeting">
-                <p className="dash-greeting-text">Hello, {displayName}</p>
+                <p className="dash-greeting-text">{t("dashboard.greeting", { name: displayName })}</p>
                 {subscription && (
                   <span className="pill pill-success pill-live">
-                    {subscription.ampere}A ACTIVE
+                    {t("dashboard.activeStatus", { ampere: subscription.ampere })}
                   </span>
                 )}
               </div>
@@ -420,19 +424,19 @@ function DashboardLayout() {
                 transition={{ duration: 0.2, ease: "easeOut" }}
               >
                 <div className="chat-panel-header">
-                  <span>WattShare Assistant</span>
+                  <span>{t("dashboard.chatbot.title")}</span>
                   <button
                     type="button"
                     className="chat-panel-close"
                     onClick={() => setIsChatOpen(false)}
-                    aria-label="Close chat"
+                    aria-label={t("dashboard.chatbot.closeChat")}
                   >
                     <X size={18} />
                   </button>
                 </div>
                 <div className="chat-messages" ref={chatMessagesRef}>
                   {messages.length === 0 && !isSending && (
-                    <p className="chat-empty">Ask me about your subscription or bills.</p>
+                    <p className="chat-empty">{t("dashboard.chatbot.emptyState")}</p>
                   )}
                   {messages.map((message, index) => (
                     <div
@@ -448,7 +452,7 @@ function DashboardLayout() {
                   ))}
                   {isSending && (
                     <div className="chat-bubble chat-bubble-model">
-                      <Loader2 size={14} className="btn-spinner" /> Typing...
+                      <Loader2 size={14} className="btn-spinner" /> {t("dashboard.chatbot.typing")}
                     </div>
                   )}
                 </div>
@@ -456,8 +460,8 @@ function DashboardLayout() {
                   <input
                     className="auth-input"
                     type="text"
-                    placeholder="Ask about your bills..."
-                    aria-label="Message"
+                    placeholder={t("dashboard.chatbot.placeholder")}
+                    aria-label={t("dashboard.chatbot.placeholder")}
                     maxLength={1000}
                     value={currentInput}
                     onChange={(e) => setCurrentInput(e.target.value)}
@@ -466,7 +470,7 @@ function DashboardLayout() {
                     type="submit"
                     className="chat-send"
                     disabled={isSending || !currentInput.trim()}
-                    aria-label="Send message"
+                    aria-label={t("dashboard.chatbot.sendMessage")}
                   >
                     <Send size={16} />
                   </button>
@@ -480,7 +484,7 @@ function DashboardLayout() {
             onClick={() => setIsChatOpen((prev) => !prev)}
             whileHover={{ scale: 1.06 }}
             whileTap={{ scale: 0.94 }}
-            aria-label={isChatOpen ? "Close chat" : "Open chat"}
+            aria-label={isChatOpen ? t("dashboard.chatbot.closeChat") : t("dashboard.chatbot.openChat")}
           >
             <MessageCircle size={24} />
           </motion.button>

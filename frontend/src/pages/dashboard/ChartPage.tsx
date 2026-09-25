@@ -2,11 +2,13 @@ import { useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";
 import { BarChart3 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
+import { useTranslation } from "react-i18next";
 import type { DashboardContext } from "./DashboardLayout";
 import { CountUpValue, cardEntrance, cardHover } from "./shared";
 
 function ChartPage() {
   const { bills } = useOutletContext<DashboardContext>();
+  const { t, i18n } = useTranslation();
 
   const totalConsumption = bills.reduce((sum, bill) => sum + bill.consumption_kwh, 0);
   const currentBalance = bills
@@ -14,7 +16,7 @@ function ChartPage() {
     .reduce((sum, bill) => sum + bill.amount, 0);
 
   const chartData = [...bills].reverse().map((bill) => ({
-    date: new Date(bill.created_at).toLocaleDateString(),
+    date: new Date(bill.created_at).toLocaleDateString(i18n.language),
     consumption_kwh: bill.consumption_kwh,
   }));
 
@@ -28,7 +30,7 @@ function ChartPage() {
           whileHover={cardHover}
         >
           <p className="dash-label">
-            <BarChart3 size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> TOTAL CONSUMPTION
+            <BarChart3 size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> {t("dashboard.chart.totalConsumption")}
           </p>
           <p className="stat-number-cyan">
             <CountUpValue value={totalConsumption} suffix=" kWh" />
@@ -40,7 +42,7 @@ function ChartPage() {
           {...cardEntrance(1)}
           whileHover={cardHover}
         >
-          <p className="dash-label">CURRENT BALANCE</p>
+          <p className="dash-label">{t("dashboard.chart.currentBalance")}</p>
           <p className="stat-number-amber">
             <CountUpValue value={currentBalance} decimals={2} suffix=" USD" />
           </p>
@@ -55,10 +57,10 @@ function ChartPage() {
         whileHover={cardHover}
       >
         <h2 className="dash-card-title">
-          <BarChart3 size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> Consumption Trend
+          <BarChart3 size={18} className="dash-icon" style={{ color: "var(--color-cyan)" }} /> {t("dashboard.chart.consumptionTrend")}
         </h2>
         {bills.length < 2 ? (
-          <p className="forecast-message">Chart will appear once you have more billing history</p>
+          <p className="forecast-message">{t("dashboard.chart.emptyState")}</p>
         ) : (
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData}>

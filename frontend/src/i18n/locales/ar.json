@@ -2,7 +2,20 @@
   "common": {
     "loading": "جارٍ التحميل...",
     "save": "حفظ",
-    "cancel": "إلغاء"
+    "cancel": "إلغاء",
+    "logout": "تسجيل الخروج",
+    "status": {
+      "active": "نشط",
+      "pending": "قيد الانتظار",
+      "inactive": "غير نشط",
+      "paid": "مدفوعة",
+      "disputed": "متنازع عليها"
+    },
+    "roles": {
+      "subscriber": "مشترك",
+      "owner": "مدير",
+      "admin": "مسؤول"
+    }
   },
   "login": {
     "title": "مرحبًا بعودتك",
@@ -95,6 +108,108 @@
     "footer": {
       "tagline": "إدارة ذكية لاشتراكات المولّدات للأحياء العصرية.",
       "copyright": "© {{year}} WattShare. جميع الحقوق محفوظة."
+    }
+  },
+  "nav": {
+    "chart": "مخطط الاستهلاك",
+    "subscription": "الاشتراك",
+    "forecast": "توقعات الذكاء الاصطناعي",
+    "billing": "سجل الفواتير",
+    "reportIssue": "الإبلاغ عن مشكلة",
+    "accountSettings": "إعدادات الحساب"
+  },
+  "dashboard": {
+    "greeting": "مرحبًا، {{name}}",
+    "activeStatus": "{{ampere}}A نشط",
+    "menuOpen": "فتح القائمة",
+    "menuClose": "إغلاق القائمة",
+    "noSubscription": {
+      "title": "ليس لديك اشتراك فعّال بعد",
+      "subtitle": "اشترك في مولّد لتبدأ بتتبّع استهلاكك وفواتيرك.",
+      "subscribeNow": "اشترك الآن"
+    },
+    "chatbot": {
+      "title": "مساعد WattShare",
+      "emptyState": "اسألني عن اشتراكك أو فواتيرك.",
+      "typing": "جارٍ الكتابة...",
+      "placeholder": "اسأل عن فواتيرك...",
+      "closeChat": "إغلاق المحادثة",
+      "openChat": "فتح المحادثة",
+      "sendMessage": "إرسال الرسالة",
+      "failedToReach": "تعذّر الوصول إلى المساعد",
+      "errorBubble": "عذرًا، حدث خطأ ما. يرجى المحاولة مرة أخرى."
+    },
+    "chart": {
+      "totalConsumption": "إجمالي الاستهلاك",
+      "currentBalance": "الرصيد الحالي",
+      "consumptionTrend": "اتجاه الاستهلاك",
+      "emptyState": "سيظهر المخطط عندما يتوفر لديك سجل فواتير أكبر"
+    },
+    "subscription": {
+      "title": "اشتراكي",
+      "assignedGenerator": "المولّد المخصص",
+      "tier": "الفئة",
+      "status": "الحالة",
+      "amperes": "{{value}} أمبير",
+      "ampereChangeRequested": "تم طلب تغيير الأمبير: {{value}} أمبير (بانتظار موافقة المدير)",
+      "newAmpereValue": "قيمة الأمبير الجديدة",
+      "requestChange": "طلب التغيير",
+      "address": "العنوان",
+      "building": "المبنى",
+      "phone": "الهاتف",
+      "editDetails": "تعديل البيانات",
+      "addressLabel": "العنوان",
+      "buildingLabel": "اسم المبنى أو رقمه",
+      "phoneLabel": "الهاتف",
+      "noSubscriptionYet": "لا يوجد اشتراك بعد",
+      "toastUpdateSuccess": "تم تحديث بيانات الاشتراك بنجاح",
+      "toastUpdateFailed": "تعذّر تحديث بيانات الاشتراك",
+      "toastAmpereRequested": "تم طلب تغيير الأمبير",
+      "toastAmpereFailed": "تعذّر طلب تغيير الأمبير"
+    },
+    "forecast": {
+      "label": "توقعات الذكاء الاصطناعي",
+      "hint": "هذا تقدير لفاتورتك القادمة استنادًا إلى استهلاكك السابق للكهرباء."
+    },
+    "billing": {
+      "title": "سجل الفواتير",
+      "noBillsYet": "لا توجد فواتير بعد",
+      "kwh": "kWh",
+      "date": "التاريخ",
+      "dueDate": "تاريخ الاستحقاق",
+      "amount": "المبلغ",
+      "invoice": "الفاتورة",
+      "download": "تنزيل",
+      "toastInvoiceFailed": "تعذّر إنشاء الفاتورة",
+      "invoiceHeader": "فاتورة الكهرباء",
+      "invoiceSubscriber": "المشترك",
+      "invoiceBillDate": "تاريخ الفاتورة",
+      "invoiceDueDate": "تاريخ الاستحقاق",
+      "invoiceConsumption": "الاستهلاك",
+      "invoiceStatus": "الحالة",
+      "invoiceTotal": "المبلغ الإجمالي",
+      "invoiceFooter": "هذه فاتورة صادرة آليًا من WattShare. للاستفسار، يرجى التواصل مع مدير حسابك."
+    },
+    "reportIssue": {
+      "title": "الإبلاغ عن مشكلة",
+      "placeholder": "صف المشكلة...",
+      "submit": "إرسال البلاغ",
+      "toastSuccess": "تم الإبلاغ عن المشكلة بنجاح",
+      "toastFailed": "تعذّر الإبلاغ عن المشكلة"
+    },
+    "accountSettings": {
+      "title": "إعدادات الحساب",
+      "profile": "الملف الشخصي",
+      "password": "كلمة المرور",
+      "editProfile": "تعديل الملف الشخصي",
+      "changePassword": "تغيير كلمة المرور",
+      "currentPassword": "كلمة المرور الحالية",
+      "newPassword": "كلمة المرور الجديدة",
+      "toastEitherRequired": "يرجى إدخال بريد إلكتروني أو رقم هاتف",
+      "toastProfileSuccess": "تم تحديث الملف الشخصي بنجاح",
+      "toastProfileFailed": "تعذّر تحديث الملف الشخصي",
+      "toastPasswordSuccess": "تم تحديث كلمة المرور بنجاح",
+      "toastPasswordFailed": "تعذّر تحديث كلمة المرور"
     }
   }
 }

@@ -5,11 +5,13 @@ import { Zap, Loader2 } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
+import { useTranslation } from "react-i18next";
 import type { DashboardContext } from "./DashboardLayout";
-import { statusPillClass, cardEntrance, cardHover } from "./shared";
+import { statusPillClass, translateStatus, cardEntrance, cardHover } from "./shared";
 
 function SubscriptionPage() {
   const showToast = useToast();
+  const { t } = useTranslation();
   const { subscription, setSubscription, hasSubscription, fetchSubscription } =
     useOutletContext<DashboardContext>();
 
@@ -45,12 +47,12 @@ function SubscriptionPage() {
       });
       setSubscription(response.data);
       setIsEditing(false);
-      showToast("Subscription details updated successfully", "success");
+      showToast(t("dashboard.subscription.toastUpdateSuccess"), "success");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
         showToast(err.response.data.detail, "error");
       } else {
-        showToast("Failed to update subscription details", "error");
+        showToast(t("dashboard.subscription.toastUpdateFailed"), "error");
       }
     } finally {
       setIsSavingEdit(false);
@@ -64,14 +66,14 @@ function SubscriptionPage() {
       await api.post("/subscription/me/request-ampere-change", {
         ampere: Number(requestedAmpere),
       });
-      showToast("Ampere change requested", "success");
+      showToast(t("dashboard.subscription.toastAmpereRequested"), "success");
       setRequestedAmpere("");
       fetchSubscription();
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
         showToast(err.response.data.detail, "error");
       } else {
-        showToast("Failed to request ampere change", "error");
+        showToast(t("dashboard.subscription.toastAmpereFailed"), "error");
       }
     } finally {
       setIsRequestingAmpereChange(false);
@@ -87,38 +89,38 @@ function SubscriptionPage() {
       whileHover={cardHover}
     >
       <h2 className="dash-card-title">
-        <Zap size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> My Subscription
+        <Zap size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> {t("dashboard.subscription.title")}
       </h2>
       {subscription ? (
         <>
-          <p className="dash-label">ASSIGNED GENERATOR</p>
+          <p className="dash-label">{t("dashboard.subscription.assignedGenerator")}</p>
           <p className="dash-value-lg">{subscription.generator_name}</p>
           <hr className="dash-divider" />
           <div className="dash-cols">
             <div className="dash-col">
-              <p className="dash-label">TIER</p>
-              <p className="dash-value-lg">{subscription.ampere} Amperes</p>
+              <p className="dash-label">{t("dashboard.subscription.tier")}</p>
+              <p className="dash-value-lg">{t("dashboard.subscription.amperes", { value: subscription.ampere })}</p>
             </div>
             <div className="dash-col">
-              <p className="dash-label">STATUS</p>
+              <p className="dash-label">{t("dashboard.subscription.status")}</p>
               <span className={statusPillClass(subscription.status)}>
-                {subscription.status.toUpperCase()}
+                {translateStatus(t, subscription.status)}
               </span>
             </div>
           </div>
           {subscription.pending_ampere_change != null ? (
             <span className="pill pill-warning">
-              Ampere change requested: {subscription.pending_ampere_change}A (awaiting manager approval)
+              {t("dashboard.subscription.ampereChangeRequested", { value: subscription.pending_ampere_change })}
             </span>
           ) : (
             <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-end" }}>
               <div style={{ flex: 1 }}>
-                <label className="auth-label" htmlFor="subscription-requested-ampere">New ampere value</label>
+                <label className="auth-label" htmlFor="subscription-requested-ampere">{t("dashboard.subscription.newAmpereValue")}</label>
                 <input
                   id="subscription-requested-ampere"
                   className="auth-input"
                   type="number"
-                  placeholder="New ampere value"
+                  placeholder={t("dashboard.subscription.newAmpereValue")}
                   value={requestedAmpere}
                   onChange={(e) => setRequestedAmpere(e.target.value)}
                   style={{ marginBottom: 0 }}
@@ -133,7 +135,7 @@ function SubscriptionPage() {
                 disabled={isRequestingAmpereChange}
                 style={{ marginTop: 0, width: "auto", padding: "0.6rem 1rem" }}
               >
-                {isRequestingAmpereChange ? <Loader2 size={16} className="btn-spinner" /> : "Request Change"}
+                {isRequestingAmpereChange ? <Loader2 size={16} className="btn-spinner" /> : t("dashboard.subscription.requestChange")}
               </motion.button>
             </div>
           )}
@@ -142,15 +144,15 @@ function SubscriptionPage() {
             <>
               <div className="dash-cols">
                 <div className="dash-col">
-                  <p className="dash-label">ADDRESS</p>
+                  <p className="dash-label">{t("dashboard.subscription.address")}</p>
                   <p className="dash-value-lg">{subscription.address}</p>
                 </div>
                 <div className="dash-col">
-                  <p className="dash-label">BUILDING</p>
+                  <p className="dash-label">{t("dashboard.subscription.building")}</p>
                   <p className="dash-value-lg">{subscription.building}</p>
                 </div>
                 <div className="dash-col">
-                  <p className="dash-label">PHONE</p>
+                  <p className="dash-label">{t("dashboard.subscription.phone")}</p>
                   <p className="dash-value-lg">{subscription.phone}</p>
                 </div>
               </div>
@@ -160,7 +162,7 @@ function SubscriptionPage() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
-                Edit Details
+                {t("dashboard.subscription.editDetails")}
               </motion.button>
             </>
           )}
@@ -175,30 +177,30 @@ function SubscriptionPage() {
                 style={{ overflow: "hidden" }}
               >
                 <form onSubmit={handleSaveEditing}>
-                  <label className="auth-label" htmlFor="subscription-edit-address">Address</label>
+                  <label className="auth-label" htmlFor="subscription-edit-address">{t("dashboard.subscription.addressLabel")}</label>
                   <input
                     id="subscription-edit-address"
                     className="auth-input"
                     type="text"
-                    placeholder="Address"
+                    placeholder={t("dashboard.subscription.addressLabel")}
                     value={editAddress}
                     onChange={(e) => setEditAddress(e.target.value)}
                   />
-                  <label className="auth-label" htmlFor="subscription-edit-building">Building name or number</label>
+                  <label className="auth-label" htmlFor="subscription-edit-building">{t("dashboard.subscription.buildingLabel")}</label>
                   <input
                     id="subscription-edit-building"
                     className="auth-input"
                     type="text"
-                    placeholder="Building name or number"
+                    placeholder={t("dashboard.subscription.buildingLabel")}
                     value={editBuilding}
                     onChange={(e) => setEditBuilding(e.target.value)}
                   />
-                  <label className="auth-label" htmlFor="subscription-edit-phone">Phone</label>
+                  <label className="auth-label" htmlFor="subscription-edit-phone">{t("dashboard.subscription.phoneLabel")}</label>
                   <input
                     id="subscription-edit-phone"
                     className="auth-input"
                     type="tel"
-                    placeholder="Phone"
+                    placeholder={t("dashboard.subscription.phoneLabel")}
                     value={editPhone}
                     onChange={(e) => setEditPhone(e.target.value)}
                   />
@@ -211,7 +213,7 @@ function SubscriptionPage() {
                       disabled={isSavingEdit}
                       style={{ flex: 1 }}
                     >
-                      {isSavingEdit ? <Loader2 size={16} className="btn-spinner" /> : "Save"}
+                      {isSavingEdit ? <Loader2 size={16} className="btn-spinner" /> : t("common.save")}
                     </motion.button>
                     <motion.button
                       className="dash-button-outline"
@@ -221,7 +223,7 @@ function SubscriptionPage() {
                       whileTap={{ scale: 0.97 }}
                       style={{ flex: 1, marginTop: 0 }}
                     >
-                      Cancel
+                      {t("common.cancel")}
                     </motion.button>
                   </div>
                 </form>
@@ -230,12 +232,12 @@ function SubscriptionPage() {
           </AnimatePresence>
         </>
       ) : hasSubscription ? (
-        <p>Loading...</p>
+        <p>{t("common.loading")}</p>
       ) : (
         <>
-          <p>No subscription yet</p>
+          <p>{t("dashboard.subscription.noSubscriptionYet")}</p>
           <Link className="dash-button" to="/subscribe" style={{ display: "block", textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-            Subscribe Now
+            {t("dashboard.noSubscription.subscribeNow")}
           </Link>
         </>
       )}

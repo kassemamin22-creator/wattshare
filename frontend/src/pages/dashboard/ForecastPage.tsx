@@ -2,11 +2,13 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion, animate } from "framer-motion";
 import { Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { DashboardContext } from "./DashboardLayout";
 import { cardHover } from "./shared";
 
 function ForecastPage() {
   const { prediction, bills } = useOutletContext<DashboardContext>();
+  const { t } = useTranslation();
   const [displayedForecast, setDisplayedForecast] = useState(0);
 
   useEffect(() => {
@@ -41,19 +43,19 @@ function ForecastPage() {
       whileHover={cardHover}
     >
       <p className="forecast-label">
-        <Sparkles size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> AI FORECAST
+        <Sparkles size={18} className="dash-icon" style={{ color: "var(--color-accent)" }} /> {t("dashboard.forecast.label")}
       </p>
       {prediction && prediction.prediction !== null ? (
         <>
           <p className="forecast-amount">${displayedForecast.toFixed(2)}</p>
-          <p className="forecast-hint">This is an estimate of your next bill, based on your past electricity usage.</p>
+          <p className="forecast-hint">{t("dashboard.forecast.hint")}</p>
           <p className="forecast-message">{prediction.message}</p>
           <div className="forecast-bar-track">
             <div className="forecast-bar-fill" style={forecastBarStyle}></div>
           </div>
         </>
       ) : (
-        <p className="forecast-message">{prediction?.message ?? "Loading..."}</p>
+        <p className="forecast-message">{prediction?.message ?? t("common.loading")}</p>
       )}
     </motion.div>
   );
