@@ -14,12 +14,9 @@ class PaymentMethod(str, Enum):
     whish = "whish"
     omt = "omt"
 
-class UserCreate(BaseModel):
-    name: str
+class EmailOrPhoneFields(BaseModel):
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
-    password: str
-    role: UserRole
 
     @field_validator("email", "phone", mode="before")
     @classmethod
@@ -45,6 +42,11 @@ class UserCreate(BaseModel):
         if not self.email and not self.phone:
             raise ValueError("Either email or phone is required")
         return self
+
+class UserCreate(EmailOrPhoneFields):
+    name: str
+    password: str
+    role: UserRole
 
 class ManagerCreate(BaseModel):
     name: str
@@ -73,17 +75,15 @@ class UserOut(BaseModel):
     role: UserRole
     subscription_status: Optional[str] = None
 
-class UserUpdate(BaseModel):
+class UserUpdate(EmailOrPhoneFields):
     name: str
-    email: EmailStr
 
 class PasswordChange(BaseModel):
     current_password: str
     new_password: str
 
-class AdminUserUpdate(BaseModel):
+class AdminUserUpdate(EmailOrPhoneFields):
     name: str
-    email: EmailStr
     role: UserRole
 
 class AdminPasswordReset(BaseModel):

@@ -142,22 +142,34 @@ def read_my_account(current_user: dict = Depends(get_current_user)):
         id=str(user["_id"]),
         name=user["name"],
         email=user["email"],
+        phone=user.get("phone"),
         role=user["role"],
     )
 
 @app.patch("/users/me", response_model=UserOut)
 def update_my_account(update: UserUpdate, current_user: dict = Depends(get_current_user)):
-    existing = users_collection.find_one({
-        "email": update.email,
+    normalized_email = update.email.lower().strip() if update.email else None
+    normalized_phone = update.phone.strip() if update.phone else None
+
+    if normalized_email and users_collection.find_one({
+        "email": normalized_email,
         "_id": {"$ne": ObjectId(current_user["id"])},
-    })
-    if existing:
+    }):
         raise HTTPException(status_code=400, detail="Email already in use")
 
-    users_collection.update_one(
-        {"_id": ObjectId(current_user["id"])},
-        {"$set": {"name": update.name, "email": update.email}},
-    )
+    if normalized_phone and users_collection.find_one({
+        "phone": normalized_phone,
+        "_id": {"$ne": ObjectId(current_user["id"])},
+    }):
+        raise HTTPException(status_code=400, detail="Phone number already in use")
+
+    try:
+        users_collection.update_one(
+            {"_id": ObjectId(current_user["id"])},
+            {"$set": {"name": update.name, "email": normalized_email, "phone": normalized_phone}},
+        )
+    except DuplicateKeyError:
+        raise HTTPException(status_code=400, detail="Email or phone number already registered")
 
     user = users_collection.find_one({"_id": ObjectId(current_user["id"])})
 
@@ -165,6 +177,7 @@ def update_my_account(update: UserUpdate, current_user: dict = Depends(get_curre
         id=str(user["_id"]),
         name=user["name"],
         email=user["email"],
+        phone=user.get("phone"),
         role=user["role"],
     )
 
@@ -641,6 +654,7 @@ def read_all_users(current_user: dict = Depends(get_current_user)):
                 id=str(user["_id"]),
                 name=user["name"],
                 email=user["email"],
+                phone=user.get("phone"),
                 role=user["role"],
                 subscription_status=subscription_status,
             )
@@ -660,27 +674,39 @@ def admin_update_user(user_id: str, update: AdminUserUpdate, current_user: dict 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    normalized_email = update.email.lower().strip()
+    normalized_email = update.email.lower().strip() if update.email else None
+    normalized_phone = update.phone.strip() if update.phone else None
 
-    existing = users_collection.find_one({
+    if normalized_email and users_collection.find_one({
         "email": normalized_email,
         "_id": {"$ne": ObjectId(user_id)},
-    })
-    if existing:
+    }):
         raise HTTPException(status_code=400, detail="Email already in use")
+
+    if normalized_phone and users_collection.find_one({
+        "phone": normalized_phone,
+        "_id": {"$ne": ObjectId(user_id)},
+    }):
+        raise HTTPException(status_code=400, detail="Phone number already in use")
 
     try:
         users_collection.update_one(
             {"_id": ObjectId(user_id)},
-            {"$set": {"name": update.name, "email": normalized_email, "role": update.role}},
+            {"$set": {
+                "name": update.name,
+                "email": normalized_email,
+                "phone": normalized_phone,
+                "role": update.role,
+            }},
         )
     except DuplicateKeyError:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail="Email or phone number already registered")
 
     return UserOut(
         id=user_id,
         name=update.name,
         email=normalized_email,
+        phone=normalized_phone,
         role=update.role,
     )
 
