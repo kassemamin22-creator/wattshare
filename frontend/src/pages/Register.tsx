@@ -36,9 +36,20 @@ function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [registerMethod, setRegisterMethod] = useState<"email" | "phone">("email");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  const handleSelectMethod = (method: "email" | "phone") => {
+    setRegisterMethod(method);
+    setError("");
+    if (method === "email") {
+      setPhone("");
+    } else {
+      setEmail("");
+    }
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -46,23 +57,33 @@ function Register() {
 
     const trimmedEmail = email.trim();
     const trimmedPhone = phone.trim();
-    if (!trimmedEmail && !trimmedPhone) {
-      setError("Please provide either an email or a phone number");
+    if (registerMethod === "email" && !trimmedEmail) {
+      setError("Please enter your email");
+      return;
+    }
+    if (registerMethod === "phone" && !trimmedPhone) {
+      setError("Please enter your phone number");
       return;
     }
 
     try {
       await api.post("/register", {
         name,
-        email: trimmedEmail || null,
-        phone: trimmedPhone || null,
+        email: registerMethod === "email" ? trimmedEmail : null,
+        phone: registerMethod === "phone" ? trimmedPhone : null,
         password,
         role: "subscriber",
       });
       navigate("/login");
     } catch (err) {
-      if (isAxiosError(err) && err.response?.data?.detail) {
-        setError(err.response.data.detail);
+      const detail = isAxiosError(err) ? err.response?.data?.detail : undefined;
+      if (typeof detail === "string" && detail) {
+        setError(detail);
+      } else if (Array.isArray(detail)) {
+        const messages = detail
+          .map((item) => (typeof item?.msg === "string" ? item.msg.replace(/^Value error, /, "") : ""))
+          .filter(Boolean);
+        setError(messages.length > 0 ? messages.join("; ") : "Registration failed");
       } else {
         setError("Registration failed");
       }
@@ -121,30 +142,62 @@ function Register() {
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
-              <label className="auth-label" htmlFor="register-email">Email (optional if phone is provided)</label>
-              <div className="auth-input-wrap">
-                <Mail size={16} className="auth-input-icon" />
-                <input
-                  id="register-email"
-                  className="auth-input"
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
+              <div className="payment-method-group">
+                <button
+                  type="button"
+                  className={
+                    registerMethod === "email"
+                      ? "payment-method-pill payment-method-pill-active"
+                      : "payment-method-pill"
+                  }
+                  onClick={() => handleSelectMethod("email")}
+                >
+                  Email
+                </button>
+                <button
+                  type="button"
+                  className={
+                    registerMethod === "phone"
+                      ? "payment-method-pill payment-method-pill-active"
+                      : "payment-method-pill"
+                  }
+                  onClick={() => handleSelectMethod("phone")}
+                >
+                  Phone Number
+                </button>
               </div>
-              <label className="auth-label" htmlFor="register-phone">Phone Number (optional if email is provided)</label>
-              <div className="auth-input-wrap">
-                <Phone size={16} className="auth-input-icon" />
-                <input
-                  id="register-phone"
-                  className="auth-input"
-                  type="tel"
-                  placeholder="Phone Number"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-              </div>
+              {registerMethod === "email" ? (
+                <>
+                  <label className="auth-label" htmlFor="register-email">Email</label>
+                  <div className="auth-input-wrap">
+                    <Mail size={16} className="auth-input-icon" />
+                    <input
+                      id="register-email"
+                      className="auth-input"
+                      type="email"
+                      placeholder="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <label className="auth-label" htmlFor="register-phone">Phone Number</label>
+                  <div className="auth-input-wrap">
+                    <Phone size={16} className="auth-input-icon" />
+                    <input
+                      id="register-phone"
+                      className="auth-input"
+                      type="tel"
+                      placeholder="+96170123456"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                    />
+                  </div>
+                  <p className="auth-fee-estimate">Format: +961 followed by 8 digits</p>
+                </>
+              )}
               <label className="auth-label" htmlFor="register-password">Password</label>
               <div className="auth-input-wrap">
                 <Lock size={16} className="auth-input-icon" />

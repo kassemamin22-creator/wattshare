@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, Lock } from "lucide-react";
+import { Mail, Lock, Phone } from "lucide-react";
 import { isAxiosError } from "axios";
 import { jwtDecode } from "jwt-decode";
 import api from "../services/api";
@@ -41,9 +41,16 @@ interface DecodedToken {
 
 function Login() {
   const [identifier, setIdentifier] = useState("");
+  const [loginMethod, setLoginMethod] = useState<"email" | "phone">("email");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  const handleSelectMethod = (method: "email" | "phone") => {
+    setLoginMethod(method);
+    setIdentifier("");
+    setError("");
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -63,8 +70,14 @@ function Login() {
         navigate("/dashboard");
       }
     } catch (err) {
-      if (isAxiosError(err) && err.response?.data?.detail) {
-        setError(err.response.data.detail);
+      const detail = isAxiosError(err) ? err.response?.data?.detail : undefined;
+      if (typeof detail === "string" && detail) {
+        setError(detail);
+      } else if (Array.isArray(detail)) {
+        const messages = detail
+          .map((item) => (typeof item?.msg === "string" ? item.msg.replace(/^Value error, /, "") : ""))
+          .filter(Boolean);
+        setError(messages.length > 0 ? messages.join("; ") : "Login failed");
       } else {
         setError("Login failed");
       }
@@ -111,14 +124,44 @@ function Login() {
           <div className="auth-title">Log In</div>
           <div className="auth-glass-card">
             <form onSubmit={handleSubmit}>
-              <label className="auth-label" htmlFor="login-identifier">Email or Phone Number</label>
+              <div className="payment-method-group">
+                <button
+                  type="button"
+                  className={
+                    loginMethod === "email"
+                      ? "payment-method-pill payment-method-pill-active"
+                      : "payment-method-pill"
+                  }
+                  onClick={() => handleSelectMethod("email")}
+                >
+                  Email
+                </button>
+                <button
+                  type="button"
+                  className={
+                    loginMethod === "phone"
+                      ? "payment-method-pill payment-method-pill-active"
+                      : "payment-method-pill"
+                  }
+                  onClick={() => handleSelectMethod("phone")}
+                >
+                  Phone Number
+                </button>
+              </div>
+              <label className="auth-label" htmlFor="login-identifier">
+                {loginMethod === "email" ? "Email" : "Phone Number"}
+              </label>
               <div className="auth-input-wrap">
-                <Mail size={16} className="auth-input-icon" />
+                {loginMethod === "email" ? (
+                  <Mail size={16} className="auth-input-icon" />
+                ) : (
+                  <Phone size={16} className="auth-input-icon" />
+                )}
                 <input
                   id="login-identifier"
                   className="auth-input"
-                  type="text"
-                  placeholder="Email or Phone Number"
+                  type={loginMethod === "email" ? "email" : "tel"}
+                  placeholder={loginMethod === "email" ? "Email" : "+96170123456"}
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                 />
