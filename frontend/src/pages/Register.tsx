@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { User, Mail, Lock, Phone } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "../services/api";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 const FEATURE_PILLS = [
   { icon: "⚡", label: "Real-time billing" },
@@ -93,6 +94,7 @@ function Register() {
   return (
     <div className="auth-split">
       <div className="auth-split-form">
+        <LanguageSwitcher className="language-switcher-corner" />
         <div className="auth-mesh" aria-hidden="true">
           <motion.div
             className="auth-mesh-blob auth-mesh-blob-accent"

@@ -2189,3 +2189,21 @@ body {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.language-switcher {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.language-switcher .payment-method-pill {
+  flex: none;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.75rem;
+}
+
+.language-switcher-corner {
+  position: absolute;
+  top: 1rem;
+  inset-inline-end: 1rem;
+  z-index: 2;
+}

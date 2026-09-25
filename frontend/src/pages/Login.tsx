@@ -1,10 +1,12 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { Mail, Lock, Phone } from "lucide-react";
 import { isAxiosError } from "axios";
 import { jwtDecode } from "jwt-decode";
 import api from "../services/api";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 const FEATURE_PILLS = [
   { icon: "⚡", label: "Real-time billing" },
@@ -40,6 +42,7 @@ interface DecodedToken {
 }
 
 function Login() {
+  const { t } = useTranslation();
   const [identifier, setIdentifier] = useState("");
   const [loginMethod, setLoginMethod] = useState<"email" | "phone">("email");
   const [password, setPassword] = useState("");
@@ -87,6 +90,7 @@ function Login() {
   return (
     <div className="auth-split">
       <div className="auth-split-form">
+        <LanguageSwitcher className="language-switcher-corner" />
         <div className="auth-mesh" aria-hidden="true">
           <motion.div
             className="auth-mesh-blob auth-mesh-blob-accent"
@@ -121,7 +125,7 @@ function Login() {
               ⚡ WattShare
             </button>
           </div>
-          <div className="auth-title">Log In</div>
+          <div className="auth-title">{t("login.title")}</div>
           <div className="auth-glass-card">
             <form onSubmit={handleSubmit}>
               <div className="payment-method-group">
@@ -134,7 +138,7 @@ function Login() {
                   }
                   onClick={() => handleSelectMethod("email")}
                 >
-                  Email
+                  {t("login.email")}
                 </button>
                 <button
                   type="button"
@@ -145,11 +149,11 @@ function Login() {
                   }
                   onClick={() => handleSelectMethod("phone")}
                 >
-                  Phone Number
+                  {t("login.phone")}
                 </button>
               </div>
               <label className="auth-label" htmlFor="login-identifier">
-                {loginMethod === "email" ? "Email" : "Phone Number"}
+                {loginMethod === "email" ? t("login.email") : t("login.phone")}
               </label>
               <div className="auth-input-wrap">
                 {loginMethod === "email" ? (
@@ -161,19 +165,19 @@ function Login() {
                   id="login-identifier"
                   className="auth-input"
                   type={loginMethod === "email" ? "email" : "tel"}
-                  placeholder={loginMethod === "email" ? "Email" : "+96170123456"}
+                  placeholder={loginMethod === "email" ? t("login.email") : "+96170123456"}
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                 />
               </div>
-              <label className="auth-label" htmlFor="login-password">Password</label>
+              <label className="auth-label" htmlFor="login-password">{t("login.password")}</label>
               <div className="auth-input-wrap">
                 <Lock size={16} className="auth-input-icon" />
                 <input
                   id="login-password"
                   className="auth-input"
                   type="password"
-                  placeholder="Password"
+                  placeholder={t("login.password")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -185,14 +189,14 @@ function Login() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  Log In
+                  {t("login.submit")}
                 </motion.button>
               </div>
               {error && <div className="auth-error">{error}</div>}
             </form>
           </div>
           <Link className="auth-link" to="/register">
-            Don't have an account? Register
+            {t("login.noAccount")} {t("login.registerLink")}
           </Link>
         </motion.div>
       </div>

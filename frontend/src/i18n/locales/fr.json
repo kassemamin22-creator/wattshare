@@ -1,0 +1,16 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler"
+  },
+  "login": {
+    "title": "Bon retour",
+    "email": "E-mail",
+    "phone": "Numéro de téléphone",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "noAccount": "Vous n'avez pas de compte ?",
+    "registerLink": "S'inscrire"
+  }
+}

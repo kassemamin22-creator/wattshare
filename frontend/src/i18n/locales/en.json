@@ -1,0 +1,16 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "login": {
+    "title": "Welcome Back",
+    "email": "Email",
+    "phone": "Phone Number",
+    "password": "Password",
+    "submit": "Log In",
+    "noAccount": "Don't have an account?",
+    "registerLink": "Register"
+  }
+}
