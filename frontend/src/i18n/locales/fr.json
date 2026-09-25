@@ -12,5 +12,25 @@
     "submit": "Se connecter",
     "noAccount": "Vous n'avez pas de compte ?",
     "registerLink": "S'inscrire"
+  },
+  "register": {
+    "title": "Créer un compte",
+    "name": "Nom",
+    "email": "E-mail",
+    "phone": "Numéro de téléphone",
+    "password": "Mot de passe",
+    "submit": "S'inscrire",
+    "haveAccount": "Vous avez déjà un compte ?",
+    "loginLink": "Se connecter",
+    "phoneFormatHint": "Format : +961 suivi de 8 chiffres",
+    "errorEmailRequired": "Veuillez saisir votre adresse e-mail",
+    "errorPhoneRequired": "Veuillez saisir votre numéro de téléphone",
+    "errorGeneric": "Échec de l'inscription"
+  },
+  "errors": {
+    "email_already_registered": "Cet e-mail est déjà enregistré",
+    "phone_already_registered": "Ce numéro de téléphone est déjà enregistré",
+    "invalid_credentials": "E-mail ou mot de passe invalide",
+    "email_or_phone_already_registered": "Cet e-mail ou ce numéro de téléphone est déjà enregistré"
   }
 }

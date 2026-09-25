@@ -1,10 +1,12 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { User, Mail, Lock, Phone } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "../services/api";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import { translateErrorDetail } from "../utils/apiError";
 
 const FEATURE_PILLS = [
   { icon: "⚡", label: "Real-time billing" },
@@ -34,6 +36,7 @@ const PARTICLES = [
 ];
 
 function Register() {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -59,11 +62,11 @@ function Register() {
     const trimmedEmail = email.trim();
     const trimmedPhone = phone.trim();
     if (registerMethod === "email" && !trimmedEmail) {
-      setError("Please enter your email");
+      setError(t("register.errorEmailRequired"));
       return;
     }
     if (registerMethod === "phone" && !trimmedPhone) {
-      setError("Please enter your phone number");
+      setError(t("register.errorPhoneRequired"));
       return;
     }
 
@@ -78,15 +81,18 @@ function Register() {
       navigate("/login");
     } catch (err) {
       const detail = isAxiosError(err) ? err.response?.data?.detail : undefined;
-      if (typeof detail === "string" && detail) {
+      const codedMessage = translateErrorDetail(detail);
+      if (codedMessage) {
+        setError(codedMessage);
+      } else if (typeof detail === "string" && detail) {
         setError(detail);
       } else if (Array.isArray(detail)) {
         const messages = detail
           .map((item) => (typeof item?.msg === "string" ? item.msg.replace(/^Value error, /, "") : ""))
           .filter(Boolean);
-        setError(messages.length > 0 ? messages.join("; ") : "Registration failed");
+        setError(messages.length > 0 ? messages.join("; ") : t("register.errorGeneric"));
       } else {
-        setError("Registration failed");
+        setError(t("register.errorGeneric"));
       }
     }
   };
@@ -129,17 +135,17 @@ function Register() {
               ⚡ WattShare
             </button>
           </div>
-          <div className="auth-title">Create Account</div>
+          <div className="auth-title">{t("register.title")}</div>
           <div className="auth-glass-card">
             <form onSubmit={handleSubmit}>
-              <label className="auth-label" htmlFor="register-name">Name</label>
+              <label className="auth-label" htmlFor="register-name">{t("register.name")}</label>
               <div className="auth-input-wrap">
                 <User size={16} className="auth-input-icon" />
                 <input
                   id="register-name"
                   className="auth-input"
                   type="text"
-                  placeholder="Name"
+                  placeholder={t("register.name")}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
@@ -154,7 +160,7 @@ function Register() {
                   }
                   onClick={() => handleSelectMethod("email")}
                 >
-                  Email
+                  {t("register.email")}
                 </button>
                 <button
                   type="button"
@@ -165,19 +171,19 @@ function Register() {
                   }
                   onClick={() => handleSelectMethod("phone")}
                 >
-                  Phone Number
+                  {t("register.phone")}
                 </button>
               </div>
               {registerMethod === "email" ? (
                 <>
-                  <label className="auth-label" htmlFor="register-email">Email</label>
+                  <label className="auth-label" htmlFor="register-email">{t("register.email")}</label>
                   <div className="auth-input-wrap">
                     <Mail size={16} className="auth-input-icon" />
                     <input
                       id="register-email"
                       className="auth-input"
                       type="email"
-                      placeholder="Email"
+                      placeholder={t("register.email")}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
@@ -185,7 +191,7 @@ function Register() {
                 </>
               ) : (
                 <>
-                  <label className="auth-label" htmlFor="register-phone">Phone Number</label>
+                  <label className="auth-label" htmlFor="register-phone">{t("register.phone")}</label>
                   <div className="auth-input-wrap">
                     <Phone size={16} className="auth-input-icon" />
                     <input
@@ -197,17 +203,17 @@ function Register() {
                       onChange={(e) => setPhone(e.target.value)}
                     />
                   </div>
-                  <p className="auth-fee-estimate">Format: +961 followed by 8 digits</p>
+                  <p className="auth-fee-estimate">{t("register.phoneFormatHint")}</p>
                 </>
               )}
-              <label className="auth-label" htmlFor="register-password">Password</label>
+              <label className="auth-label" htmlFor="register-password">{t("register.password")}</label>
               <div className="auth-input-wrap">
                 <Lock size={16} className="auth-input-icon" />
                 <input
                   id="register-password"
                   className="auth-input"
                   type="password"
-                  placeholder="Password"
+                  placeholder={t("register.password")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -219,14 +225,14 @@ function Register() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  Create Account
+                  {t("register.submit")}
                 </motion.button>
               </div>
               {error && <div className="auth-error">{error}</div>}
             </form>
           </div>
           <Link className="auth-link" to="/login">
-            Already have an account? Log In
+            {t("register.haveAccount")} {t("register.loginLink")}
           </Link>
         </motion.div>
       </div>

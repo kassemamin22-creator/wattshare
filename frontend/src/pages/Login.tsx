@@ -7,6 +7,7 @@ import { isAxiosError } from "axios";
 import { jwtDecode } from "jwt-decode";
 import api from "../services/api";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import { translateErrorDetail } from "../utils/apiError";
 
 const FEATURE_PILLS = [
   { icon: "⚡", label: "Real-time billing" },
@@ -74,7 +75,10 @@ function Login() {
       }
     } catch (err) {
       const detail = isAxiosError(err) ? err.response?.data?.detail : undefined;
-      if (typeof detail === "string" && detail) {
+      const codedMessage = translateErrorDetail(detail);
+      if (codedMessage) {
+        setError(codedMessage);
+      } else if (typeof detail === "string" && detail) {
         setError(detail);
       } else if (Array.isArray(detail)) {
         const messages = detail

@@ -12,5 +12,25 @@
     "submit": "Log In",
     "noAccount": "Don't have an account?",
     "registerLink": "Register"
+  },
+  "register": {
+    "title": "Create Account",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone Number",
+    "password": "Password",
+    "submit": "Register",
+    "haveAccount": "Already have an account?",
+    "loginLink": "Log In",
+    "phoneFormatHint": "Format: +961 followed by 8 digits",
+    "errorEmailRequired": "Please enter your email",
+    "errorPhoneRequired": "Please enter your phone number",
+    "errorGeneric": "Registration failed"
+  },
+  "errors": {
+    "email_already_registered": "Email already registered",
+    "phone_already_registered": "Phone number already registered",
+    "invalid_credentials": "Invalid email or password",
+    "email_or_phone_already_registered": "Email or phone number already registered"
   }
 }
