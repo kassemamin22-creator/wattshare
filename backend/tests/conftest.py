@@ -1,4 +1,5 @@
 import os
+import uuid
 from unittest import mock
 
 import mongomock
@@ -45,3 +46,26 @@ def fresh_database(main_module, monkeypatch):
 def client(main_module):
     with TestClient(main_module.app) as test_client:
         yield test_client
+
+
+@pytest.fixture
+def make_user(fresh_database):
+    """Insert a user with the given role and return its id plus ready-to-use auth headers."""
+    from auth import create_access_token
+
+    def _make_user(role, name=None):
+        unique = uuid.uuid4().hex[:8]
+        inserted = fresh_database["users"].insert_one(
+            {
+                "name": name or f"Test {role.capitalize()}",
+                "email": f"{role}-{unique}@x.com",
+                "phone": None,
+                "password": "not-a-real-hash",
+                "role": role,
+            }
+        )
+        user_id = str(inserted.inserted_id)
+        token = create_access_token({"id": user_id, "role": role})
+        return {"id": user_id, "headers": {"Authorization": f"Bearer {token}"}}
+
+    return _make_user
