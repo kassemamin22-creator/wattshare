@@ -1,5 +1,6 @@
 import os
 import uuid
+from types import SimpleNamespace
 from unittest import mock
 
 import mongomock
@@ -46,6 +47,53 @@ def fresh_database(main_module, monkeypatch):
 def client(main_module):
     with TestClient(main_module.app) as test_client:
         yield test_client
+
+
+class FakeGemini:
+    """Stands in for the google-genai client.
+
+    Script it with `reply_text` (or `error` to make every call raise), then inspect what the app
+    sent through `generate_calls` (OCR), `chat_create_calls` (chatbot setup) and `sent_messages`.
+    """
+
+    def __init__(self):
+        self.reply_text = "OK"
+        self.error = None
+        self.generate_calls = []
+        self.chat_create_calls = []
+        self.sent_messages = []
+        self.models = SimpleNamespace(generate_content=self._generate_content)
+        self.chats = SimpleNamespace(create=self._create_chat)
+
+    def _reply(self):
+        if self.error is not None:
+            raise self.error
+        return SimpleNamespace(text=self.reply_text)
+
+    def _generate_content(self, **kwargs):
+        self.generate_calls.append(kwargs)
+        return self._reply()
+
+    def _create_chat(self, **kwargs):
+        self.chat_create_calls.append(kwargs)
+        return SimpleNamespace(send_message=self._send_message)
+
+    def _send_message(self, message):
+        self.sent_messages.append(message)
+        return self._reply()
+
+
+@pytest.fixture
+def fake_gemini(main_module, monkeypatch):
+    """Replace `genai` inside main.py so `genai.Client(...)` returns one shared FakeGemini.
+
+    Only the name main.py sees is swapped (monkeypatch undoes it after the test), so no test can
+    reach the real API or needs GEMINI_API_KEY. `google.genai.types` stays real, which means the
+    recorded calls contain the genuine Content/Part objects the app built.
+    """
+    fake = FakeGemini()
+    monkeypatch.setattr(main_module, "genai", SimpleNamespace(Client=lambda *args, **kwargs: fake))
+    return fake
 
 
 @pytest.fixture
