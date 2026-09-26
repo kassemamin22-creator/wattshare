@@ -1,3 +1,4 @@
+# All Pydantic models for the API: what clients may send (validation) and what endpoints return.
 from pydantic import BaseModel, EmailStr, field_validator, model_validator
 from typing import List, Literal, Optional
 from enum import Enum

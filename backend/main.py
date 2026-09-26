@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from sklearn.linear_model import LinearRegression
 import numpy as np
 
+# ----- Configuration and database setup -----
 load_dotenv()
 
 MONGO_URI = os.getenv("MONGO_URI")
@@ -54,6 +55,7 @@ def get_current_price_per_ampere() -> float:
     )
     return settings["price_per_ampere"]
 
+# ----- App and CORS setup -----
 app = FastAPI()
 
 app.add_middleware(
@@ -69,6 +71,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ----- Health checks -----
 @app.get("/")
 def read_root():
     return {"message": "WattShare API is running"}
@@ -81,6 +84,7 @@ def db_check():
     except Exception as e:
         return {"status": "MongoDB connection failed", "error": str(e)}
 
+# ----- Authentication and the user's own account -----
 @app.post("/register", response_model=UserOut)
 def register(user: UserCreate):
     if user.role != UserRole.subscriber:
@@ -217,6 +221,7 @@ def change_my_password(change: PasswordChange, current_user: dict = Depends(get_
 
     return {"message": "Password updated successfully"}
 
+# ----- Tariff and the subscriber's subscription -----
 @app.get("/tariff", response_model=TariffOut)
 def read_tariff():
     price_per_ampere = get_current_price_per_ampere()
@@ -330,6 +335,7 @@ def update_my_subscription(update: SubscriptionUpdate, current_user: dict = Depe
         start_date=subscription.get("start_date", datetime.utcnow()),
     )
 
+# ----- Manager: subscriber list, meter readings, photo scanning -----
 @app.get("/subscribers", response_model=List[SubscriptionOut])
 def read_subscribers(current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "owner":
@@ -453,6 +459,7 @@ def ocr_meter_reading(file: UploadFile = File(...), current_user: dict = Depends
 
     return {"reading_value": reading_value, "raw_text": raw_text}
 
+# ----- Subscriber chatbot (Gemini) -----
 @app.post("/chatbot/ask", response_model=ChatResponse)
 def chatbot_ask(request: ChatRequest, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "subscriber":
@@ -528,6 +535,7 @@ def chatbot_ask(request: ChatRequest, current_user: dict = Depends(get_current_u
 
     return ChatResponse(reply=response.text)
 
+# ----- Bills: subscriber view and next-bill prediction -----
 @app.get("/bills/me", response_model=List[BillOut])
 def read_my_bills(current_user: dict = Depends(get_current_user)):
     bills = bills_collection.find({"subscriber_id": current_user["id"]}).sort("created_at", -1)
@@ -584,6 +592,7 @@ def predict_next_bill(current_user: dict = Depends(get_current_user)):
             "message": "Unable to generate a prediction right now",
         }
 
+# ----- Issue reporting -----
 @app.post("/issues", response_model=IssueOut)
 def create_issue(issue: IssueCreate, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "subscriber":
@@ -656,6 +665,7 @@ def update_issue(issue_id: str, status: str, current_user: dict = Depends(get_cu
         created_at=issue["created_at"],
     )
 
+# ----- Admin: user management -----
 @app.get("/admin/users", response_model=List[UserOut])
 def read_all_users(current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "admin":
@@ -780,6 +790,7 @@ def delete_user(user_id: str, current_user: dict = Depends(get_current_user)):
 
     return {"message": "User and related data deleted successfully"}
 
+# ----- Admin and manager: subscription management and approvals -----
 @app.get("/admin/subscriptions", response_model=List[SubscriptionOut])
 def read_all_subscriptions(current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "admin":
@@ -986,6 +997,7 @@ def approve_subscription(subscription_id: str, approval: SubscriptionApprove, cu
         pending_ampere_change=subscription.get("pending_ampere_change"),
     )
 
+# ----- Admin: pricing and account creation -----
 @app.put("/admin/tariff", response_model=TariffOut)
 def update_tariff(tariff: TariffUpdate, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "admin":
@@ -1070,6 +1082,7 @@ def add_subscriber(subscriber: SubscriberCreate, current_user: dict = Depends(ge
         subscription_status="active",
     )
 
+# ----- Admin and manager: all bills, revenue, mark paid -----
 @app.get("/admin/bills", response_model=List[BillOut])
 def read_all_bills(current_user: dict = Depends(get_current_user)):
     if current_user["role"] not in ("admin", "owner"):

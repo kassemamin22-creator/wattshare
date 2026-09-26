@@ -1,3 +1,5 @@
+# Authentication helpers: password hashing, JWT creation, and the get_current_user dependency
+# that protects endpoints.
 from datetime import datetime, timedelta
 import os
 
