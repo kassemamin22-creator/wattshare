@@ -13,6 +13,14 @@ interface DecodedToken {
   exp: number;
 }
 
+function hasAllowedRole(token: string, allowedRoles: string[]): boolean {
+  try {
+    return allowedRoles.includes(jwtDecode<DecodedToken>(token).role);
+  } catch {
+    return false;
+  }
+}
+
 function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const token = localStorage.getItem("token");
 
@@ -20,15 +28,8 @@ function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
     return <Navigate to="/login" />;
   }
 
-  if (allowedRoles) {
-    try {
-      const decoded = jwtDecode<DecodedToken>(token);
-      if (!allowedRoles.includes(decoded.role)) {
-        return <Navigate to="/login" />;
-      }
-    } catch {
-      return <Navigate to="/login" />;
-    }
+  if (allowedRoles && !hasAllowedRole(token, allowedRoles)) {
+    return <Navigate to="/login" />;
   }
 
   return <>{children}</>;

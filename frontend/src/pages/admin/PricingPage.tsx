@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";
 import { DollarSign, Loader2 } from "lucide-react";
@@ -7,21 +7,18 @@ import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
 import { useTranslation } from "react-i18next";
 import type { AdminDashboardContext } from "./AdminDashboardLayout";
-import { cardEntrance, cardHover, CountUpValue } from "./shared";
+import { CountUpValue } from "./shared";
+import { cardEntrance, cardHover } from "./helpers";
 
 function PricingPage() {
   const showToast = useToast();
   const { t } = useTranslation();
   const { tariffPrice, setTariffPrice } = useOutletContext<AdminDashboardContext>();
 
-  const [tariffInput, setTariffInput] = useState("");
+  const [tariffDraft, setTariffDraft] = useState<string | null>(null);
   const [isUpdatingTariff, setIsUpdatingTariff] = useState(false);
 
-  useEffect(() => {
-    if (tariffPrice !== null) {
-      setTariffInput(String(tariffPrice));
-    }
-  }, [tariffPrice]);
+  const tariffInput = tariffDraft ?? (tariffPrice !== null ? String(tariffPrice) : "");
 
   const handleUpdateTariff = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,6 +29,7 @@ function PricingPage() {
         price_per_ampere: Number(tariffInput),
       });
       setTariffPrice(response.data.price_per_ampere);
+      setTariffDraft(null);
       showToast(t("admin.pricing.toastSuccess"), "success");
     } catch (err) {
       if (isAxiosError(err) && err.response?.data?.detail) {
@@ -71,7 +69,7 @@ function PricingPage() {
           step="0.01"
           placeholder={t("admin.pricing.priceLabel")}
           value={tariffInput}
-          onChange={(e) => setTariffInput(e.target.value)}
+          onChange={(e) => setTariffDraft(e.target.value)}
         />
         <motion.button
           className="auth-button"

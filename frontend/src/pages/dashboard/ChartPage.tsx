@@ -4,7 +4,8 @@ import { BarChart3 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { useTranslation } from "react-i18next";
 import type { DashboardContext } from "./DashboardLayout";
-import { CountUpValue, cardEntrance, cardHover } from "./shared";
+import { CountUpValue } from "./shared";
+import { cardEntrance, cardHover } from "./helpers";
 
 function ChartPage() {
   const { bills } = useOutletContext<DashboardContext>();

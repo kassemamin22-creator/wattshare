@@ -6,7 +6,7 @@ import html2canvas from "html2canvas";
 import { useToast } from "../../hooks/useToast";
 import { useTranslation } from "react-i18next";
 import type { Bill, DashboardContext } from "./DashboardLayout";
-import { statusPillClass, translateStatus, cardEntrance, cardHover, rowEntrance, rowHover } from "./shared";
+import { statusPillClass, translateStatus, cardEntrance, cardHover, rowEntrance, rowHover } from "./helpers";
 
 function BillingPage() {
   const showToast = useToast();
@@ -37,7 +37,7 @@ function BillingPage() {
           document.body.removeChild(link);
         })
         .catch(() => {
-          showToast(t("dashboard.billing.toastInvoiceFailed"), "error");
+          showToast(i18n.t("dashboard.billing.toastInvoiceFailed"), "error");
         })
         .finally(() => {
           setDownloadingBillId(null);
@@ -45,7 +45,7 @@ function BillingPage() {
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [downloadingBillId]);
+  }, [downloadingBillId, showToast, i18n]);
 
   const downloadInvoice = (bill: Bill) => {
     setDownloadingBillId(bill.id);

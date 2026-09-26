@@ -8,7 +8,8 @@ import { useToast } from "../../hooks/useToast";
 import { useTranslation } from "react-i18next";
 import { getApiErrorMessage } from "../../utils/apiError";
 import type { AdminDashboardContext, Bill } from "./AdminDashboardLayout";
-import { statusPillClass, translateStatus, cardEntrance, cardHover, rowEntrance, rowHover, CountUpValue } from "./shared";
+import { CountUpValue } from "./shared";
+import { statusPillClass, translateStatus, cardEntrance, cardHover, rowEntrance, rowHover } from "./helpers";
 
 function BillsPage() {
   const showToast = useToast();
@@ -55,7 +56,7 @@ function BillsPage() {
           document.body.removeChild(link);
         })
         .catch(() => {
-          showToast(t("dashboard.billing.toastInvoiceFailed"), "error");
+          showToast(i18n.t("dashboard.billing.toastInvoiceFailed"), "error");
         })
         .finally(() => {
           setDownloadingBillId(null);
@@ -63,7 +64,7 @@ function BillsPage() {
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [downloadingBillId]);
+  }, [downloadingBillId, showToast, i18n]);
 
   const downloadInvoice = (bill: Bill) => {
     setDownloadingBillId(bill.id);

@@ -7,7 +7,7 @@ import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
 import { useTranslation } from "react-i18next";
 import type { DashboardContext } from "./DashboardLayout";
-import { statusPillClass, translateStatus, cardEntrance, cardHover } from "./shared";
+import { statusPillClass, translateStatus, cardEntrance, cardHover } from "./helpers";
 
 function SubscriptionPage() {
   const showToast = useToast();

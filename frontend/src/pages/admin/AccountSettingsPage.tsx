@@ -8,7 +8,7 @@ import { useToast } from "../../hooks/useToast";
 import { getApiErrorMessage } from "../../utils/apiError";
 import { useTranslation } from "react-i18next";
 import type { AdminDashboardContext } from "./AdminDashboardLayout";
-import { cardEntrance, cardHover } from "./shared";
+import { cardEntrance, cardHover } from "./helpers";
 
 function AccountSettingsPage() {
   const showToast = useToast();

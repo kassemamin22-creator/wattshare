@@ -5,7 +5,7 @@ import { isAxiosError } from "axios";
 import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
 import { useTranslation } from "react-i18next";
-import { cardEntrance, cardHover } from "./shared";
+import { cardEntrance, cardHover } from "./helpers";
 
 function ReportIssuePage() {
   const showToast = useToast();

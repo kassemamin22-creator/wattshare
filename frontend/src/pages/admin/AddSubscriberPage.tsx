@@ -7,7 +7,7 @@ import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
 import { useTranslation } from "react-i18next";
 import type { AdminDashboardContext } from "./AdminDashboardLayout";
-import { cardEntrance, cardHover, SUBSCRIBER_PAYMENT_METHODS } from "./shared";
+import { cardEntrance, cardHover, SUBSCRIBER_PAYMENT_METHODS } from "./helpers";
 
 function AddSubscriberPage() {
   const showToast = useToast();

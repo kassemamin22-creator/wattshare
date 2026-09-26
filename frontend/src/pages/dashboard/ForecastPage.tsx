@@ -4,7 +4,7 @@ import { motion, animate } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { DashboardContext } from "./DashboardLayout";
-import { cardHover } from "./shared";
+import { cardHover } from "./helpers";
 
 function ForecastPage() {
   const { prediction, bills } = useOutletContext<DashboardContext>();

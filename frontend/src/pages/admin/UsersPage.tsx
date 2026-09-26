@@ -10,7 +10,8 @@ import ConfirmModal from "../../components/ConfirmModal";
 import { getApiErrorMessage } from "../../utils/apiError";
 import { useTranslation } from "react-i18next";
 import type { AdminDashboardContext, User } from "./AdminDashboardLayout";
-import { statusPillClass, translateStatus, displayRole, cardEntrance, cardHover, rowEntrance, rowHover, CountUpValue } from "./shared";
+import { CountUpValue } from "./shared";
+import { statusPillClass, translateStatus, displayRole, cardEntrance, cardHover, rowEntrance, rowHover } from "./helpers";
 
 function UsersPage() {
   const showToast = useToast();

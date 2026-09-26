@@ -7,7 +7,7 @@ import api from "../../services/api";
 import { useToast } from "../../hooks/useToast";
 import { useTranslation } from "react-i18next";
 import type { OwnerDashboardContext } from "./OwnerDashboardLayout";
-import { cardEntrance, cardHover, rowEntrance, rowHover } from "./shared";
+import { cardEntrance, cardHover, rowEntrance, rowHover } from "./helpers";
 
 function PendingAmpereChangesPage() {
   const showToast = useToast();

@@ -6,7 +6,7 @@ import { useToast } from "../../hooks/useToast";
 import { useTranslation } from "react-i18next";
 import { getApiErrorMessage } from "../../utils/apiError";
 import type { OwnerDashboardContext } from "./OwnerDashboardLayout";
-import { statusPillClass, translateStatus, cardEntrance, cardHover, rowEntrance, rowHover } from "./shared";
+import { statusPillClass, translateStatus, cardEntrance, cardHover, rowEntrance, rowHover } from "./helpers";
 
 function IssuesPage() {
   const { issues, setIssues } = useOutletContext<OwnerDashboardContext>();

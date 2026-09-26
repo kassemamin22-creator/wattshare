@@ -8,7 +8,7 @@ import { useToast } from "../../hooks/useToast";
 import { useTranslation } from "react-i18next";
 import { getApiErrorMessage } from "../../utils/apiError";
 import type { AdminDashboardContext, Subscription } from "./AdminDashboardLayout";
-import { statusPillClass, translateStatus, cardEntrance, cardHover, rowEntrance, rowHover } from "./shared";
+import { statusPillClass, translateStatus, cardEntrance, cardHover, rowEntrance, rowHover } from "./helpers";
 
 function SubscriptionsPage() {
   const showToast = useToast();

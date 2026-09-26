@@ -88,7 +88,7 @@ const ACCOUNT_SETTINGS_PATH = "/admin/account-settings";
 
 function AdminDashboardLayout() {
   const showToast = useToast();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [currentUserId, setCurrentUserId] = useState("");
@@ -117,9 +117,9 @@ function AdminDashboardLayout() {
         setTariffPrice(response.data.price_per_ampere);
       }),
     ]).catch(() => {
-      showToast(t("common.loadError"), "error");
+      showToast(i18n.t("common.loadError"), "error");
     });
-  }, []);
+  }, [showToast, i18n]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");

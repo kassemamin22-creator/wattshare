@@ -4,7 +4,7 @@ import { BarChart3 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { useTranslation } from "react-i18next";
 import type { OwnerDashboardContext } from "./OwnerDashboardLayout";
-import { cardEntrance, cardHover } from "./shared";
+import { cardEntrance, cardHover } from "./helpers";
 
 function ChartPage() {
   const { subscribers } = useOutletContext<OwnerDashboardContext>();
