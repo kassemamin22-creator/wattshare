@@ -1,3 +1,4 @@
+// Reusable confirmation dialog, used before risky actions such as deleting a user.
 import { AnimatePresence, motion } from "framer-motion";
 
 interface ConfirmModalProps {

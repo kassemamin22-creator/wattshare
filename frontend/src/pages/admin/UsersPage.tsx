@@ -1,3 +1,5 @@
+// Admin's users page: role counts, a users-by-role chart, and a table to edit, reset the password of,
+// or delete users.
 import { useState, type FormEvent, Fragment } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";

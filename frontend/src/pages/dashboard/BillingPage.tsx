@@ -1,3 +1,4 @@
+// Subscriber's billing history page: shows past bills and lets them download invoices as images.
 import { useEffect, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";

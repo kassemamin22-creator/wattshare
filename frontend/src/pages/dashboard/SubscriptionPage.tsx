@@ -1,3 +1,4 @@
+// Subscriber's subscription page: shows their plan, lets them edit contact details, and request an ampere change.
 import { useState, type FormEvent } from "react";
 import { Link, useOutletContext } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";

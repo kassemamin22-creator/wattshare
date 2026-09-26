@@ -1,3 +1,4 @@
+// AI forecast page: shows the predicted amount of the subscriber's next bill.
 import { useEffect, useState, type CSSProperties } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion, animate } from "framer-motion";

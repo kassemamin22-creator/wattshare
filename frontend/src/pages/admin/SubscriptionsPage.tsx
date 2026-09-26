@@ -1,3 +1,4 @@
+// Admin's subscriptions page: filter subscriptions, edit their details, and activate or deactivate them.
 import { useState, type FormEvent, Fragment } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";

@@ -1,3 +1,4 @@
+// Subscriber's consumption page: total kWh, current balance, and a bar chart of usage per bill.
 import { useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";
 import { BarChart3 } from "lucide-react";

@@ -1,3 +1,4 @@
+// Subscriber's account settings: edit name, email and phone, and change the password.
 import { useState, type FormEvent } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";

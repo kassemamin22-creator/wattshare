@@ -1,3 +1,5 @@
+// Layout for the subscriber dashboard: sidebar and mobile menu, greeting header, shared data loading,
+// and the chatbot widget. The subscriber pages render inside it.
 import { useEffect, useRef, useState, type Dispatch, type FormEvent, type ReactNode, type SetStateAction } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";

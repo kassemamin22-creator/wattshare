@@ -1,3 +1,4 @@
+// Shared dashboard component: CountUpValue, a number that animates from 0 up to its value.
 import { useEffect, useState } from "react";
 import { animate } from "framer-motion";
 

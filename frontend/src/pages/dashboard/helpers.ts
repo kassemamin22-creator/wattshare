@@ -1,3 +1,5 @@
+// Non-component helpers for the subscriber dashboard: status labels and colors, and card/row animation
+// settings (also reused by the manager and admin dashboards).
 import type { TFunction } from "i18next";
 
 export function translateStatus(t: TFunction, status: string): string {

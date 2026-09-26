@@ -1,3 +1,4 @@
+// Admin's bills page: revenue totals, all bills, marking bills as paid, and downloading invoices as images.
 import { useEffect, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";

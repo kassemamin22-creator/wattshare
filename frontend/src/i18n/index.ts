@@ -1,3 +1,5 @@
+// Sets up multi-language support (English, Arabic, French) with i18next: loads the translations,
+// remembers the chosen language, and sets the page language and direction.
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";

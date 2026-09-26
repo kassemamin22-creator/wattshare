@@ -1,3 +1,4 @@
+// Small EN / AR / FR button group that switches the app's language.
 import { useTranslation } from "react-i18next";
 
 const LANGUAGES = [

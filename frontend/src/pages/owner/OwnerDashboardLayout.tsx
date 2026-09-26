@@ -1,3 +1,5 @@
+// Layout for the manager (owner) dashboard: sidebar and mobile menu plus shared data loading
+// (subscribers, issues, bills, pending approvals). The manager pages render inside it.
 import { useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";

@@ -1,3 +1,4 @@
+// Toast notifications: provides showToast() to the whole app and renders the pop-up messages.
 import { useCallback, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, XCircle, X } from "lucide-react";

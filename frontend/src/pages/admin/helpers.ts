@@ -1,3 +1,5 @@
+// Non-component helpers for the admin dashboard: role names and status colors,
+// plus re-exports of the shared helpers.
 import type { TFunction } from "i18next";
 
 export { cardEntrance, cardHover, CARD_STAGGER, rowEntrance, rowHover, SUBSCRIBER_PAYMENT_METHODS, translateStatus } from "../owner/helpers";

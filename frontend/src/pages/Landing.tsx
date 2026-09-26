@@ -1,3 +1,4 @@
+// Public landing page: hero, feature highlights, how-it-works steps, and sign-up / log-in buttons.
 import {
   useState,
   useEffect,

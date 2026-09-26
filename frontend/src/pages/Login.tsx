@@ -1,3 +1,4 @@
+// Login page: users sign in with an email or phone number and go to the dashboard for their role.
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";

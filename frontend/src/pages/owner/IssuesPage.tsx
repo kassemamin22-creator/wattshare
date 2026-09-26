@@ -1,3 +1,4 @@
+// Manager's reported issues page: see the issues subscribers reported and update their status.
 import { useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";
 import { AlertCircle } from "lucide-react";

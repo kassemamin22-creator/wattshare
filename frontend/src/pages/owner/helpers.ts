@@ -1,3 +1,5 @@
+// Non-component helpers for the manager dashboard: its status colors and the payment method list,
+// plus re-exports of the shared animation helpers.
 export { cardEntrance, cardHover, CARD_STAGGER, rowEntrance, rowHover, translateStatus } from "../dashboard/helpers";
 
 // Owner's status set differs from the subscriber dashboard's (needs "open" for issues,

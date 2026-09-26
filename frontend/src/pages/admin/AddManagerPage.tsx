@@ -1,3 +1,4 @@
+// Form for an admin to create a manager account.
 import { useState, type FormEvent } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";

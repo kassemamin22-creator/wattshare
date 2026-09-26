@@ -1,3 +1,4 @@
+// Page where a subscriber reports an outage or billing problem to their manager.
 import { useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import { MessageCircle, Loader2 } from "lucide-react";

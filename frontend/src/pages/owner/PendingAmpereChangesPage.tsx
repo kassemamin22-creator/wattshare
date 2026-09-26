@@ -1,3 +1,4 @@
+// Manager's page listing subscribers' requested ampere changes so they can be approved.
 import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";

@@ -1,3 +1,5 @@
+// Manager's subscribers page: a searchable, filterable table with details, editing, and meter reading
+// entry (typed in or scanned from a photo).
 import { useMemo, useRef, useState, type ChangeEvent, type FormEvent, Fragment } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";

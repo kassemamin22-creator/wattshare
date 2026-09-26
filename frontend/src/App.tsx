@@ -1,3 +1,5 @@
+// Defines all of the app's routes: the public pages plus the protected subscriber, manager
+// and admin dashboards, each with its nested pages.
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Landing from './pages/Landing'
 import Login from './pages/Login'

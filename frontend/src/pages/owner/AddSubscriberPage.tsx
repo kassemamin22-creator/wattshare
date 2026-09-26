@@ -1,3 +1,4 @@
+// Form for a manager to create a subscriber account together with its subscription.
 import { useState, type FormEvent } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";

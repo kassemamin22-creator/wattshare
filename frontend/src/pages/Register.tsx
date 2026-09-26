@@ -1,3 +1,4 @@
+// Registration page: a new subscriber creates an account with an email or a Lebanese phone number.
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";

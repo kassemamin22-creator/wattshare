@@ -1,3 +1,4 @@
+// Manager's pending approvals page: approve new subscription requests and choose their payment method.
 import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";

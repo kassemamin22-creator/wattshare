@@ -1,3 +1,4 @@
+// Admin's pricing page: shows the current price per ampere and lets the admin change it.
 import { useState, type FormEvent } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";

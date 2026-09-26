@@ -1,3 +1,4 @@
+// Manager's overview chart showing each subscriber's ampere.
 import { useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";
 import { BarChart3 } from "lucide-react";

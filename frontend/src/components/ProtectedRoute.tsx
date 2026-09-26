@@ -1,3 +1,4 @@
+// Route guard: sends the user to the login page unless they have a valid token and, when required, an allowed role.
 import { type ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";

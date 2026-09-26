@@ -1,3 +1,5 @@
+// Subscription request page: a logged-in subscriber submits their address, building, phone and ampere
+// to ask for a generator subscription.
 import { useState, useEffect, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";

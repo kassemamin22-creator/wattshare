@@ -1,3 +1,5 @@
+// Layout for the admin dashboard: sidebar and mobile menu plus shared data loading
+// (users, subscriptions, bills, revenue, tariff). The admin pages render inside it.
 import { useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";

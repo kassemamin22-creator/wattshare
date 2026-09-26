@@ -1,3 +1,4 @@
+// Manager's bills page: lists all bills and lets the manager mark pending ones as paid.
 import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";
