@@ -4,7 +4,7 @@
 
 ## Overview
 
-In many neighborhoods, electricity comes from privately owned generators, and subscriptions, meter readings and bills are still tracked by hand in notebooks and spreadsheets. This leads to billing disputes, lost records and slow approvals. WattShare replaces that with one platform: subscribers request and manage their subscription, managers approve requests and log meter readings, bills are generated automatically from those readings, and admins oversee users, pricing and revenue.
+In many neighborhoods, electricity comes from privately owned generators, and subscriptions, meter readings and bills are still tracked by hand in notebooks and spreadsheets. This leads to billing disputes, lost records and slow approvals. WattShare replaces that with one platform: subscribers request and manage their subscription, employees approve requests and log meter readings, bills are generated automatically from those readings, and admins oversee users, pricing and revenue.
 
 ## Live Demo
 
@@ -12,15 +12,15 @@ In many neighborhoods, electricity comes from privately owned generators, and su
 
 ## Key Features
 
-- **Role-based dashboards** — separate dashboards for **Admin**, **Manager** and **Subscriber**, each showing only what that role needs to do.
-- **Subscription lifecycle with manager approval** — a subscriber requests a subscription (status `pending`), a manager approves it and records the payment method (cash, Whish or OMT), and it becomes `active`. Admins and managers can also activate or deactivate subscriptions.
-- **Meter reading and automatic billing** — managers submit readings and a bill is generated automatically: `consumption (kWh) × tariff rate + flat fee`, where the flat fee follows the admin-controlled price per ampere.
-- **Downloadable invoices** — subscribers and admins can download any bill as an invoice image.
+- **Role-based dashboards** — separate dashboards for **Admin**, **Employee** and **Subscriber**, each showing only what that role needs to do.
+- **Subscription lifecycle with employee approval** — a subscriber requests a subscription (status `pending`), an employee approves it and records the payment method (cash, Whish or OMT), and it becomes `active`. Admins and employees can also activate or deactivate subscriptions.
+- **Meter reading and automatic billing** — employees submit readings and a bill is generated automatically: `consumption (kWh) × tariff rate + flat fee`, where the flat fee follows the admin-controlled price per ampere.
+- **Downloadable invoices** — subscribers, employees and admins can download any bill as an invoice image.
 - **Revenue overview** — admins see total collected and outstanding amounts, updated as bills are marked as paid.
-- **Ampere change requests** — subscribers request a different ampere plan and a manager approves it, which recalculates the flat fee.
-- **Building filters** — managers can search subscribers by name and filter them by building and status.
+- **Ampere change requests** — subscribers request a different ampere plan and an employee approves it, which recalculates the flat fee.
+- **Building filters** — employees can search subscribers by name and filter them by building and status.
 - **Phone number registration** — sign up and log in with either an email or a Lebanese phone number (`+961` followed by 8 digits).
-- **Issue reporting** — subscribers report outages or billing problems, and managers track them to resolution.
+- **Issue reporting** — subscribers report outages or billing problems, and employees track them to resolution.
 - **Pricing control** — admins set the price per ampere.
 
 ## AI Features
@@ -28,7 +28,7 @@ In many neighborhoods, electricity comes from privately owned generators, and su
 WattShare uses Google's **Gemini API** for two features. Both use the `gemini-3.5-flash-lite` model.
 
 ### Meter scanner (OCR)
-Managers can photograph a subscriber's meter from the Subscribers page. Gemini reads the number in the image and pre-fills the reading field. The result is never submitted automatically: the manager reviews it and confirms it through the normal reading form, so a misread can't silently create a wrong bill.
+Employees can photograph a subscriber's meter from the Subscribers page. Gemini reads the number in the image and pre-fills the reading field. The result is never submitted automatically: the employee reviews it and confirms it through the normal reading form, so a misread can't silently create a wrong bill.
 
 ### AI chatbot assistant
 Subscribers get a floating assistant on their dashboard. It answers questions about their own subscription and their last 12 bills (for example, "Why is this month's bill higher?"). It only sees the signed-in subscriber's data, and it is instructed to answer only from that data. Conversations are limited to the last 20 turns and 1,000 characters per message.
@@ -39,6 +39,8 @@ Separately from Gemini, the subscriber dashboard predicts the next bill with a l
 ## Multi-language Support
 
 The whole interface is available in **English**, **Arabic** and **French**, with full **right-to-left (RTL)** layout support for Arabic. The language is detected from the browser on the first visit, can be changed at any time with the language switcher, and is remembered afterwards. Backend error messages are returned as error codes and translated on the frontend, so users see errors in their chosen language.
+
+Note: the "Manager" role is displayed as **"Employee"** in the UI text across all three languages, per the client's naming preference. The underlying role value stored in the database, JWT and backend logic remains `owner`; only the on-screen label changed.
 
 ## Tech Stack
 
@@ -67,7 +69,7 @@ wattshare/
     ├── src/
     │   ├── pages/            # Landing, Login, Register, Subscribe
     │   │   ├── dashboard/    # Subscriber dashboard pages
-    │   │   ├── owner/        # Manager dashboard pages
+    │   │   ├── owner/        # Employee dashboard pages
     │   │   └── admin/        # Admin dashboard pages
     │   ├── components/       # LanguageSwitcher, ProtectedRoute, Toast, ConfirmModal
     │   ├── i18n/             # i18next setup and the en / ar / fr translation files
@@ -117,7 +119,7 @@ uvicorn main:app --reload
 
 The API runs at http://127.0.0.1:8000, and interactive documentation is available at http://127.0.0.1:8000/docs.
 
-> **First admin account:** self-registration only creates subscriber accounts. Create the first admin by inserting a user with the role `admin` (and a bcrypt-hashed password) directly into the `users` collection. Admins can then create manager accounts from the dashboard.
+> **First admin account:** self-registration only creates subscriber accounts. Create the first admin by inserting a user with the role `admin` (and a bcrypt-hashed password) directly into the `users` collection. Admins can then create employee accounts from the dashboard.
 
 ### Frontend
 
